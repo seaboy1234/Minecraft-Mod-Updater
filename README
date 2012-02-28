@@ -1,0 +1,36 @@
+Minecraft Mod Updater
+This is intended to help Minecraft servers who run with mods to make the experience of adding new mods and updating 
+old ones easier.  For the past few months, I've worked on this with three main goals:
+1. Provide a simple way for server admins to push new updates to their members.
+2. Provide users a simple way to update the mods that are required for play on modded servers.
+3. Remove the terrible experience of installing mods that unexperienced users normally have.
+
+The Specs
+This program uses a client-server method to send files from the server to the client. I've tried to make this as 
+simple
+as I can to use. Both for the admin as well as the user.
+This program includes a full protocol that operates on port 4713.
+
+Supported Features
+Client:
+Two update modes: Fast and Detailed.
+The Fast update mode will download any updates from the server as soon as the client clicks "Update".
+The Detailed update mode will do the same as the fast but, will include a summery of all of the files that will be 
+deleted.
+A friendly interface designed with end-users in mind.
+Support for alternate Minecraft installations as to not modify the users' vanilla game.
+And several more that I don't care to list.
+Server:
+A simple XML format for discovering mods. A XML file is required for each mod.
+A mirrored file structure to the client (e.g. "mods/arecool.zip" would be located in the same place as on the client,
+"mods/arecool.zip").
+Both:
+A multi-threaded network system with as few choke points as possible.
+An expandable network protocol for easy modification.
+Most things sent over the network are encrypted.
+
+Disclaimer
+I am well aware that most mods forbid this sort of thing and to an extent, I agree with it. If you are a mod author,
+I think you for giving back to the minecraft community. I also know that because of the nature of this program it may make me one of the most
+hated people in the Minecraft modding community, but please, don't blame me if someone
+uses this to "rob" you of your adfly, or adcraft money. I didn't pirate your mod.
