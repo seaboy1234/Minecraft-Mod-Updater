@@ -15,7 +15,6 @@ namespace ModUpdater
         private Thread NetworkThread;
         /*Events*/
         public event PacketEvent<FilePartPacket> FilePart;
-        public event PacketEvent<ChunkSizePacket> ChunkSize;
         public event PacketEvent<HandshakePacket> Handshake;
         public event PacketEvent<ModMetadataPacket> ModConfig;
         public event PacketEvent<ModInfoPacket> ModInfo;
@@ -83,9 +82,6 @@ namespace ModUpdater
                         break;
                     case PacketId.FilePart:
                         FilePart.Invoke((FilePartPacket)p);
-                        break;
-                    case PacketId.ChunkSize:
-                        ChunkSize.Invoke((ChunkSizePacket)p);
                         break;
                     case PacketId.ClientUpdate:
                         ClientUpdate.Invoke((ClientUpdatePacket)p);

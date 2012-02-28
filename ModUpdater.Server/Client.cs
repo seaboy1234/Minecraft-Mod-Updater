@@ -58,7 +58,6 @@ namespace ModUpdater.Server
                     break;
                 case RequestModPacket.RequestType.Download:
                     byte[] file = File.ReadAllBytes(mod.ModFile);
-                    Packet.Send(new NextDownloadPacket { ModName = mod.ModName, FileName = mod.ModFile, Length = file.Length, PostDownloadCLI = mod.PostDownloadCLI }, ph.Stream);
                     List<List<byte>> abyte = new List<List<byte>>();
                     int k = 0;
                     for (int i = 0; i < file.Length; i+= 1024)
@@ -71,7 +70,7 @@ namespace ModUpdater.Server
                         }
                         k++;
                     }
-                    Packet.Send(new ChunkSizePacket { Size = abyte.Count }, ph.Stream);
+                    Packet.Send(new NextDownloadPacket { ModName = mod.ModName, FileName = mod.ModFile, Length = file.Length, PostDownloadCLI = mod.PostDownloadCLI, ChunkSize = abyte.Count }, ph.Stream);
                     int l = 0;
                     for (int h = 0; h < abyte.Count; h++)
                     {
@@ -114,7 +113,7 @@ namespace ModUpdater.Server
             {
                 mods[i] = Server.Mods[i].ModFile;
             }
-            Packet.Send(new ConnectPacket { Address = Server.Address, ClientID = ClientID, Port = 4714 }, ph.Stream);
+            //Packet.Send(new ConnectPacket { Address = Server.Address, ClientID = ClientID, Port = 4714 }, ph.Stream);
             Packet.Send(new ModListPacket { Mods = mods}, ph.Stream);
         }
 

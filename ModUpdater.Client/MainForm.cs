@@ -160,7 +160,6 @@ namespace ModUpdater.Client
                 ph.AllDone += new PacketEvent<AllDonePacket>(ph_AllDone);
                 ph.NextDownload += new PacketEvent<NextDownloadPacket>(ph_NextDownload);
                 ph.FilePart += new PacketEvent<FilePartPacket>(ph_FilePart);
-                ph.ChunkSize += new PacketEvent<ChunkSizePacket>(ph_ChunkSize);
                 ph.ClientUpdate += new PacketEvent<ClientUpdatePacket>(ph_ClientUpdate);
                 ph.Connect += new PacketEvent<ConnectPacket>(ph_Connect);
                 Debug.Assert("Packet Handlers registered.");
@@ -179,17 +178,6 @@ namespace ModUpdater.Client
         void ph_ClientUpdate(ClientUpdatePacket p)
         {
             SplashScreen.UpdateStatusTextWithStatus("Downloading update of " + p.FileName, TypeOfMessage.Warning);
-        }
-
-        void ph_ChunkSize(ChunkSizePacket p)
-        {
-            SplashScreen.GetScreen().Invoke(new Void(delegate
-            {
-                SplashScreen.GetScreen().progressBar1.Value = 0;
-                SplashScreen.GetScreen().progressBar1.Maximum = p.Size * 10;
-                SplashScreen.GetScreen().progressBar1.Style = ProgressBarStyle.Blocks;
-                SplashScreen.GetScreen().progressBar1.PerformStep();
-            }));
         }
 
         void ph_FilePart(FilePartPacket p)
@@ -212,6 +200,13 @@ namespace ModUpdater.Client
         void ph_NextDownload(NextDownloadPacket p)
         {
             Thread.Sleep(100);
+            SplashScreen.GetScreen().Invoke(new Void(delegate
+            {
+                SplashScreen.GetScreen().progressBar1.Value = 0;
+                SplashScreen.GetScreen().progressBar1.Maximum = p.ChunkSize * 10;
+                SplashScreen.GetScreen().progressBar1.Style = ProgressBarStyle.Blocks;
+                SplashScreen.GetScreen().progressBar1.PerformStep();
+            }));
             CurrentDownload = new ModFile(p.ModName, p.FileName, p.Length);
             SplashScreen.UpdateStatusText("Downloading " + p.ModName);
             MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Starting download of " + p.ModName);
@@ -262,7 +257,6 @@ namespace ModUpdater.Client
                 ph.AllDone -= new PacketEvent<AllDonePacket>(ph_AllDone);
                 ph.NextDownload -= new PacketEvent<NextDownloadPacket>(ph_NextDownload);
                 ph.FilePart -= new PacketEvent<FilePartPacket>(ph_FilePart);
-                ph.ChunkSize -= new PacketEvent<ChunkSizePacket>(ph_ChunkSize);
                 ph.ClientUpdate -= new PacketEvent<ClientUpdatePacket>(ph_ClientUpdate);
                 ph.Connect -= new PacketEvent<ConnectPacket>(ph_Connect);
                 if (socket.Connected) socket.Disconnect(false);

@@ -101,7 +101,6 @@ namespace ModUpdater
                 {PacketId.Handshake, typeof(HandshakePacket)},
                 {PacketId.RequestMod, typeof(RequestModPacket)},
                 {PacketId.FilePart, typeof(FilePartPacket)},
-                {PacketId.ChunkSize, typeof(ChunkSizePacket)},
                 {PacketId.ModInfo, typeof(ModInfoPacket)},
                 {PacketId.ModMetadata, typeof(ModMetadataPacket)},
                 {PacketId.ModList, typeof(ModListPacket)},
@@ -151,19 +150,6 @@ namespace ModUpdater
             Info,
             Download,
             Config
-        }
-    }
-    public class ChunkSizePacket : Packet
-    {
-        public int Size { get; set; }
-        public override void Read(ModUpdaterNetworkStream s)
-        {
-            Size = s.ReadInt();
-        }
-
-        public override void Write(ModUpdaterNetworkStream s)
-        {
-            s.WriteInt(Size);
         }
     }
     public class FilePartPacket : Packet
@@ -269,12 +255,15 @@ namespace ModUpdater
         public string ModName { get; set; }
         public string FileName { get; set; }
         public int Length { get; set; }
+        public int ChunkSize { get; set; }
         public string[] PostDownloadCLI { get; set; }
+        
         public override void Read(ModUpdaterNetworkStream s)
         {
             ModName = s.ReadString();
             FileName = s.ReadString();
             Length = s.ReadInt();
+            ChunkSize = s.ReadInt();
             int i = s.ReadInt();
             PostDownloadCLI = new string[i];
             for (int j = 0; j < i; j++)
@@ -288,6 +277,7 @@ namespace ModUpdater
             s.WriteString(ModName);
             s.WriteString(FileName);
             s.WriteInt(Length);
+            s.WriteInt(ChunkSize);
             s.WriteInt(PostDownloadCLI.Length);
             foreach (string l in PostDownloadCLI)
             {
