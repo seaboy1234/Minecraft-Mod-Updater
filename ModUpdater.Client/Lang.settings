@@ -1,0 +1,15 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ModUpdater" GeneratedClassName="Lang">
+  <Profiles />
+  <Settings>
+    <Setting Name="WelcomeStr" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Welcome to seaboy1234's {0} version {1}.</Value>
+    </Setting>
+    <Setting Name="NewModsStr" Type="System.String" Scope="User">
+      <Value Profile="(Default)">There are {0} mods that need updating.</Value>
+    </Setting>
+    <Setting Name="NoNewMods" Type="System.String" Scope="User">
+      <Value Profile="(Default)">There are no updates.</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

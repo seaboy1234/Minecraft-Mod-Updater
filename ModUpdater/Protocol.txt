@@ -1,0 +1,17 @@
+﻿Packet Order
+Handshake --> Server
+EncryptionStatus --> Client
+ModList --> Client
+Foreach mod
+	RequestMod (Info) --> Server
+	ModInfo --> Client
+	Client stores mod hash
+Foreach mod that needs updating
+	RequestMod (Download) --> Server
+	NextDownload --> Client
+	ModDownload --> Client
+	AllDone --> Client
+	RequestMod (Config) --> Server
+	ModConfig --> Client
+Log --> Server
+ThankYou Client <--> Server
