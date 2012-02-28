@@ -15,7 +15,6 @@ namespace ModUpdater
         RequestMod, // <--
         FilePart, // -->
         ModInfo, // -->
-        ModMetadata, // -->
         ModList, // -->
         AllDone, // -->
         NextDownload, // -->

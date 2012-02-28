@@ -16,7 +16,7 @@ namespace ModUpdater
         /*Events*/
         public event PacketEvent<FilePartPacket> FilePart;
         public event PacketEvent<HandshakePacket> Handshake;
-        public event PacketEvent<ModMetadataPacket> ModConfig;
+        public event PacketEvent<MetadataPacket> Metadata;
         public event PacketEvent<ModInfoPacket> ModInfo;
         public event PacketEvent<ModListPacket> ModList;
         public event PacketEvent<RequestModPacket> RequestMod;
@@ -59,8 +59,8 @@ namespace ModUpdater
                     case PacketId.Handshake:
                         Handshake.Invoke((HandshakePacket)p);
                         break;
-                    case PacketId.ModMetadata:
-                        ModConfig.Invoke((ModMetadataPacket)p);
+                    case PacketId.Metadata:
+                        Metadata.Invoke((MetadataPacket)p);
                         break;
                     case PacketId.ModInfo:
                         ModInfo.Invoke((ModInfoPacket)p);

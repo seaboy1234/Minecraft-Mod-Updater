@@ -102,7 +102,7 @@ namespace ModUpdater
                 {PacketId.RequestMod, typeof(RequestModPacket)},
                 {PacketId.FilePart, typeof(FilePartPacket)},
                 {PacketId.ModInfo, typeof(ModInfoPacket)},
-                {PacketId.ModMetadata, typeof(ModMetadataPacket)},
+                {PacketId.Metadata, typeof(MetadataPacket)},
                 {PacketId.ModList, typeof(ModListPacket)},
                 {PacketId.EncryptionStatus, typeof(EncryptionStatusPacket)},
                 {PacketId.NextDownload, typeof(NextDownloadPacket)},
@@ -316,19 +316,28 @@ namespace ModUpdater
             s.WriteString(FileName);
         }
     }
-    public class ResyncPacket : Packet
+    public class MetadataPacket : Packet
     {
+        public string[] Data { get; set; }
         public override void Read(ModUpdaterNetworkStream s)
         {
-            
+            int i = s.ReadInt();
+            Data = new string[i];
+            for (int j = 0; j < i; j++)
+            {
+                Data[j] = s.ReadString();
+            }
         }
 
         public override void Write(ModUpdaterNetworkStream s)
         {
-            
+            s.WriteInt(Data.Length);
+            foreach (string str in Data)
+            {
+                s.WriteString(str);
+            }
         }
     }
-
     public class AdminPacket : Packet
     {
         public string AdminName { get; set; }

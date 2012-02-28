@@ -20,6 +20,7 @@ namespace ModUpdater.Client
         private Socket socket;
         public delegate void Void();
         private string[] PostDownload;
+        private bool ServerShutdown = false;
         public MainForm()
         {
             InitializeComponent();
@@ -154,7 +155,7 @@ namespace ModUpdater.Client
             });
             TaskManager.AddAsyncTask(delegate
             {
-                ph.ModConfig += new PacketEvent<ModMetadataPacket>(ph_ModConfig);
+                ph.Metadata += new PacketEvent<MetadataPacket>(ph_Metadata);
                 ph.ModInfo += new PacketEvent<ModInfoPacket>(ph_ModInfo);
                 ph.ModList += new PacketEvent<ModListPacket>(ph_ModList);
                 ph.AllDone += new PacketEvent<AllDonePacket>(ph_AllDone);
@@ -208,7 +209,10 @@ namespace ModUpdater.Client
                 SplashScreen.GetScreen().progressBar1.PerformStep();
             }));
             CurrentDownload = new ModFile(p.ModName, p.FileName, p.Length);
-            SplashScreen.UpdateStatusText("Downloading " + p.ModName);
+            if(!ServerShutdown)
+                SplashScreen.UpdateStatusText("Downloading " + p.ModName);
+            else
+                SplashScreen.UpdateStatusTextWithStatus("Downloading " + p.ModName + "(Server Shutdown Mode)", TypeOfMessage.Warning);
             MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Starting download of " + p.ModName);
             PostDownload = p.PostDownloadCLI;
             string path = Properties.Settings.Default.MinecraftPath + "\\" + p.FileName.Replace(p.FileName.Split('\\').Last(), "").TrimEnd('\\').Replace("clientmods", "mods");
@@ -251,7 +255,7 @@ namespace ModUpdater.Client
                 }
                 Packet.Send(new DisconnectPacket(), ph.Stream);
                 ph.Stop();
-                ph.ModConfig -= new PacketEvent<ModMetadataPacket>(ph_ModConfig);
+                ph.Metadata -= new PacketEvent<MetadataPacket>(ph_Metadata);
                 ph.ModInfo -= new PacketEvent<ModInfoPacket>(ph_ModInfo);
                 ph.ModList -= new PacketEvent<ModListPacket>(ph_ModList);
                 ph.AllDone -= new PacketEvent<AllDonePacket>(ph_AllDone);
@@ -358,10 +362,17 @@ namespace ModUpdater.Client
             }
         }
 
-        void ph_ModConfig(ModMetadataPacket p)
+        void ph_Metadata(MetadataPacket p)
         {
-            //TODO: Rewrite method
-            
+            if (p.Data[0] == "shutdown")
+            {
+                ServerShutdown = true;
+                if (SplashScreen.GetScreen() != null)
+                    SplashScreen.UpdateStatusTextWithStatus(p.Data[1], TypeOfMessage.Error);
+                else
+                    MessageBox.Show(p.Data[1], "Server Shutdown");
+                MinecraftModUpdater.Logger.Log(Logger.Level.Error, "Server Shutdown.  Reason: " + p.Data[1]);
+            }
         }
         struct Mod
         {

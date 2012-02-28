@@ -116,6 +116,10 @@ namespace ModUpdater.Server
                         break;
                     case "exit":
                     case "stop":
+                        foreach (Client c in Clients)
+                        {
+                            Packet.Send(new MetadataPacket { Data = new string[] { "shutdown", "The Server is shutting down." } }, c.PacketHandler.Stream);
+                        }
                         if (Clients.Count > 0) Console.WriteLine("Waiting for {0} clients to exit.", Clients.Count);
                         while (Clients.Count > 0) ;
                         Dispose();
