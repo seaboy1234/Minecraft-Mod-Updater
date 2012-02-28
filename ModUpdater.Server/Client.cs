@@ -131,7 +131,10 @@ namespace ModUpdater.Server
             }
             catch (Exception e) { Console.WriteLine(e); }
         }
-
+        public override string ToString()
+        {
+            return IPAddress.Address.ToString();
+        }
         public bool Connected { get { return ph.Stream.Disposed; } }
     }
 }

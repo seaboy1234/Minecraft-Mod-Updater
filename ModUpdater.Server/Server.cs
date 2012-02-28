@@ -99,21 +99,26 @@ namespace ModUpdater.Server
             Console.WriteLine("Simple Console Input Handler is online and ready.  \r\nEnter \"help\" for a list of commands.");
             while (Online)
             {
-                switch (Console.ReadLine())
+                string input = Console.ReadLine();
+                if (!Online) break;
+                switch (input)
                 {
                     case "connected":
-                        Console.WriteLine(Clients.ToArray().ToString());
+                        Console.WriteLine("There are {0} connected clients.", Clients.Count);
+                        if (Clients.Count > 0)
+                        {
+                            Console.WriteLine("Connected Clients:");
+                            foreach (Client c in Clients)
+                            {
+                                Console.WriteLine(c.ToString());
+                            }
+                        }
                         break;
                     case "exit":
                     case "stop":
-
-                        TaskManager.AddAsyncTask(
-                            delegate
-                            {
-                                if (Clients.Count > 0) Console.WriteLine("Waiting for {0} clients to exit.", Clients.Count);
-                                while (Clients.Count > 0) ;
-                                Dispose();
-                            });
+                        if (Clients.Count > 0) Console.WriteLine("Waiting for {0} clients to exit.", Clients.Count);
+                        while (Clients.Count > 0) ;
+                        Dispose();
                         break;
                     case "help":
                     case "?":

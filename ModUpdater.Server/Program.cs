@@ -18,9 +18,6 @@ namespace ModUpdater.Server
             catch (Exception e)
             {
                 Console.WriteLine(e);
-            }
-            finally
-            {
                 Console.WriteLine("Press any key to close.");
                 Console.ReadKey();
             }
