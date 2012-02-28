@@ -13,7 +13,6 @@ namespace ModUpdater
         EncryptionStatus, // -->
         Ping, // -->
         RequestMod, // <--
-        ChunkSize, // -->
         FilePart, // -->
         ModInfo, // -->
         ModMetadata, // -->
