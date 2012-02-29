@@ -90,6 +90,7 @@ namespace ModUpdater.Client
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            TaskManager.AddAsyncTask(delegate { throw new Exception("This is a test"); });
             Debug.Assert("Debug mode is enabled.  In-depth messages will be displayed.");
             if (ProgramOptions.Debug)
             {

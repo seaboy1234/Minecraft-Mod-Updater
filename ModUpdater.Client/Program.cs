@@ -42,6 +42,7 @@ namespace ModUpdater.Client
                     }
                 }
             }
+            ExceptionHandler.Init();
             Console.WriteLine("Started.");
             WindowsPrincipal pricipal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
             ProgramOptions.Administrator = pricipal.IsInRole(WindowsBuiltInRole.Administrator);
@@ -49,6 +50,5 @@ namespace ModUpdater.Client
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());
         }
-       
     }
 }

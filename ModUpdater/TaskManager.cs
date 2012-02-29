@@ -12,6 +12,8 @@ namespace ModUpdater
         private delegate void ThreadExit(Thread t);
         private static event ThreadExit te;
         private static int CurrentTaskId = 0;
+        public delegate void Error(Exception e);
+        public static event Error ExceptionRaised;
         /// <summary>
         /// Runs the task on a new thread.
         /// </summary>
@@ -79,8 +81,9 @@ namespace ModUpdater
             catch (Exception e) 
             {
                 MinecraftModUpdater.Logger.Log(Logger.Level.Error, "Error on task " + tid.ToString());
-                MinecraftModUpdater.Logger.Log(e); 
-
+                MinecraftModUpdater.Logger.Log(e);
+                if (ExceptionRaised != null)
+                    ExceptionRaised.Invoke(e);
             }
             Thread.CurrentThread.Abort();
             //te.Invoke(Thread.CurrentThread);
