@@ -19,15 +19,10 @@ namespace ModUpdater.Server
         bool Online { get; set; }
         public Server()
         {
+            Config.Load();
             Mods = new List<Mod>();
             Clients = new List<Client>();
             TcpServer = new TcpListener(IPAddress.Any, 4713);
-            if (Directory.Exists(@"clientmods\xml")) Directory.Move(@"clientmods\xml", "xml");
-            if (Directory.Exists(@"clientmods\config")) Directory.Move(@"clientmods\config", "config");
-            if (Directory.Exists("clientmods")) Directory.Move("clientmods", "mods");
-            if (!Directory.Exists("mods")) Directory.CreateDirectory("mods");
-            if (!Directory.Exists("xml")) Directory.CreateDirectory("xml");
-            if (!Directory.Exists("config")) Directory.CreateDirectory("config");
             foreach (string s in Directory.GetFiles("xml"))
             {
                 Mods.Add(new Mod(s));
@@ -37,6 +32,16 @@ namespace ModUpdater.Server
                 //Console.WriteLine(m.ToString());
             }
             Console.WriteLine("Registered {0} mods", Mods.Count);
+        }
+        private void SelfUpdate()
+        {
+            if (Directory.Exists(@"clientmods\xml")) Directory.Move(@"clientmods\xml", "xml");
+            if (Directory.Exists(@"clientmods\config")) Directory.Move(@"clientmods\config", "config");
+            if (Directory.Exists("clientmods")) Directory.Move("clientmods", "mods");
+            if (Directory.Exists("mods")) Directory.Move("mods", Config.ModsPath + "\\mods");
+            if (Directory.Exists("xml")) Directory.Move("xml", Config.ModsPath + "\\xml");
+            if (!Directory.Exists(Config.ModsPath + "\\mods")) Directory.CreateDirectory("mods");
+            if (!Directory.Exists(Config.ModsPath + "\\xml")) Directory.CreateDirectory("xml");
         }
         public void Start()
         {
@@ -68,6 +73,7 @@ namespace ModUpdater.Server
         {
             TcpServer.Stop();
             Online = false;
+            Config.Save();
         }
         public void Receve()
         {
@@ -86,6 +92,11 @@ namespace ModUpdater.Server
         }
         public void AcceptClient(Socket s)
         {
+            if (Clients.Count >= Config.MaxClients)
+            {
+                s.Disconnect(false);
+                return;
+            }
             Client c = new Client(s, this);
             Clients.Add(c);
             c.StartListening();
