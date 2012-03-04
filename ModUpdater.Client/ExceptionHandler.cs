@@ -30,6 +30,10 @@ namespace ModUpdater.Client
             sb.AppendLine("If you make an error report about this, I will make sure it gets fixed.");
             sb.AppendLine();
             sb.AppendLine("----------------------------------------------------------------");
+            sb.AppendLine("Application: " + MinecraftModUpdater.LongAppName);
+            sb.AppendLine("Version: " + MinecraftModUpdater.Version);
+            sb.AppendLine("OS: " + Environment.OSVersion.ToString());
+            sb.AppendLine("Framework Version: " + System.Runtime.InteropServices.RuntimeEnvironment.GetSystemVersion());
             sb.AppendLine();
             sb.AppendLine(Exception.ToString());
             txtError.Text = sb.ToString();
@@ -43,6 +47,18 @@ namespace ModUpdater.Client
         public static void Init()
         {
             TaskManager.ExceptionRaised += new TaskManager.Error(HandleException);
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
+            Application.ThreadException += new System.Threading.ThreadExceptionEventHandler(Application_ThreadException);
+        }
+
+        static void Application_ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
+        {
+            new ExceptionHandler(e.Exception).ShowDialog();
+        }
+
+        static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            new ExceptionHandler((Exception)e.ExceptionObject).ShowDialog();
         }
 
         private void btnReport_Click(object sender, EventArgs e)
@@ -50,10 +66,11 @@ namespace ModUpdater.Client
             Process.Start("https://github.com/seaboy1234/Minecraft-Mod-Updater/issues/new");
             using (StreamWriter sw = File.CreateText("ErrorReport.log"))
             {
+                
                 sw.WriteLine(txtError.Text);
                 sw.Close();
             }
-            Application.Exit();
+            Close();
         }
 
         private void btnSave_Click(object sender, EventArgs e)
@@ -67,13 +84,18 @@ namespace ModUpdater.Client
 
         private void btnClose_Click(object sender, EventArgs e)
         {
-            Application.Exit();
+            Close();
         }
 
         private void txtError_TextChanged(object sender, EventArgs e)
         {
             if(Locked)
                 txtError.Text = Report;
+        }
+
+        private void ExceptionHandler_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Application.Exit();
         }
     }
 }
