@@ -22,7 +22,7 @@ namespace ModUpdater.Server
             Config.Load();
             Mods = new List<Mod>();
             Clients = new List<Client>();
-            TcpServer = new TcpListener(IPAddress.Any, 4713);
+            TcpServer = new TcpListener(IPAddress.Any, Config.Port);
             foreach (string s in Directory.GetFiles("xml"))
             {
                 Mods.Add(new Mod(s));
