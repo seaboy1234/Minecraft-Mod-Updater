@@ -90,7 +90,6 @@ namespace ModUpdater.Client
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            TaskManager.AddAsyncTask(delegate { throw new Exception("This is a test"); });
             Debug.Assert("Debug mode is enabled.  In-depth messages will be displayed.");
             if (ProgramOptions.Debug)
             {
@@ -120,9 +119,9 @@ namespace ModUpdater.Client
             Debug.Assert("Creating Opjects.");
             try
             {
-                s.Connect(new IPEndPoint(IPAddress.Parse(Properties.Settings.Default.Server), 4713));
+                s.Connect(new IPEndPoint(IPAddress.Parse(Properties.Settings.Default.Server), Properties.Settings.Default.Port));
             }
-            catch(Exception ex)
+            catch(SocketException ex)
             {
                 Debug.Assert(ex);
                 MessageBox.Show("There was an error while connecting to the update server.  I will now self destruct.");

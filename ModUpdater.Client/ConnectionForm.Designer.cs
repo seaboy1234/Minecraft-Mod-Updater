@@ -39,6 +39,7 @@
             this.mcpathfinder = new System.Windows.Forms.FolderBrowserDialog();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.checkBox2 = new System.Windows.Forms.CheckBox();
+            this.tempPortTxt = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // txtServer
@@ -124,12 +125,21 @@
             this.checkBox2.UseVisualStyleBackColor = true;
             this.checkBox2.CheckedChanged += new System.EventHandler(this.checkBox2_CheckedChanged);
             // 
+            // tempPortTxt
+            // 
+            this.tempPortTxt.Location = new System.Drawing.Point(179, 32);
+            this.tempPortTxt.Name = "tempPortTxt";
+            this.tempPortTxt.Size = new System.Drawing.Size(55, 20);
+            this.tempPortTxt.TabIndex = 9;
+            this.tempPortTxt.Text = "4713";
+            // 
             // ConnectionForm
             // 
             this.AcceptButton = this.btnUpdate;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(246, 132);
+            this.Controls.Add(this.tempPortTxt);
             this.Controls.Add(this.checkBox2);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.btnFindMc);
@@ -163,5 +173,6 @@
         private System.Windows.Forms.FolderBrowserDialog mcpathfinder;
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.CheckBox checkBox2;
+        private System.Windows.Forms.TextBox tempPortTxt;
     }
 }

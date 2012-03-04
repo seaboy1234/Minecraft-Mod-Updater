@@ -61,6 +61,7 @@ namespace ModUpdater.Client
             txtMcPath.Text = Properties.Settings.Default.MinecraftPath;
             checkBox1.Checked = Properties.Settings.Default.LaunchAfterUpdate;
             checkBox2.Checked = Properties.Settings.Default.AutoUpdate;
+            tempPortTxt.Text = Properties.Settings.Default.Port.ToString();
             KeyDown += new KeyEventHandler(ConnectionForm_KeyDown);
         }
 
