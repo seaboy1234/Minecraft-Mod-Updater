@@ -79,29 +79,17 @@ namespace ModUpdater.Server
                     }
                     Packet.Send(new AllDonePacket { File = mod.ModFile }, ph.Stream);
                     break;
-                case RequestModPacket.RequestType.Config:
-                    SendConfig(mod);
-                    break;
             }
         }
-
-        private void SendConfig(Mod mod)
+        public void BeginDownloadProcess()
         {
-            //List<byte[]> contents = new List<byte[]>();
-            //for(int i = 0; i < mod.ModConfigs.Length; i++)
-            //{
-            //    contents.Add(File.ReadAllBytes(mod.ModConfigs[i]));
-            //}
-            
-        }
 
+        }
         internal void RegisterClient(HandshakePacket p)
         {
             ClientID = Server.Clients.Count;
             if (Packet.PROTOCOL_VERSION != p.Version)
             {
-                Packet.Send(new ClientUpdatePacket { File = File.ReadAllBytes("Client\\ModUpdater.dll")}, ph.Stream);
-                Packet.Send(new ClientUpdatePacket { File = File.ReadAllBytes("Client\\MinecraftModUpdater.exe") }, ph.Stream);
                 ph.Stop();
                 return;
             }
@@ -113,8 +101,8 @@ namespace ModUpdater.Server
             {
                 mods[i] = Server.Mods[i].ModFile;
             }
-            //Packet.Send(new ConnectPacket { Address = Server.Address, ClientID = ClientID, Port = 4714 }, ph.Stream);
-            Packet.Send(new ModListPacket { Mods = mods}, ph.Stream);
+            Packet.Send(new ModListPacket { Mods = mods }, ph.Stream);
+            Packet.Send(new MetadataPacket { SData = new string[] { "server_name", Config.ServerName }, FData = new float[] { 24.0f } }, ph.Stream);
         }
 
         internal void HandleLog(LogPacket p)
@@ -134,6 +122,6 @@ namespace ModUpdater.Server
         {
             return IPAddress.Address.ToString();
         }
-        public bool Connected { get { return ph.Stream.Disposed; } }
+        public bool Connected { get { return !ph.Stream.Disposed; } }
     }
 }

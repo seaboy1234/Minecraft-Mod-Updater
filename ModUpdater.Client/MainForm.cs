@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.Drawing;
 
 namespace ModUpdater.Client
 {
@@ -21,6 +22,8 @@ namespace ModUpdater.Client
         public delegate void Void();
         private string[] PostDownload;
         private bool ServerShutdown = false;
+        private string serverName = "";
+        private float serverFontSize = 36;
         public MainForm()
         {
             InitializeComponent();
@@ -60,14 +63,18 @@ namespace ModUpdater.Client
                 }
                 TaskManager.AddAsyncTask(delegate
                 {
-                    SplashScreen.ShowSplashScreen();
-                    Thread.Sleep(100);
+                    SplashScreen.ShowSplashScreen();                    
                 });
             }
             TaskManager.AddDelayedAsyncTask(delegate
             {
                 SplashScreen.UpdateStatusText("Downloading Updates...");
-            }, 100);
+                SplashScreen.GetScreen().Invoke(new Void(delegate
+                {
+                    SplashScreen.GetScreen().label2.Font = new Font(FontFamily.GenericSansSerif, serverFontSize);
+                    SplashScreen.GetScreen().label2.Text = serverName;
+                }));
+            }, 300);
             TaskManager.AddDelayedAsyncTask(delegate
             {
                 foreach (object o in lsModsToDelete.Items)
@@ -116,7 +123,7 @@ namespace ModUpdater.Client
             SplashScreen.UpdateStatusText("Connecting...");
             Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             socket = s;
-            Debug.Assert("Creating Opjects.");
+            Debug.Assert("Creating Objects.");
             try
             {
                 s.Connect(new IPEndPoint(IPAddress.Parse(Properties.Settings.Default.Server), Properties.Settings.Default.Port));
@@ -161,7 +168,6 @@ namespace ModUpdater.Client
                 ph.AllDone += new PacketEvent<AllDonePacket>(ph_AllDone);
                 ph.NextDownload += new PacketEvent<NextDownloadPacket>(ph_NextDownload);
                 ph.FilePart += new PacketEvent<FilePartPacket>(ph_FilePart);
-                ph.ClientUpdate += new PacketEvent<ClientUpdatePacket>(ph_ClientUpdate);
                 ph.Connect += new PacketEvent<ConnectPacket>(ph_Connect);
                 Debug.Assert("Packet Handlers registered.");
             }); 
@@ -261,7 +267,6 @@ namespace ModUpdater.Client
                 ph.AllDone -= new PacketEvent<AllDonePacket>(ph_AllDone);
                 ph.NextDownload -= new PacketEvent<NextDownloadPacket>(ph_NextDownload);
                 ph.FilePart -= new PacketEvent<FilePartPacket>(ph_FilePart);
-                ph.ClientUpdate -= new PacketEvent<ClientUpdatePacket>(ph_ClientUpdate);
                 ph.Connect -= new PacketEvent<ConnectPacket>(ph_Connect);
                 if (socket.Connected) socket.Disconnect(false);
                 Invoke(new Void(delegate
@@ -364,14 +369,19 @@ namespace ModUpdater.Client
 
         void ph_Metadata(MetadataPacket p)
         {
-            if (p.Data[0] == "shutdown")
+            if (p.SData[0] == "shutdown")
             {
                 ServerShutdown = true;
                 if (SplashScreen.GetScreen() != null)
-                    SplashScreen.UpdateStatusTextWithStatus(p.Data[1], TypeOfMessage.Error);
+                    SplashScreen.UpdateStatusTextWithStatus(p.SData[1], TypeOfMessage.Error);
                 else
-                    MessageBox.Show(p.Data[1], "Server Shutdown");
-                MinecraftModUpdater.Logger.Log(Logger.Level.Error, "Server Shutdown.  Reason: " + p.Data[1]);
+                    MessageBox.Show(p.SData[1], "Server Shutdown");
+                MinecraftModUpdater.Logger.Log(Logger.Level.Error, "Server Shutdown.  Reason: " + p.SData[1]);
+            }
+            else if (p.SData[0] == "server_name")
+            {
+                serverName = p.SData[1];
+                serverFontSize = p.FData[0];
             }
         }
         struct Mod
