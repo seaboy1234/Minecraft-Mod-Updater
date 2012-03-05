@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.IO;
 using System.Threading;
+using System.Drawing;
 
 namespace ModUpdater.Server
 {
@@ -16,6 +17,7 @@ namespace ModUpdater.Server
         public TcpListener TcpServer { get; private set; }
         public TcpListener TcpServer2 { get; private set; }
         public IPAddress Address { get; private set; }
+        public Dictionary<Mod, Image> ModImages { get; private set; }
         bool Online { get; set; }
         public Server()
         {
@@ -129,7 +131,7 @@ namespace ModUpdater.Server
                     case "stop":
                         foreach (Client c in Clients)
                         {
-                            Packet.Send(new MetadataPacket { Data = new string[] { "shutdown", "The Server is shutting down." } }, c.PacketHandler.Stream);
+                            Packet.Send(new MetadataPacket { SData = new string[] { "shutdown", "The Server is shutting down." } }, c.PacketHandler.Stream);
                         }
                         if (Clients.Count > 0) Console.WriteLine("Waiting for {0} clients to exit.", Clients.Count);
                         while (Clients.Count > 0) ;

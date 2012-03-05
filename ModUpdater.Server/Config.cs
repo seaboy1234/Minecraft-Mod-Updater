@@ -22,6 +22,10 @@ namespace ModUpdater.Server
         /// The path the the mods and xml folders.
         /// </summary>
         public static string ModsPath { get; set; }
+        /// <summary>
+        /// The name of this update server.
+        /// </summary>
+        public static string ServerName { get; set; }
         private static XmlDocument config = new XmlDocument();
         public static void Load()
         {
@@ -50,6 +54,12 @@ namespace ModUpdater.Server
             }
             catch
             { ModsPath = ""; }
+            try
+            {
+                ServerName = n["ServerName"].InnerText;
+            }
+            catch
+            { ServerName = "Minecraft Mod Updater v" + MinecraftModUpdater.Version; }
         }
         public static void Save()
         {

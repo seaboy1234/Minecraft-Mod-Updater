@@ -52,7 +52,7 @@
             this.label2.BackColor = System.Drawing.Color.White;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.ForeColor = System.Drawing.Color.White;
-            this.label2.Location = new System.Drawing.Point(117, 9);
+            this.label2.Location = new System.Drawing.Point(17, 9);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(0, 55);
             this.label2.TabIndex = 3;
@@ -107,10 +107,10 @@
 
         #endregion
 
-        private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Timer timer1;
         internal System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.PictureBox DownloadPicture;
+        internal System.Windows.Forms.Label label2;
     }
 }

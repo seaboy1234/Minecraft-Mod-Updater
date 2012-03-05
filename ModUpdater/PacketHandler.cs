@@ -23,7 +23,6 @@ namespace ModUpdater
         public event PacketEvent<NextDownloadPacket> NextDownload;
         public event PacketEvent<LogPacket> Log;
         public event PacketEvent<AllDonePacket> AllDone;
-        public event PacketEvent<ClientUpdatePacket> ClientUpdate;
         public event PacketEvent<Packet> Disconnect;
         public event PacketEvent<ConnectPacket> Connect;
         /*End Events*/
@@ -82,9 +81,6 @@ namespace ModUpdater
                         break;
                     case PacketId.FilePart:
                         FilePart.Invoke((FilePartPacket)p);
-                        break;
-                    case PacketId.ClientUpdate:
-                        ClientUpdate.Invoke((ClientUpdatePacket)p);
                         break;
                     case PacketId.Disconnect:
                         if (Disconnect != null)

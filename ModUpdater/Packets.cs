@@ -23,11 +23,9 @@ namespace ModUpdater
         AdminInfo, // <--
         Log, // <--
         Metadata, // <-->
-        ClientUpdate, // -->
-        Kick, // -->
-        Image, // -->  Notes: To be sent on second connection.
-        Connect, // --> Notes: Used to tell the client to make the second connection.
-        GoodBye, // <--
+        Image, // -->
+        BeginDownload, // <--
+        Connect, // -->
         Disconnect = 255 // <-- Notes: Disconnect Packet
     }
 }

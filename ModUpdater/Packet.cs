@@ -318,24 +318,69 @@ namespace ModUpdater
     }
     public class MetadataPacket : Packet
     {
-        public string[] Data { get; set; }
+        public string[] SData { get; set; }
+        public int[] IData { get; set; }
+        public float[] FData { get; set; }
         public override void Read(ModUpdaterNetworkStream s)
         {
             int i = s.ReadInt();
-            Data = new string[i];
-            for (int j = 0; j < i; j++)
-            {
-                Data[j] = s.ReadString();
-            }
+            int j = s.ReadInt();
+            int k = s.ReadInt();
+            SData = new string[i];
+            IData = new int[j];
+            FData = new float[k];
+            if (i > 0)
+                for (int l = 0; l < i; l++)
+                {
+                    SData[l] = s.ReadString();
+                }
+            if (j > 0)
+                for (int l = 0; l < j; l++)
+                {
+                    IData[l] = s.ReadInt();
+                }
+            if (k > 0)
+                for (int l = 0; l < k; l++)
+                {
+                    FData[l] = s.ReadFloat();
+                }
         }
 
         public override void Write(ModUpdaterNetworkStream s)
         {
-            s.WriteInt(Data.Length);
-            foreach (string str in Data)
+            if (SData == null) s.WriteInt(0);
+            else s.WriteInt(SData.Length);
+            if (IData == null) s.WriteInt(0);
+            else s.WriteInt(IData.Length);
+            if (FData == null) s.WriteInt(0);
+            else s.WriteInt(FData.Length);
+            try
             {
-                s.WriteString(str);
+                if (SData.Length > 0)
+                    foreach (string str in SData)
+                    {
+                        s.WriteString(str);
+                    }
             }
+            catch (NullReferenceException) { }//The data is null.  What CAN we do?
+            try
+            {
+                if (IData.Length > 0)
+                    foreach (int i in IData)
+                    {
+                        s.WriteInt(i);
+                    }
+            }
+            catch (NullReferenceException) { } 
+            try
+            {
+                if (FData.Length > 0)
+                    foreach (float f in FData)
+                    {
+                        s.WriteFloat(f);
+                    }
+            }
+            catch (NullReferenceException) { }
         }
     }
     public class AdminPacket : Packet
@@ -456,15 +501,18 @@ namespace ModUpdater
     }
     public class ImagePacket : Packet
     {
+        public string ShowOn { get; set; }
         public byte[] Image { get; set; }
         public override void Read(ModUpdaterNetworkStream s)
         {
+            ShowOn = s.ReadString();
             int l = s.ReadInt();
             Image = s.ReadBytes(l);
         }
 
         public override void Write(ModUpdaterNetworkStream s)
         {
+            s.WriteString(ShowOn);
             s.WriteInt(Image.Length);
             s.WriteBytes(Image);
         }
