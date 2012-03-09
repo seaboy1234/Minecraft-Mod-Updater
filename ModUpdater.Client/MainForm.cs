@@ -13,6 +13,7 @@ namespace ModUpdater.Client
 {
     public partial class MainForm : Form
     {
+        public static MainForm Instance { get; private set; }
         List<string> ModFiles = new List<string>();
         List<Mod> Mods = new List<Mod>();
         ModFile CurrentDownload;
@@ -26,6 +27,7 @@ namespace ModUpdater.Client
         private float serverFontSize = 36;
         public MainForm()
         {
+            if (Instance == null) Instance = this;
             InitializeComponent();
         }
 
@@ -71,6 +73,7 @@ namespace ModUpdater.Client
                 SplashScreen.UpdateStatusText("Downloading Updates...");
                 SplashScreen.GetScreen().Invoke(new Void(delegate
                 {
+                    SplashScreen.GetScreen().label2.Font.Dispose();
                     SplashScreen.GetScreen().label2.Font = new Font(FontFamily.GenericSansSerif, serverFontSize);
                     SplashScreen.GetScreen().label2.Text = serverName;
                 }));
@@ -169,6 +172,7 @@ namespace ModUpdater.Client
                 ph.NextDownload += new PacketEvent<NextDownloadPacket>(ph_NextDownload);
                 ph.FilePart += new PacketEvent<FilePartPacket>(ph_FilePart);
                 ph.Connect += new PacketEvent<ConnectPacket>(ph_Connect);
+                ph.Image += new PacketEvent<ImagePacket>(ph_Image);
                 Debug.Assert("Packet Handlers registered.");
             }); 
             Thread.Sleep(1000);
@@ -176,6 +180,14 @@ namespace ModUpdater.Client
             Packet.Send(new HandshakePacket(), ph.Stream);
             Debug.Assert("Sent Handshake Packet.");
             Thread.Sleep(100);
+        }
+
+        void ph_Image(ImagePacket p)
+        {
+            if (p.Type == ImagePacket.ImageType.Background)
+            {
+                SplashScreen.BackgroundImage = Extras.ImageFromBytes(p.Image);
+            }
         }
 
         void ph_Connect(ConnectPacket p)
@@ -189,6 +201,12 @@ namespace ModUpdater.Client
 
         void ph_FilePart(FilePartPacket p)
         {
+            if (ExceptionHandler.ProgramCrashed)
+            {
+                ph.Stop();
+                return;
+            }
+            while (SplashScreen.GetScreen().Loading) ;
             int i = p.Index;
             foreach (byte b in p.Part)
             {
@@ -382,6 +400,10 @@ namespace ModUpdater.Client
             {
                 serverName = p.SData[1];
                 serverFontSize = p.FData[0];
+            }
+            else if (p.SData[0] == "splash_display")
+            {
+                SplashScreen.UpdateStatusText(p.SData[1]);
             }
         }
         struct Mod

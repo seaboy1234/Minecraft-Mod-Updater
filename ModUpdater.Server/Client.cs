@@ -54,10 +54,10 @@ namespace ModUpdater.Server
             switch (p.Type)
             {
                 case RequestModPacket.RequestType.Info:
-                    Packet.Send(new ModInfoPacket { Author = mod.Author, File = mod.ModFile, ModName = mod.ModName, Hash = Extras.GenerateHash(mod.ModFile) }, ph.Stream);
+                    Packet.Send(new ModInfoPacket { Author = mod.Author, File = mod.ModFile, ModName = mod.ModName, Hash = Extras.GenerateHash(Config.ModsPath + "\\" + mod.ModFile) }, ph.Stream);
                     break;
                 case RequestModPacket.RequestType.Download:
-                    byte[] file = File.ReadAllBytes(mod.ModFile);
+                    byte[] file = File.ReadAllBytes(Config.ModsPath + "\\" + mod.ModFile);
                     List<List<byte>> abyte = new List<List<byte>>();
                     int k = 0;
                     for (int i = 0; i < file.Length; i+= 1024)
@@ -70,7 +70,7 @@ namespace ModUpdater.Server
                         }
                         k++;
                     }
-                    Packet.Send(new NextDownloadPacket { ModName = mod.ModName, FileName = mod.ModFile, Length = file.Length, PostDownloadCLI = mod.PostDownloadCLI, ChunkSize = abyte.Count }, ph.Stream);
+                    Packet.Send(new NextDownloadPacket { ModName = mod.ModName, FileName = Config.ModsPath + "\\" + mod.ModFile, Length = file.Length, PostDownloadCLI = mod.PostDownloadCLI, ChunkSize = abyte.Count }, ph.Stream);
                     int l = 0;
                     for (int h = 0; h < abyte.Count; h++)
                     {
@@ -101,8 +101,13 @@ namespace ModUpdater.Server
             {
                 mods[i] = Server.Mods[i].ModFile;
             }
-            Packet.Send(new ModListPacket { Mods = mods }, ph.Stream);
             Packet.Send(new MetadataPacket { SData = new string[] { "server_name", Config.ServerName }, FData = new float[] { 24.0f } }, ph.Stream);
+            if (Server.BackgroundImage != null)
+            {
+                Packet.Send(new MetadataPacket { SData = new string[] { "splash_display", "Downloading Assets..." } }, ph.Stream);
+                Packet.Send(new ImagePacket { Type = ImagePacket.ImageType.Background, ShowOn = "", Image = Extras.BytesFromImage(Server.BackgroundImage) }, ph.Stream);
+            }
+            Packet.Send(new ModListPacket { Mods = mods }, ph.Stream);
         }
 
         internal void HandleLog(LogPacket p)
