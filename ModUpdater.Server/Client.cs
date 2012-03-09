@@ -102,10 +102,14 @@ namespace ModUpdater.Server
                 mods[i] = Server.Mods[i].ModFile;
             }
             Packet.Send(new MetadataPacket { SData = new string[] { "server_name", Config.ServerName }, FData = new float[] { 24.0f } }, ph.Stream);
+            Packet.Send(new MetadataPacket { SData = new string[] { "splash_display", "Downloading Assets..." } }, ph.Stream);
             if (Server.BackgroundImage != null)
             {
-                Packet.Send(new MetadataPacket { SData = new string[] { "splash_display", "Downloading Assets..." } }, ph.Stream);
                 Packet.Send(new ImagePacket { Type = ImagePacket.ImageType.Background, ShowOn = "", Image = Extras.BytesFromImage(Server.BackgroundImage) }, ph.Stream);
+            }
+            foreach (var v in Server.ModImages)
+            {
+                Packet.Send(new ImagePacket { Type = ImagePacket.ImageType.Mod, ShowOn = v.Key.ModFile, Image = Extras.BytesFromImage(v.Value) }, ph.Stream);
             }
             Packet.Send(new ModListPacket { Mods = mods }, ph.Stream);
         }

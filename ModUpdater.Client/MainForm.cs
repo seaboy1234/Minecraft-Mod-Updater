@@ -25,6 +25,7 @@ namespace ModUpdater.Client
         private bool ServerShutdown = false;
         private string serverName = "";
         private float serverFontSize = 36;
+        private ImageList modImages;
         public MainForm()
         {
             if (Instance == null) Instance = this;
@@ -145,7 +146,9 @@ namespace ModUpdater.Client
                 Close();
                 return;
             }
-            
+            modImages = new ImageList();
+            modImages.ImageSize = new Size(230, 180);
+            modImages.ColorDepth = ColorDepth.Depth32Bit;
             TaskManager.AddAsyncTask(delegate
             {
                 while (s.Connected) ; 
@@ -187,6 +190,10 @@ namespace ModUpdater.Client
             if (p.Type == ImagePacket.ImageType.Background)
             {
                 SplashScreen.BackgroundImage = Extras.ImageFromBytes(p.Image);
+            }
+            else
+            {
+                modImages.Images.Add(p.ShowOn, Extras.ImageFromBytes(p.Image));
             }
         }
 
@@ -238,6 +245,8 @@ namespace ModUpdater.Client
             else
                 SplashScreen.UpdateStatusTextWithStatus("Downloading " + p.ModName + "(Server Shutdown Mode)", TypeOfMessage.Warning);
             MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Starting download of " + p.ModName);
+            if(modImages.Images.ContainsKey(p.FileName))
+                SplashScreen.GetScreen().setDownloadPicture(modImages.Images[p.FileName]);
             PostDownload = p.PostDownloadCLI;
             string path = Properties.Settings.Default.MinecraftPath + "\\" + p.FileName.Replace(p.FileName.Split('\\').Last(), "").TrimEnd('\\').Replace("clientmods", "mods");
             bool exists = Directory.Exists(path);

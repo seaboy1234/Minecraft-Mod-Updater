@@ -26,6 +26,7 @@ namespace ModUpdater.Server
             Mods = new List<Mod>();
             Clients = new List<Client>();
             TcpServer = new TcpListener(IPAddress.Any, Config.Port);
+            ModImages = new Dictionary<Mod, Image>();
             SelfUpdate();
             foreach (string s in Directory.GetFiles(Config.ModsPath + "\\xml"))
             {
@@ -33,7 +34,10 @@ namespace ModUpdater.Server
             }
             foreach (Mod m in Mods)
             {
-                //Console.WriteLine(m.ToString());
+                if (File.Exists(Config.ModsPath + "\\ModAssets\\" + Path.GetFileName(m.ModFile) + ".png"))
+                {
+                    ModImages.Add(m, Image.FromFile(Config.ModsPath + "\\ModAssets\\" + Path.GetFileName(m.ModFile) + ".png"));
+                }
             }
             if (File.Exists(Config.ModsPath + "\\assets\\server_background.png"))
             {
@@ -48,10 +52,12 @@ namespace ModUpdater.Server
                 if (!Directory.Exists(Config.ModsPath)) Directory.CreateDirectory(Config.ModsPath);
                 if (Directory.Exists("mods")) Directory.Move("mods", Config.ModsPath + "\\mods");
                 if (Directory.Exists("xml")) Directory.Move("xml", Config.ModsPath + "\\xml");
+                if (Directory.Exists("ModAssets")) Directory.Move("ModAssets", Config.ModsPath + "\\ModAssets");
             }
-            if (!Directory.Exists(Config.ModsPath + "\\mods")) Directory.CreateDirectory(Config.ModsPath + "mods");
-            if (!Directory.Exists(Config.ModsPath + "\\xml")) Directory.CreateDirectory(Config.ModsPath + "xml");
-            if (!Directory.Exists(Config.ModsPath + "\\assets")) Directory.CreateDirectory(Config.ModsPath + "assets");
+            if (!Directory.Exists(Config.ModsPath + "\\mods")) Directory.CreateDirectory(Config.ModsPath + "\\mods");
+            if (!Directory.Exists(Config.ModsPath + "\\xml")) Directory.CreateDirectory(Config.ModsPath + "\\xml");
+            if (!Directory.Exists(Config.ModsPath + "\\assets")) Directory.CreateDirectory(Config.ModsPath + "\\assets");
+            if (!Directory.Exists(Config.ModsPath + "\\ModAssets")) Directory.CreateDirectory(Config.ModsPath + "\\ModAssets");
         }
         public void Start()
         {
