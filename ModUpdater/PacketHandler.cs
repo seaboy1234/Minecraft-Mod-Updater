@@ -25,6 +25,7 @@ namespace ModUpdater
         public event PacketEvent<AllDonePacket> AllDone;
         public event PacketEvent<Packet> Disconnect;
         public event PacketEvent<ConnectPacket> Connect;
+        public event PacketEvent<ImagePacket> Image;
         /*End Events*/
 
         public PacketHandler(Socket s)
@@ -89,6 +90,10 @@ namespace ModUpdater
                     case PacketId.Connect:
                         if (Connect != null)
                             Connect.Invoke((ConnectPacket)p);
+                        break;
+                    case PacketId.Image:
+                        if (Image != null)
+                            Image.Invoke((ImagePacket)p);
                         break;
                     default:
                         break;

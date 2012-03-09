@@ -108,10 +108,8 @@ namespace ModUpdater
                 {PacketId.NextDownload, typeof(NextDownloadPacket)},
                 {PacketId.AllDone, typeof(AllDonePacket)},
                 {PacketId.Log, typeof(LogPacket)},
-                //{PacketId.ClientUpdate, typeof(ClientUpdatePacket)},
                 {PacketId.Disconnect, typeof(DisconnectPacket)},
-                //{PacketId.GoodBye, typeof(DisconnectPacket)},
-                //{PacketId.Image, typeof(ImagePacket)},
+                {PacketId.Image, typeof(ImagePacket)},
                 {PacketId.Connect, typeof(ConnectPacket)}
             };
         }
@@ -362,7 +360,7 @@ namespace ModUpdater
                         s.WriteString(str);
                     }
             }
-            catch (NullReferenceException) { }//The data is null.  What CAN we do?
+            catch (NullReferenceException) { } //The data is null.  What CAN we do?
             try
             {
                 if (IData.Length > 0)
@@ -383,6 +381,20 @@ namespace ModUpdater
             catch (NullReferenceException) { }
         }
     }
+    public class BeginDownload : Packet
+    {
+        
+        public override void Read(ModUpdaterNetworkStream s)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Write(ModUpdaterNetworkStream s)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class AdminPacket : Packet
     {
         public string AdminName { get; set; }
@@ -501,10 +513,12 @@ namespace ModUpdater
     }
     public class ImagePacket : Packet
     {
+        public ImageType Type { get; set; }
         public string ShowOn { get; set; }
         public byte[] Image { get; set; }
         public override void Read(ModUpdaterNetworkStream s)
         {
+            Type = (ImageType)((byte)s.ReadByte()); //Stupid ReadByte().  It's in NetworkStream and thus pretty much out of my control.
             ShowOn = s.ReadString();
             int l = s.ReadInt();
             Image = s.ReadBytes(l);
@@ -512,9 +526,15 @@ namespace ModUpdater
 
         public override void Write(ModUpdaterNetworkStream s)
         {
+            s.WriteByte((byte)Type);
             s.WriteString(ShowOn);
             s.WriteInt(Image.Length);
             s.WriteBytes(Image);
+        }
+        public enum ImageType : byte
+        {
+            Background,
+            Mod
         }
     }
     public class ConnectPacket : Packet
