@@ -70,7 +70,7 @@ namespace ModUpdater.Server
                         }
                         k++;
                     }
-                    Packet.Send(new NextDownloadPacket { ModName = mod.ModName, FileName = Config.ModsPath + "\\" + mod.ModFile, Length = file.Length, PostDownloadCLI = mod.PostDownloadCLI, ChunkSize = abyte.Count }, ph.Stream);
+                    Packet.Send(new NextDownloadPacket { ModName = mod.ModName, FileName = mod.ModFile, Length = file.Length, PostDownloadCLI = mod.PostDownloadCLI, ChunkSize = abyte.Count }, ph.Stream);
                     int l = 0;
                     for (int h = 0; h < abyte.Count; h++)
                     {
