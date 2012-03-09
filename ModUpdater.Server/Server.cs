@@ -43,12 +43,12 @@ namespace ModUpdater.Server
         }
         private void SelfUpdate()
         {
-            if (Directory.Exists(@"clientmods\xml")) Directory.Move(@"clientmods\xml", "xml");
-            if (Directory.Exists(@"clientmods\config")) Directory.Move(@"clientmods\config", "config");
-            if (Directory.Exists("clientmods")) Directory.Move("clientmods", "mods");
-            if(!Directory.Exists(Config.ModsPath)) Directory.CreateDirectory(Config.ModsPath);
-            if (Directory.Exists("mods")) Directory.Move("mods", Config.ModsPath + "\\mods");
-            if (Directory.Exists("xml")) Directory.Move("xml", Config.ModsPath + "\\xml");
+            if (Config.ModsPath != "")
+            {
+                if (!Directory.Exists(Config.ModsPath)) Directory.CreateDirectory(Config.ModsPath);
+                if (Directory.Exists("mods")) Directory.Move("mods", Config.ModsPath + "\\mods");
+                if (Directory.Exists("xml")) Directory.Move("xml", Config.ModsPath + "\\xml");
+            }
             if (!Directory.Exists(Config.ModsPath + "\\mods")) Directory.CreateDirectory(Config.ModsPath + "mods");
             if (!Directory.Exists(Config.ModsPath + "\\xml")) Directory.CreateDirectory(Config.ModsPath + "xml");
             if (!Directory.Exists(Config.ModsPath + "\\assets")) Directory.CreateDirectory(Config.ModsPath + "assets");
