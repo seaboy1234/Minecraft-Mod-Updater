@@ -18,6 +18,7 @@ namespace ModUpdater.Server
         public TcpListener TcpServer2 { get; private set; }
         public IPAddress Address { get; private set; }
         public Dictionary<Mod, Image> ModImages { get; private set; }
+        public Image BackgroundImage { get; private set; }
         bool Online { get; set; }
         public Server()
         {
@@ -25,13 +26,18 @@ namespace ModUpdater.Server
             Mods = new List<Mod>();
             Clients = new List<Client>();
             TcpServer = new TcpListener(IPAddress.Any, Config.Port);
-            foreach (string s in Directory.GetFiles("xml"))
+            SelfUpdate();
+            foreach (string s in Directory.GetFiles(Config.ModsPath + "\\xml"))
             {
                 Mods.Add(new Mod(s));
             }
             foreach (Mod m in Mods)
             {
                 //Console.WriteLine(m.ToString());
+            }
+            if (File.Exists(Config.ModsPath + "\\assets\\server_background.png"))
+            {
+                BackgroundImage = Image.FromFile(Config.ModsPath + "\\assets\\server_background.png");
             }
             Console.WriteLine("Registered {0} mods", Mods.Count);
         }
@@ -40,10 +46,12 @@ namespace ModUpdater.Server
             if (Directory.Exists(@"clientmods\xml")) Directory.Move(@"clientmods\xml", "xml");
             if (Directory.Exists(@"clientmods\config")) Directory.Move(@"clientmods\config", "config");
             if (Directory.Exists("clientmods")) Directory.Move("clientmods", "mods");
+            if(!Directory.Exists(Config.ModsPath)) Directory.CreateDirectory(Config.ModsPath);
             if (Directory.Exists("mods")) Directory.Move("mods", Config.ModsPath + "\\mods");
             if (Directory.Exists("xml")) Directory.Move("xml", Config.ModsPath + "\\xml");
-            if (!Directory.Exists(Config.ModsPath + "\\mods")) Directory.CreateDirectory("mods");
-            if (!Directory.Exists(Config.ModsPath + "\\xml")) Directory.CreateDirectory("xml");
+            if (!Directory.Exists(Config.ModsPath + "\\mods")) Directory.CreateDirectory(Config.ModsPath + "mods");
+            if (!Directory.Exists(Config.ModsPath + "\\xml")) Directory.CreateDirectory(Config.ModsPath + "xml");
+            if (!Directory.Exists(Config.ModsPath + "\\assets")) Directory.CreateDirectory(Config.ModsPath + "assets");
         }
         public void Start()
         {
@@ -69,7 +77,7 @@ namespace ModUpdater.Server
             TcpServer.Start();
             Online = true;
             TaskManager.AddDelayedAsyncTask(delegate { SimpleConsoleImputHandler(); }, 3000);
-            Receve();
+            Receive();
         }
         public void Dispose()
         {
@@ -77,7 +85,7 @@ namespace ModUpdater.Server
             Online = false;
             Config.Save();
         }
-        public void Receve()
+        public void Receive()
         {
             while (Online)
             {
