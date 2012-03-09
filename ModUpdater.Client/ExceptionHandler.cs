@@ -8,11 +8,13 @@ using System.Text;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 
 namespace ModUpdater.Client
 {
     public partial class ExceptionHandler : Form
     {
+        public static bool ProgramCrashed { get; private set; }
         public Exception Exception;
         private bool Locked = false;
         private string Report;
@@ -24,6 +26,7 @@ namespace ModUpdater.Client
 
         private void ExceptionHandler_Load(object sender, EventArgs e)
         {
+            ProgramCrashed = true;
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("Minecraft Mod Updater has crashed.");
             sb.AppendLine("Please make an error report about this including everything below the line.");
@@ -42,23 +45,19 @@ namespace ModUpdater.Client
         }
         public static void HandleException(Exception e)
         {
-            new ExceptionHandler(e).ShowDialog();
+            MainForm.Instance.Invoke(new MainForm.Void(delegate
+            {
+                new ExceptionHandler(e).ShowDialog();
+            }));
         }
         public static void Init()
         {
             TaskManager.ExceptionRaised += new TaskManager.Error(HandleException);
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
-            Application.ThreadException += new System.Threading.ThreadExceptionEventHandler(Application_ThreadException);
         }
-
-        static void Application_ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
-        {
-            new ExceptionHandler(e.Exception).ShowDialog();
-        }
-
         static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            new ExceptionHandler((Exception)e.ExceptionObject).ShowDialog();
+            HandleException((Exception)e.ExceptionObject);
         }
 
         private void btnReport_Click(object sender, EventArgs e)
