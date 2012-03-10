@@ -23,7 +23,7 @@ namespace ModUpdater
         public abstract void Write(ModUpdaterNetworkStream s);
 
         //Static Methods
-        public static Dictionary<PacketId, Type> Map = new Dictionary<PacketId, Type>();
+        public static Dictionary<Type, PacketId> Map = new Dictionary<Type, PacketId>();
         private static Packet LastSent;
         private static bool Busy = false;
         /// <summary>
@@ -39,12 +39,18 @@ namespace ModUpdater
             {
                 PacketId id = (PacketId)Stream.ReadByte();
                 if (id == PacketId.Disconnect) return null;
-                if (!Map.ContainsKey(id))
+                if (!Map.ContainsValue(id))
                 {
                     Stream.Flush();
                     return null;
                 }
-                Packet = Map[id];
+                foreach (var v in Map)
+                {
+                    if (v.Value == id)
+                    {
+                        Packet = v.Key;
+                    }
+                }
                 p = (Packet)Packet.GetConstructor(new Type[] { }).Invoke(null);
                 p.Read(Stream);
                 MinecraftModUpdater.Logger.Log(Logger.Level.Info, string.Format("Read packet {0}", id.ToString()));
@@ -85,32 +91,27 @@ namespace ModUpdater
         {
             PacketId id = (PacketId)255;
             if (p == null) return id;
-            foreach (var v in Map)
-            {
-                if (p.GetType() == v.Value)
-                {
-                    id = v.Key;
-                }
-            }
-            return id;
+            if (Map.TryGetValue(p.GetType(), out id))
+                return id;
+            throw new KeyNotFoundException();
         }
         static Packet()
         {
-            Map = new Dictionary<PacketId,Type>
+            Map = new Dictionary<Type, PacketId>
             {
-                {PacketId.Handshake, typeof(HandshakePacket)},
-                {PacketId.RequestMod, typeof(RequestModPacket)},
-                {PacketId.FilePart, typeof(FilePartPacket)},
-                {PacketId.ModInfo, typeof(ModInfoPacket)},
-                {PacketId.Metadata, typeof(MetadataPacket)},
-                {PacketId.ModList, typeof(ModListPacket)},
-                {PacketId.EncryptionStatus, typeof(EncryptionStatusPacket)},
-                {PacketId.NextDownload, typeof(NextDownloadPacket)},
-                {PacketId.AllDone, typeof(AllDonePacket)},
-                {PacketId.Log, typeof(LogPacket)},
-                {PacketId.Disconnect, typeof(DisconnectPacket)},
-                {PacketId.Image, typeof(ImagePacket)},
-                {PacketId.Connect, typeof(ConnectPacket)}
+                {typeof(HandshakePacket), PacketId.Handshake},
+                {typeof(RequestModPacket), PacketId.RequestMod},
+                {typeof(FilePartPacket), PacketId.FilePart},
+                {typeof(ModInfoPacket), PacketId.ModInfo},
+                {typeof(MetadataPacket), PacketId.Metadata},
+                {typeof(ModListPacket), PacketId.ModList},
+                {typeof(EncryptionStatusPacket), PacketId.EncryptionStatus},
+                {typeof(NextDownloadPacket), PacketId.NextDownload},
+                {typeof(AllDonePacket), PacketId.AllDone},
+                {typeof(LogPacket), PacketId.Log},
+                {typeof(DisconnectPacket), PacketId.Disconnect},
+                {typeof(ImagePacket), PacketId.Image},
+                {typeof(ConnectPacket), PacketId.Connect}
             };
         }
     }
