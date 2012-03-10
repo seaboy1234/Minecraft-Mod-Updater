@@ -190,6 +190,10 @@ namespace ModUpdater.Client
             if (p.Type == ImagePacket.ImageType.Background)
             {
                 SplashScreen.BackgroundImage = Extras.ImageFromBytes(p.Image);
+                if (SplashScreen.GetScreen() != null)
+                {
+                    SplashScreen.GetScreen().Image.Image = Extras.ImageFromBytes(p.Image);
+                }
             }
             else
             {
@@ -263,17 +267,21 @@ namespace ModUpdater.Client
             });
             foreach (string s in PostDownload)
             {
-                ProcessStartInfo pr = new ProcessStartInfo("cmd", "/c " + s);
-                pr.CreateNoWindow = true;
-                pr.RedirectStandardOutput = true;
-                Process proc = new Process();
-                proc.StartInfo = pr;
-                proc.Start();
-                MinecraftModUpdater.Logger.Log(Logger.Level.Info, "[Post Download] " + proc.StandardOutput.ReadToEnd());
+                try
+                {
+                    ProcessStartInfo pr = new ProcessStartInfo("cmd", "/c " + s);
+                    pr.CreateNoWindow = true;
+                    pr.UseShellExecute = false;
+                    pr.RedirectStandardOutput = true;
+                    Process proc = new Process();
+                    proc.StartInfo = pr;
+                    proc.Start();
+                    MinecraftModUpdater.Logger.Log(Logger.Level.Info, "[Post Download] " + proc.StandardOutput.ReadToEnd());
+                }
+                catch (Exception e) { ExceptionHandler.HandleException(e); }
             }
             if (GetLastModToUpdate().File == p.File)
             {
-                Packet.Send(new LogPacket { LogMessages = MinecraftModUpdater.Logger.GetMessages() }, ph.Stream);
                 SplashScreen.UpdateStatusText("All files downloaded!");
                 Thread.Sleep(1000);
                 SplashScreen.CloseSplashScreen();
@@ -286,6 +294,7 @@ namespace ModUpdater.Client
                     }));
                     l.ShowDialog();
                 }
+                Packet.Send(new LogPacket { LogMessages = MinecraftModUpdater.Logger.GetMessages() }, ph.Stream);
                 Packet.Send(new DisconnectPacket(), ph.Stream);
                 ph.Stop();
                 ph.Metadata -= new PacketEvent<MetadataPacket>(ph_Metadata);
