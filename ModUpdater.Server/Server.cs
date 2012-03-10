@@ -151,6 +151,35 @@ namespace ModUpdater.Server
                         while (Clients.Count > 0) ;
                         Dispose();
                         break;
+                    case "populate":
+                        foreach(string s in Directory.GetFiles(Config.ModsPath + "\\mods"))
+                        {
+                            string[] file = new string[] {
+                                "<Mod>",
+                                "    <Name>" + Path.GetFileName(s) + "</Name>",
+                                "    <Author>null</Author>",
+                                "    <File>mods\\" + Path.GetFileName(s) + "</File>",
+                                "    <PostDownload>",
+                                "        <Action>echo Example</Action>",
+                                "    </PostDownload>",
+                                "</Mod>" };
+                            File.WriteAllLines(Config.ModsPath + "\\xml\\" + Path.GetFileName(s) + ".xml", file);
+                        }
+                        Mods.Clear();
+                        ModImages.Clear();
+                        foreach (string s in Directory.GetFiles(Config.ModsPath + "\\xml"))
+                        {
+                            Mods.Add(new Mod(s));
+                        }
+                        foreach (Mod m in Mods)
+                        {
+                            if (File.Exists(Config.ModsPath + "\\ModAssets\\" + Path.GetFileName(m.ModFile) + ".png"))
+                            {
+                                ModImages.Add(m, Image.FromFile(Config.ModsPath + "\\ModAssets\\" + Path.GetFileName(m.ModFile) + ".png"));
+                            }
+                        }
+                        Console.WriteLine("Registered {0} mods", Mods.Count);
+                        break;
                     case "help":
                     case "?":
                     default:
