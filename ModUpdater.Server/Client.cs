@@ -60,10 +60,10 @@ namespace ModUpdater.Server
                     byte[] file = File.ReadAllBytes(Config.ModsPath + "\\" + mod.ModFile);
                     List<List<byte>> abyte = new List<List<byte>>();
                     int k = 0;
-                    for (int i = 0; i < file.Length; i+= 1024)
+                    for (int i = 0; i < file.Length; i+= 2048)
                     {
                         abyte.Add(new List<byte>());
-                        for (int j = i; j < i + 1024; j++)
+                        for (int j = i; j < i + 2048; j++)
                         {
                             if(file.Length > j)
                                 abyte[k].Add(file[j]);
