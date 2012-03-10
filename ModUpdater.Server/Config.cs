@@ -70,6 +70,7 @@ namespace ModUpdater.Server
             XmlElement port;
             XmlElement maxclients;
             XmlElement modspath;
+            XmlElement servername;
             if (!rootexists)
             {
                 XmlDeclaration dec = config.CreateXmlDeclaration("1.0", null, null);
@@ -82,16 +83,20 @@ namespace ModUpdater.Server
                 root.AppendChild(maxclients);
                 modspath = config.CreateElement("ModsPath");
                 root.AppendChild(modspath);
+                servername = config.CreateElement("ServerName");
+                root.AppendChild(servername);
             }
             else
             {
                 port = n["Port"];
                 maxclients = n["MaxClients"];
                 modspath = n["ModsPath"];
+                servername = n["ServerName"];
             }
             port.InnerText = Port.ToString();
             maxclients.InnerText = MaxClients.ToString();
             modspath.InnerText = ModsPath;
+            servername.InnerText = ServerName;
             File.WriteAllText("Config.xml", config.OuterXml);
         }
     }
