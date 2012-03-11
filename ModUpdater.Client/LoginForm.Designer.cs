@@ -40,11 +40,11 @@
             // 
             // startmc
             // 
-            this.startmc.Location = new System.Drawing.Point(90, 131);
+            this.startmc.Location = new System.Drawing.Point(130, 131);
             this.startmc.Name = "startmc";
-            this.startmc.Size = new System.Drawing.Size(88, 23);
+            this.startmc.Size = new System.Drawing.Size(48, 23);
             this.startmc.TabIndex = 0;
-            this.startmc.Text = "Start Minecraft";
+            this.startmc.Text = "Login";
             this.startmc.UseVisualStyleBackColor = true;
             this.startmc.Click += new System.EventHandler(this.startmc_Click);
             // 

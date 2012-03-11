@@ -177,7 +177,13 @@ namespace ModUpdater.Client
                 ph.Connect += new PacketEvent<ConnectPacket>(ph_Connect);
                 ph.Image += new PacketEvent<ImagePacket>(ph_Image);
                 Debug.Assert("Packet Handlers registered.");
-            }); 
+            });
+            if ((new LoginForm()).ShowDialog() == System.Windows.Forms.DialogResult.Abort)
+            {
+                MinecraftModUpdater.Logger.Log(Logger.Level.Error, "Login failed");
+                Close();
+                return;
+            }
             Thread.Sleep(1000);
             SplashScreen.UpdateStatusText("Connected to server.  Retreving Mod List.");
             Packet.Send(new HandshakePacket(), ph.Stream);
@@ -287,12 +293,7 @@ namespace ModUpdater.Client
                 SplashScreen.CloseSplashScreen();
                 if (Properties.Settings.Default.LaunchAfterUpdate)
                 {
-                    LoginForm l = new LoginForm();
-                    Invoke(new Void(delegate
-                    {
-                        Hide();
-                    }));
-                    l.ShowDialog();
+                    Program.StartMinecraft();
                 }
                 Packet.Send(new LogPacket { LogMessages = MinecraftModUpdater.Logger.GetMessages() }, ph.Stream);
                 Packet.Send(new DisconnectPacket(), ph.Stream);
