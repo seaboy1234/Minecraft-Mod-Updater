@@ -61,6 +61,9 @@ namespace ModUpdater.Client
             StreamReader sr = new StreamReader(s);
             string responce = sr.ReadToEnd();
             error = responce;
+            s.Close();
+            sr.Close();
+            wr.Close();
             if (!responce.Contains(":")) return false;
             return true;
         }
