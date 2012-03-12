@@ -48,8 +48,8 @@ namespace ModUpdater.Client
             }
             Properties.Settings.Default.MinecraftPath = txtMcPath.Text;
             Properties.Settings.Default.Server = txtServer.Text;
-            Properties.Settings.Default.LaunchAfterUpdate = checkBox1.Checked;
-            Properties.Settings.Default.AutoUpdate = checkBox2.Checked;
+            Properties.Settings.Default.LaunchAfterUpdate = chkStartMC.Checked;
+            Properties.Settings.Default.AutoUpdate = chkAuUpdate.Checked;
             Properties.Settings.Default.Save();
             DialogResult = System.Windows.Forms.DialogResult.OK;
             Close();
@@ -59,8 +59,8 @@ namespace ModUpdater.Client
         {
             txtServer.Text = Properties.Settings.Default.Server;
             txtMcPath.Text = Properties.Settings.Default.MinecraftPath;
-            checkBox1.Checked = Properties.Settings.Default.LaunchAfterUpdate;
-            checkBox2.Checked = Properties.Settings.Default.AutoUpdate;
+            chkStartMC.Checked = Properties.Settings.Default.LaunchAfterUpdate;
+            chkAuUpdate.Checked = Properties.Settings.Default.AutoUpdate;
             tempPortTxt.Text = Properties.Settings.Default.Port.ToString();
             KeyDown += new KeyEventHandler(ConnectionForm_KeyDown);
         }
@@ -78,11 +78,11 @@ namespace ModUpdater.Client
 
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox2.Checked && !Properties.Settings.Default.AutoUpdate)
+            if (chkAuUpdate.Checked && !Properties.Settings.Default.AutoUpdate)
             {
                 if (MessageBox.Show("WARNING: Turning on the auto updater will automaticly download new updates.  ONLY use this on servers you FULLY TRUST. \r\nAre you sure you want to enable this feature?", "Mod Updater Warning", MessageBoxButtons.YesNo) != System.Windows.Forms.DialogResult.Yes)
                 {
-                    checkBox2.Checked = false;
+                    chkAuUpdate.Checked = false;
                 }
             }
         }
