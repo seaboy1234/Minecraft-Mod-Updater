@@ -175,10 +175,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ModUpdater.Client.SelfUpdateManager\ModUpdater.Client.SelfUpdateManager.csproj">
-      <Project>{6C71D4C0-19C2-484A-A3DE-B0CCA2CCB8D0}</Project>
-      <Name>ModUpdater.Client.SelfUpdateManager</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ModUpdater\ModUpdater.csproj">
       <Project>{A35F98A0-18D0-4FF4-9258-EF348095F8C8}</Project>
       <Name>ModUpdater</Name>
