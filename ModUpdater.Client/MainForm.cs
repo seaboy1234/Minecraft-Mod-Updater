@@ -175,9 +175,13 @@ namespace ModUpdater.Client
                 ph.Image += new PacketEvent<ImagePacket>(ph_Image);
                 Debug.Assert("Packet Handlers registered.");
             });
-            if ((new LoginForm()).ShowDialog() == System.Windows.Forms.DialogResult.Abort)
+            if ((new LoginForm()).ShowDialog() != DialogResult.OK)
             {
                 MinecraftModUpdater.Logger.Log(Logger.Level.Error, "Login failed");
+                SplashScreen.UpdateStatusTextWithStatus("Your login failed.", TypeOfMessage.Error);
+                Thread.Sleep(2000);
+                SplashScreen.CloseSplashScreen();
+                Thread.Sleep(400);
                 Close();
                 return;
             }
