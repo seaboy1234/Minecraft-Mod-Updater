@@ -189,6 +189,7 @@ namespace ModUpdater.Server
                     default:
                         Console.WriteLine("exit, stop - Safely stops the update server after all clients exit.");
                         Console.WriteLine("connected - Shows a list of connected clients.");
+                        Console.WriteLine("populate - Automagicly reads all of the files in the mods folder and creates XML files for them.");
                         break;
                 }
             }
