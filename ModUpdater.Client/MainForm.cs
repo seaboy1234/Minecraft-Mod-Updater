@@ -44,9 +44,6 @@ namespace ModUpdater.Client
                 if (Properties.Settings.Default.LaunchAfterUpdate)
                 {
                     SplashScreen.CloseSplashScreen();
-                    LoginForm l = new LoginForm();
-                    Hide();
-                    l.ShowDialog();
                 }
                 try
                 {
