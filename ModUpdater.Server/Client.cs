@@ -12,7 +12,7 @@ namespace ModUpdater.Server
     {
         public IPEndPoint IPAddress { get; private set; }
         public Server Server {get; private set;}
-        public int ClientID { get; private set; }
+        public string ClientID { get; private set; }
         public PacketHandler PacketHandler { get { return ph; } }
         private PacketHandler ph;
         private PacketHandler ph2;
@@ -87,7 +87,7 @@ namespace ModUpdater.Server
         }
         internal void RegisterClient(HandshakePacket p)
         {
-            ClientID = Server.Clients.Count;
+            ClientID = p.Username;
             if (Packet.PROTOCOL_VERSION != p.Version)
             {
                 ph.Stop();

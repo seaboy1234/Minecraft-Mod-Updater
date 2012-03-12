@@ -186,7 +186,7 @@ namespace ModUpdater.Client
             }
             Thread.Sleep(1000);
             SplashScreen.UpdateStatusText("Connected to server.  Retreving Mod List.");
-            Packet.Send(new HandshakePacket(), ph.Stream);
+            Packet.Send(new HandshakePacket { Username = Properties.Settings.Default.Username }, ph.Stream);
             Debug.Assert("Sent Handshake Packet.");
             Thread.Sleep(100);
         }

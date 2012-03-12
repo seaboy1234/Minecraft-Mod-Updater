@@ -119,14 +119,17 @@ namespace ModUpdater
     public class HandshakePacket : Packet
     {
         public int Version { get; private set; }
+        public string Username { get; set; }
         public override void Read(ModUpdaterNetworkStream s)
         {
             Version = s.ReadInt();
+            Username = s.ReadString();
         }
 
         public override void Write(ModUpdaterNetworkStream s)
         {
             s.WriteInt(PROTOCOL_VERSION);
+            s.WriteString(Username);
         }
     }
     public class RequestModPacket : Packet
