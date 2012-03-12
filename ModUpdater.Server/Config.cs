@@ -53,13 +53,18 @@ namespace ModUpdater.Server
                 ModsPath = n["ModsPath"].InnerText;
             }
             catch
-            { ModsPath = ""; }
+            { ModsPath = "."; }
             try
             {
                 ServerName = n["ServerName"].InnerText;
             }
             catch
             { ServerName = "Minecraft Mod Updater v" + MinecraftModUpdater.Version; }
+            try
+            {
+                config.Save("Config.xml");
+            }
+            catch { } //XML file is not valid.
         }
         public static void Save()
         {

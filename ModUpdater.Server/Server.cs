@@ -28,36 +28,40 @@ namespace ModUpdater.Server
             TcpServer = new TcpListener(IPAddress.Any, Config.Port);
             ModImages = new Dictionary<Mod, Image>();
             SelfUpdate();
-            foreach (string s in Directory.GetFiles(Config.ModsPath + "\\xml"))
+            foreach (string s in Directory.GetFiles(Config.ModsPath + "/xml"))
             {
                 Mods.Add(new Mod(s));
             }
             foreach (Mod m in Mods)
             {
-                if (File.Exists(Config.ModsPath + "\\ModAssets\\" + Path.GetFileName(m.ModFile) + ".png"))
+                if (File.Exists(Config.ModsPath + "/ModAssets/" + Path.GetFileName(m.ModFile) + ".png"))
                 {
-                    ModImages.Add(m, Image.FromFile(Config.ModsPath + "\\ModAssets\\" + Path.GetFileName(m.ModFile) + ".png"));
+                    ModImages.Add(m, Image.FromFile(Config.ModsPath + "/ModAssets/" + Path.GetFileName(m.ModFile) + ".png"));
                 }
             }
-            if (File.Exists(Config.ModsPath + "\\assets\\server_background.png"))
+            if (File.Exists(Config.ModsPath + "/assets/server_background.png"))
             {
-                BackgroundImage = Image.FromFile(Config.ModsPath + "\\assets\\server_background.png");
+                BackgroundImage = Image.FromFile(Config.ModsPath + "/assets/server_background.png");
             }
             Console.WriteLine("Registered {0} mods", Mods.Count);
         }
         private void SelfUpdate()
         {
-            if (Config.ModsPath != "")
+            if (Config.ModsPath != ".")
             {
-                if (!Directory.Exists(Config.ModsPath)) Directory.CreateDirectory(Config.ModsPath);
-                if (Directory.Exists("mods")) Directory.Move("mods", Config.ModsPath + "\\mods");
-                if (Directory.Exists("xml")) Directory.Move("xml", Config.ModsPath + "\\xml");
-                if (Directory.Exists("ModAssets")) Directory.Move("ModAssets", Config.ModsPath + "\\ModAssets");
+                try
+                {
+                    if (!Directory.Exists(Config.ModsPath)) Directory.CreateDirectory(Config.ModsPath);
+                    if (Directory.Exists("mods")) Directory.Move("mods", Config.ModsPath + "/mods");
+                    if (Directory.Exists("xml")) Directory.Move("xml", Config.ModsPath + "/xml");
+                    if (Directory.Exists("ModAssets")) Directory.Move("ModAssets", Config.ModsPath + "/ModAssets");
+                }
+                catch { }
             }
-            if (!Directory.Exists(Config.ModsPath + "\\mods")) Directory.CreateDirectory(Config.ModsPath + "\\mods");
-            if (!Directory.Exists(Config.ModsPath + "\\xml")) Directory.CreateDirectory(Config.ModsPath + "\\xml");
-            if (!Directory.Exists(Config.ModsPath + "\\assets")) Directory.CreateDirectory(Config.ModsPath + "\\assets");
-            if (!Directory.Exists(Config.ModsPath + "\\ModAssets")) Directory.CreateDirectory(Config.ModsPath + "\\ModAssets");
+            if (!Directory.Exists(Config.ModsPath + "/mods")) Directory.CreateDirectory(Config.ModsPath + "/mods");
+            if (!Directory.Exists(Config.ModsPath + "/xml")) Directory.CreateDirectory(Config.ModsPath + "/xml");
+            if (!Directory.Exists(Config.ModsPath + "/assets")) Directory.CreateDirectory(Config.ModsPath + "/assets");
+            if (!Directory.Exists(Config.ModsPath + "/ModAssets")) Directory.CreateDirectory(Config.ModsPath + "/ModAssets");
         }
         public void Start()
         {
@@ -152,30 +156,30 @@ namespace ModUpdater.Server
                         Dispose();
                         break;
                     case "populate":
-                        foreach(string s in Directory.GetFiles(Config.ModsPath + "\\mods"))
+                        foreach(string s in Directory.GetFiles(Config.ModsPath + "/mods"))
                         {
                             string[] file = new string[] {
                                 "<Mod>",
                                 "    <Name>" + Path.GetFileName(s) + "</Name>",
                                 "    <Author>null</Author>",
-                                "    <File>mods\\" + Path.GetFileName(s) + "</File>",
+                                "    <File>mods/" + Path.GetFileName(s) + "</File>",
                                 "    <PostDownload>",
                                 "        <Action>echo Example</Action>",
                                 "    </PostDownload>",
                                 "</Mod>" };
-                            File.WriteAllLines(Config.ModsPath + "\\xml\\" + Path.GetFileName(s) + ".xml", file);
+                            File.WriteAllLines(Config.ModsPath + "/xml/" + Path.GetFileName(s) + ".xml", file);
                         }
                         Mods.Clear();
                         ModImages.Clear();
-                        foreach (string s in Directory.GetFiles(Config.ModsPath + "\\xml"))
+                        foreach (string s in Directory.GetFiles(Config.ModsPath + "/xml"))
                         {
                             Mods.Add(new Mod(s));
                         }
                         foreach (Mod m in Mods)
                         {
-                            if (File.Exists(Config.ModsPath + "\\ModAssets\\" + Path.GetFileName(m.ModFile) + ".png"))
+                            if (File.Exists(Config.ModsPath + "/ModAssets/" + Path.GetFileName(m.ModFile) + ".png"))
                             {
-                                ModImages.Add(m, Image.FromFile(Config.ModsPath + "\\ModAssets\\" + Path.GetFileName(m.ModFile) + ".png"));
+                                ModImages.Add(m, Image.FromFile(Config.ModsPath + "/ModAssets/" + Path.GetFileName(m.ModFile) + ".png"));
                             }
                         }
                         Console.WriteLine("Registered {0} mods", Mods.Count);
