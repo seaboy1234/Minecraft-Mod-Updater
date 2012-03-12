@@ -40,7 +40,10 @@ namespace ModUpdater.Client
             {
                 MessageBox.Show("Unable to login to Minecraft.  " + error, "Error");
                 DialogResult = System.Windows.Forms.DialogResult.Abort;
+                Close();
+                return;
             }
+            DialogResult = System.Windows.Forms.DialogResult.OK;
             Close();
         }
 
