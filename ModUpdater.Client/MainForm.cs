@@ -44,6 +44,8 @@ namespace ModUpdater.Client
                 if (Properties.Settings.Default.LaunchAfterUpdate)
                 {
                     SplashScreen.CloseSplashScreen();
+                    Hide();
+                    Program.StartMinecraft();
                 }
                 try
                 {
