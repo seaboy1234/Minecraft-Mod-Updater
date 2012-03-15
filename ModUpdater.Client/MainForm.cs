@@ -24,6 +24,8 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.Drawing;
+using ModUpdater.Utility;
+using ModUpdater.Net;
 
 namespace ModUpdater.Client
 {

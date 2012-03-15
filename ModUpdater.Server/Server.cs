@@ -23,6 +23,8 @@ using System.Net;
 using System.IO;
 using System.Threading;
 using System.Drawing;
+using ModUpdater.Net;
+using ModUpdater.Utility;
 
 namespace ModUpdater.Server
 {

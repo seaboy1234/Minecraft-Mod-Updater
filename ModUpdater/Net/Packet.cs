@@ -21,6 +21,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.IO;
+using ModUpdater.Utility;
 
 namespace ModUpdater.Net
 {

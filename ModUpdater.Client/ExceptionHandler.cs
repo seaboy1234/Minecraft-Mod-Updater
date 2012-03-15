@@ -25,6 +25,7 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using ModUpdater.Utility;
 
 namespace ModUpdater.Client
 {
