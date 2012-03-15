@@ -20,7 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace ModUpdater
+namespace ModUpdater.Utility
 {
     public static class TaskManager
     {

@@ -22,7 +22,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.IO;
 
-namespace ModUpdater
+namespace ModUpdater.Net
 {
     public abstract class Packet
     {
@@ -559,19 +559,16 @@ namespace ModUpdater
     }
     public class ConnectPacket : Packet
     {
-        public int ClientID { get; set; }
         public IPAddress Address { get; set; }
         public int Port { get; set; }
         public override void Read(ModUpdaterNetworkStream s)
         {
-            ClientID = s.ReadInt();
             Address = new IPAddress(s.ReadBytes(4));
             Port = s.ReadInt();
         }
 
         public override void Write(ModUpdaterNetworkStream s)
         {
-            s.WriteInt(ClientID);
             s.WriteBytes(Address.GetAddressBytes());
             s.WriteInt(Port);
         }

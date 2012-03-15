@@ -21,7 +21,7 @@ using System.Text;
 using System.Net.Sockets;
 using System.Threading;
 
-namespace ModUpdater
+namespace ModUpdater.Net
 {
     public class PacketHandler
     {

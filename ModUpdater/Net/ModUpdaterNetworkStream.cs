@@ -23,7 +23,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 
-namespace ModUpdater
+namespace ModUpdater.Net
 {
     public class ModUpdaterNetworkStream : NetworkStream
     {
