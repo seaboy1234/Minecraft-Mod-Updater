@@ -16,6 +16,7 @@ namespace ModUpdater.Server
         public PacketHandler PacketHandler { get { return ph; } }
         private PacketHandler ph;
         private PacketHandler ph2;
+        private List<Mod> allowedMods;
         public Client(Socket s, Server sv)
         {
             ph = new PacketHandler(s);
@@ -25,6 +26,7 @@ namespace ModUpdater.Server
             ph.Disconnect += new PacketEvent<Packet>(HandleDisconnect);
             Server = sv;
             IPAddress = (IPEndPoint)s.RemoteEndPoint;
+            allowedMods = new List<Mod>();
         }
         public void StartListening()
         {
@@ -96,10 +98,11 @@ namespace ModUpdater.Server
             Console.WriteLine("Client {0} connected. ({1})", ClientID, IPAddress.Address);
             Packet.Send(new EncryptionStatusPacket { Encrypt = true, EncryptionIV = ph.Stream.IV, EncryptionKey = ph.Stream.Key }, ph.Stream);
             ph.Stream.Encrypted = true;
-            string[] mods = new string[Server.Mods.Count];
             for (int i = 0; i < Server.Mods.Count; i++)
             {
-                mods[i] = Server.Mods[i].ModFile;
+                if(Server.Mods[i].WhitelistedUsers.Contains(ClientID) || !Server.Mods[i].BlacklistedUsers.Contains(ClientID))
+                    allowedMods.Add(Server.Mods[i]);
+                else Console.WriteLine("NOT SENDING: " + Server.Mods[i].ModName);
             }
             Packet.Send(new MetadataPacket { SData = new string[] { "server_name", Config.ServerName }, FData = new float[] { 24.0f } }, ph.Stream);
             Packet.Send(new MetadataPacket { SData = new string[] { "splash_display", "Downloading Assets..." } }, ph.Stream);
@@ -110,6 +113,11 @@ namespace ModUpdater.Server
             foreach (var v in Server.ModImages)
             {
                 Packet.Send(new ImagePacket { Type = ImagePacket.ImageType.Mod, ShowOn = v.Key.ModFile, Image = Extras.BytesFromImage(v.Value) }, ph.Stream);
+            }
+            string[] mods = new string[allowedMods.Count];
+            for (int i = 0; i < allowedMods.Count; i++)
+            {
+                mods[i] = allowedMods[i].ModFile;
             }
             Packet.Send(new ModListPacket { Mods = mods }, ph.Stream);
         }
