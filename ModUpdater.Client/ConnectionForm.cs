@@ -84,6 +84,7 @@ namespace ModUpdater.Client
 
         private bool CanClose()
         {
+            while (MainForm.Instance.LocalAddress == null) ;
             if (MainForm.Instance.LocalAddress.ToString() == txtServer.Text) txtServer.Text = "127.0.0.1";
             IPEndPoint ip = new IPEndPoint(IPAddress.Parse(txtServer.Text), int.Parse(tempPortTxt.Text));
             Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
