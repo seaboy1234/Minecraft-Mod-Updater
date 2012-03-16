@@ -38,7 +38,7 @@ namespace ModUpdater
         /// <summary>
         /// The Mod Updater Version.
         /// </summary>
-        public const string Version = "1.2.0_dev";
+        public const string Version = "1.2.0_rc";
         /// <summary>
         /// The Logger.
         /// </summary>
