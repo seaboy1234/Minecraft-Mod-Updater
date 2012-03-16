@@ -87,11 +87,11 @@ namespace ModUpdater.Utility
             CurrentTaskId++;
             try
             {
-                Console.WriteLine("Running Task Id: " + tid.ToString());
+                MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Running Task Id: " + tid.ToString());
                 if (t != null)
                 {
                     t.Invoke();
-                    Console.WriteLine("Task " + tid.ToString() + " Done");
+                    MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Task " + tid.ToString() + " Done");
                 }
             }
             catch (Exception e) 
