@@ -42,6 +42,10 @@ namespace ModUpdater.Server
         /// The name of this update server.
         /// </summary>
         public static string ServerName { get; set; }
+        /// <summary>
+        /// The IP Address and port of the master server.
+        /// </summary>
+        public static string MasterServer { get; set; }
         private static XmlDocument config = new XmlDocument();
         public static void Load()
         {
@@ -78,6 +82,12 @@ namespace ModUpdater.Server
             { ServerName = "Minecraft Mod Updater v" + MinecraftModUpdater.Version; }
             try
             {
+                MasterServer = n["MasterServer"].InnerText;
+            }
+            catch
+            { MasterServer = ""; }
+            try
+            {
                 config.Save("Config.xml");
             }
             catch { } //XML file is not valid.
@@ -92,6 +102,7 @@ namespace ModUpdater.Server
             XmlElement maxclients;
             XmlElement modspath;
             XmlElement servername;
+            XmlElement master;
             if (!rootexists)
             {
                 XmlDeclaration dec = config.CreateXmlDeclaration("1.0", null, null);
@@ -106,6 +117,7 @@ namespace ModUpdater.Server
                 root.AppendChild(modspath);
                 servername = config.CreateElement("ServerName");
                 root.AppendChild(servername);
+                master = config.CreateElement("MasterServer");
             }
             else
             {
@@ -113,12 +125,21 @@ namespace ModUpdater.Server
                 maxclients = n["MaxClients"];
                 modspath = n["ModsPath"];
                 servername = n["ServerName"];
+                master = n["MasterServer"];
             }
             port.InnerText = Port.ToString();
             maxclients.InnerText = MaxClients.ToString();
             modspath.InnerText = ModsPath;
             servername.InnerText = ServerName;
-            File.WriteAllText("Config.xml", config.OuterXml);
+            master.InnerText = MasterServer;
+            try
+            {
+                config.Save("Config.xml");
+            }
+            catch
+            {
+                File.WriteAllText("Config.xml", config.OuterXml);
+            }
         }
     }
 }

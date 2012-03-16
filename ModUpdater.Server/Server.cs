@@ -104,7 +104,22 @@ namespace ModUpdater.Server
             Console.WriteLine("Server IP Address is: " + Address.ToString());
             TcpServer.Start();
             Online = true;
-            TaskManager.AddDelayedAsyncTask(delegate { SimpleConsoleImputHandler(); }, 3000);
+            TaskManager.AddAsyncTask(delegate { SimpleConsoleImputHandler(); });
+            TaskManager.AddDelayedAsyncTask(delegate
+            {
+                if (Config.MasterServer != "")
+                {
+                    Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    string ip = Config.MasterServer.Split(':')[0].Trim();
+                    int port = int.Parse(Config.MasterServer.Split(':')[1].Trim());
+                    IPEndPoint ep = new IPEndPoint(IPAddress.Parse(ip), port);
+                    s.Connect(ep);
+                    PacketHandler ph = new PacketHandler(s);
+                    ph.Start();
+                    Thread.Sleep(1000);
+                    Packet.Send(new HandshakePacket { Name = Config.ServerName, Port = Config.Port, Address = Address.ToString(), Type = HandshakePacket.SessionType.Server }, ph.Stream);
+                }
+            }, 5000);
             Receive();
         }
         public void Dispose()
