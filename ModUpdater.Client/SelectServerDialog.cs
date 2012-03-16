@@ -57,6 +57,7 @@ namespace ModUpdater.Client
         private void SelectServerDialog_Load(object sender, EventArgs e)
         {
             serverSelecter.Items.AddRange(Servers);
+            chkRemember.Checked = Properties.Settings.Default.RememberServer;
         }
     }
 }
