@@ -149,5 +149,17 @@ namespace ModUpdater.Client.Properties {
                 this["Port"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool RememberServer {
+            get {
+                return ((bool)(this["RememberServer"]));
+            }
+            set {
+                this["RememberServer"] = value;
+            }
+        }
     }
 }

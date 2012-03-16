@@ -32,5 +32,8 @@
     <Setting Name="Port" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">4713</Value>
     </Setting>
+    <Setting Name="RememberServer" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
