@@ -35,7 +35,7 @@ namespace ModUpdater.Client
         List<string> ModFiles = new List<string>();
         List<Mod> Mods = new List<Mod>();
         ModFile CurrentDownload;
-        private IPAddress localaddr;
+        public IPAddress LocalAddress;
         private PacketHandler ph;
         private PacketHandler ph2;
         private Socket socket;
@@ -133,7 +133,7 @@ namespace ModUpdater.Client
                 int first = direction.IndexOf("Address: ") + 9;
                 int last = direction.LastIndexOf("</body>");
                 direction = direction.Substring(first, last - first);
-                localaddr = IPAddress.Parse(direction);
+                LocalAddress = IPAddress.Parse(direction);
             });
             Debug.Assert("Debug mode is enabled.  In-depth messages will be displayed.");
             if (ProgramOptions.Debug)
@@ -149,7 +149,8 @@ namespace ModUpdater.Client
                 if (Extras.CheckForUpdate())
                     UpdateForm.Open();
             });
-            if ((new ConnectionForm()).ShowDialog() != System.Windows.Forms.DialogResult.OK)
+            ConnectionForm cf = new ConnectionForm();
+            if (cf.ShowDialog() != System.Windows.Forms.DialogResult.OK)
             {
                 Dispose();
                 return;
@@ -169,9 +170,9 @@ namespace ModUpdater.Client
             Debug.Assert("Creating Objects.");
             try
             {
-                string srv = Properties.Settings.Default.Server;
-                int port =  Properties.Settings.Default.Port;
-                if (srv == localaddr.ToString()) srv = "127.0.0.1";
+                string srv = cf.ConnectTo.Address;
+                int port =  cf.ConnectTo.Port;
+                if (srv == LocalAddress.ToString()) srv = "127.0.0.1";
                 s.Connect(new IPEndPoint(IPAddress.Parse(srv), port));
             }
             catch (SocketException ex)
