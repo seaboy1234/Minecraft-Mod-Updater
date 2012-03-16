@@ -42,6 +42,7 @@ namespace ModUpdater.Net
         Image, // -->
         BeginDownload, // <--
         Connect, // -->
+        ServerList, // MasterServer --> Client
         Disconnect = 255 // <-- Notes: Disconnect Packet
     }
 }

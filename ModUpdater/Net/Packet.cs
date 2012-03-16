@@ -135,18 +135,54 @@ namespace ModUpdater.Net
     #region Packet Classes
     public class HandshakePacket : Packet
     {
+        public SessionType Type { get; set; }
+        //Client
         public int Version { get; private set; }
         public string Username { get; set; }
+
+        //Server
+        public string Address { get; set; }
+        public string Name { get; set; }
+        public int Port { get; set; }
+
         public override void Read(ModUpdaterNetworkStream s)
         {
+            Type = (SessionType)s.ReadByte();
             Version = s.ReadInt();
-            Username = s.ReadString();
+            switch (Type)
+            {
+                case SessionType.Client:
+                    Username = s.ReadString();
+                    break;
+                case SessionType.Server:
+                    Address = s.ReadString();
+                    Name = s.ReadString();
+                    Port = s.ReadInt();
+                    break;
+            }
         }
 
         public override void Write(ModUpdaterNetworkStream s)
         {
+            s.WriteByte((byte)Type);
             s.WriteInt(PROTOCOL_VERSION);
-            s.WriteString(Username);
+            switch(Type)
+            {
+                case SessionType.Client:
+                    s.WriteString(Username);
+                    break;
+                case SessionType.Server:
+                    s.WriteString(Address);
+                    s.WriteString(Name);
+                    s.WriteInt(Port);
+                    break;
+            }
+        }
+        public enum SessionType : byte
+        {
+            Client,
+            Server,
+            ServerList
         }
     }
     public class RequestModPacket : Packet
@@ -574,7 +610,35 @@ namespace ModUpdater.Net
             s.WriteInt(Port);
         }
     }
+    public class ServerListPacket : Packet
+    {
+        public string[] Servers { get; set; }
+        public string[] Locations { get; set; }
+        public int[] Ports { get; set; }
+        public override void Read(ModUpdaterNetworkStream s)
+        {
+            int i = s.ReadInt();
+            for (int j = 0; j < i; j++)
+            {
+                Servers[i] = s.ReadString();
+                Locations[i] = s.ReadString();
+                Ports[i] = s.ReadInt();
+            }
 
+        }
+
+        public override void Write(ModUpdaterNetworkStream s)
+        {
+            s.WriteInt(Servers.Length);
+            for (int i = 0; i < Servers.Length; i++)
+            {
+                s.WriteString(Servers[i]);
+                s.WriteString(Locations[i]);
+                s.WriteInt(Ports[i]);
+            }
+
+        }
+    }
     #endregion
     #region Exceptions
     public class PacketException : Exception

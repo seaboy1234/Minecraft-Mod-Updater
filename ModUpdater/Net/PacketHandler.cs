@@ -42,6 +42,7 @@ namespace ModUpdater.Net
         public event PacketEvent<Packet> Disconnect;
         public event PacketEvent<ConnectPacket> Connect;
         public event PacketEvent<ImagePacket> Image;
+        public event PacketEvent<ServerListPacket> ServerList;
         /*End Events*/
 
         public PacketHandler(Socket s)
@@ -110,6 +111,10 @@ namespace ModUpdater.Net
                     case PacketId.Image:
                         if (Image != null)
                             Image.Invoke((ImagePacket)p);
+                        break;
+                    case PacketId.ServerList:
+                        if (ServerList != null)
+                            ServerList.Invoke((ServerListPacket)p);
                         break;
                     default:
                         break;
