@@ -43,7 +43,7 @@ namespace ModUpdater.Client
         {
             if (Directory.Exists(".minecraft"))
             {
-                if (MessageBox.Show("I've found a valid minecraft folder in this directory.  Would you like me to use \"" + Environment.CurrentDirectory + "\\.minecraft\" as the minecraft directory?", "Make this prossess 10x easyer by pressing \"Yes\"", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
+                if (MessageBox.Show("I've found a valid minecraft folder in this directory.  Would you like me to use \"" + Environment.CurrentDirectory + "\\.minecraft\" as the minecraft directory?", "Make this prossess 10x easier by pressing \"Yes\"", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
                 {
                     txtMcPath.Text = Environment.CurrentDirectory + "\\.minecraft";
                     return;
