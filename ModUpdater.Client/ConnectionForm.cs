@@ -74,6 +74,8 @@ namespace ModUpdater.Client
             Properties.Settings.Default.Save();
             Properties.Settings.Default.Port = ConnectTo.Port;
             Properties.Settings.Default.Server = ConnectTo.Address;
+            if (Properties.Settings.Default.RememberServer)
+                Properties.Settings.Default.Save();
             DialogResult = System.Windows.Forms.DialogResult.OK;
             Close();
         }
@@ -85,11 +87,21 @@ namespace ModUpdater.Client
             s.Connect(ip);
             ModUpdaterNetworkStream str = new ModUpdaterNetworkStream(s);
             Packet.Send(new HandshakePacket { Type = HandshakePacket.SessionType.ServerList }, str);
-            ServerListPacket p = (ServerListPacket)Packet.ReadPacket(str); //The server should only return a ServerList, right?
-            List<Server> servers = new List<Server>();
-            for (int i = 0; i < p.Servers.Length; i++)
+            Packet p = Packet.ReadPacket(str); //The server should only return a ServerList, right?
+            ServerListPacket sp = null;
+            if (!(p is ServerListPacket))
             {
-                Server srv = new Server { Address = p.Locations[i], Name = p.Servers[i], Port = p.Ports[i] };
+                Packet.Send(new DisconnectPacket(), str);
+                ConnectTo = new Server { Address = txtServer.Text, Port = int.Parse(tempPortTxt.Text) };
+                str.Close();
+                s.Disconnect(false);
+                return true;
+            }
+            sp = (ServerListPacket)p;
+            List<Server> servers = new List<Server>();
+            for (int i = 0; i < sp.Servers.Length; i++)
+            {
+                Server srv = new Server { Address = sp.Locations[i], Name = sp.Servers[i], Port = sp.Ports[i] };
                 servers.Add(srv);
             }
             SelectServerDialog dial = new SelectServerDialog(servers.ToArray());
