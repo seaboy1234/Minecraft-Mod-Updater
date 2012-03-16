@@ -35,6 +35,7 @@ namespace ModUpdater.Client
         List<string> ModFiles = new List<string>();
         List<Mod> Mods = new List<Mod>();
         ModFile CurrentDownload;
+        private IPAddress localaddr;
         private PacketHandler ph;
         private PacketHandler ph2;
         private Socket socket;
@@ -118,6 +119,22 @@ namespace ModUpdater.Client
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            TaskManager.AddAsyncTask(delegate
+            {
+                string direction = "";
+                WebRequest request = WebRequest.Create("http://checkip.dyndns.org/");
+                using (WebResponse response = request.GetResponse())
+                {
+                    using (StreamReader stream = new StreamReader(response.GetResponseStream()))
+                    {
+                        direction = stream.ReadToEnd();
+                    }
+                }
+                int first = direction.IndexOf("Address: ") + 9;
+                int last = direction.LastIndexOf("</body>");
+                direction = direction.Substring(first, last - first);
+                localaddr = IPAddress.Parse(direction);
+            });
             Debug.Assert("Debug mode is enabled.  In-depth messages will be displayed.");
             if (ProgramOptions.Debug)
             {
@@ -152,9 +169,12 @@ namespace ModUpdater.Client
             Debug.Assert("Creating Objects.");
             try
             {
-                s.Connect(new IPEndPoint(IPAddress.Parse(Properties.Settings.Default.Server), Properties.Settings.Default.Port));
+                string srv = Properties.Settings.Default.Server;
+                int port =  Properties.Settings.Default.Port;
+                if (srv == localaddr.ToString()) srv = "127.0.0.1";
+                s.Connect(new IPEndPoint(IPAddress.Parse(srv), port));
             }
-            catch(SocketException ex)
+            catch (SocketException ex)
             {
                 Debug.Assert(ex);
                 MessageBox.Show("There was an error while connecting to the update server.  I will now self destruct.");
@@ -167,6 +187,10 @@ namespace ModUpdater.Client
                 Thread.Sleep(3000);
                 Close();
                 return;
+            }
+            catch(Exception ex)
+            {
+                ExceptionHandler.HandleException(ex);
             }
             modImages = new ImageList();
             modImages.ImageSize = new Size(230, 180);

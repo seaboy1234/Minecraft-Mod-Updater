@@ -157,7 +157,7 @@ namespace ModUpdater.Client
             this.tempPortTxt.Name = "tempPortTxt";
             this.tempPortTxt.Size = new System.Drawing.Size(55, 20);
             this.tempPortTxt.TabIndex = 9;
-            this.tempPortTxt.Text = "4713";
+            this.tempPortTxt.Text = "8732";
             // 
             // ConnectionForm
             // 

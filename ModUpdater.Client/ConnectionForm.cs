@@ -23,11 +23,15 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using System.Net.Sockets;
+using System.Net;
+using ModUpdater.Net;
 
 namespace ModUpdater.Client
 {
     public partial class ConnectionForm : Form
     {
+        public Server ConnectTo;
         public ConnectionForm()
         {
             DialogResult = System.Windows.Forms.DialogResult.Cancel;
@@ -66,9 +70,34 @@ namespace ModUpdater.Client
             Properties.Settings.Default.Server = txtServer.Text;
             Properties.Settings.Default.LaunchAfterUpdate = chkStartMC.Checked;
             Properties.Settings.Default.AutoUpdate = chkAuUpdate.Checked;
+            if (!CanClose()) return;
             Properties.Settings.Default.Save();
+            Properties.Settings.Default.Port = ConnectTo.Port;
+            Properties.Settings.Default.Server = ConnectTo.Address;
             DialogResult = System.Windows.Forms.DialogResult.OK;
             Close();
+        }
+
+        private bool CanClose()
+        {
+            IPEndPoint ip = new IPEndPoint(IPAddress.Parse(txtServer.Text), int.Parse(tempPortTxt.Text));
+            Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            s.Connect(ip);
+            ModUpdaterNetworkStream str = new ModUpdaterNetworkStream(s);
+            Packet.Send(new HandshakePacket { Type = HandshakePacket.SessionType.ServerList }, str);
+            ServerListPacket p = (ServerListPacket)Packet.ReadPacket(str); //The server should only return a ServerList, right?
+            List<Server> servers = new List<Server>();
+            for (int i = 0; i < p.Servers.Length; i++)
+            {
+                Server srv = new Server { Address = p.Locations[i], Name = p.Servers[i], Port = p.Ports[i] };
+                servers.Add(srv);
+            }
+            SelectServerDialog dial = new SelectServerDialog(servers.ToArray());
+            dial.ShowDialog();
+            if (dial.DialogResult != System.Windows.Forms.DialogResult.OK)
+                return false;
+            ConnectTo = dial.SelectedServer;
+            return true;
         }
 
         private void ConnectionForm_Load(object sender, EventArgs e)
