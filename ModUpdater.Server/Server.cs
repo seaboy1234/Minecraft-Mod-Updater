@@ -119,7 +119,7 @@ namespace ModUpdater.Server
                     Thread.Sleep(1000);
                     Packet.Send(new HandshakePacket { Name = Config.ServerName, Port = Config.Port, Address = Address.ToString(), Type = HandshakePacket.SessionType.Server }, ph.Stream);
                 }
-            }, 5000);
+            }, 1000);
             Receive();
         }
         public void Dispose()
