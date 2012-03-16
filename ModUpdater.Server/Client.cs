@@ -107,6 +107,12 @@ namespace ModUpdater.Server
         }
         internal void RegisterClient(HandshakePacket p)
         {
+            if (p.Type == HandshakePacket.SessionType.ServerList)
+            {
+                Packet.Send(new DisconnectPacket(), ph.Stream);
+                ph.Stop();
+                return;
+            }
             ClientID = p.Username;
             if (Packet.PROTOCOL_VERSION != p.Version)
             {
