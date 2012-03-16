@@ -128,7 +128,8 @@ namespace ModUpdater.Net
                 {typeof(LogPacket), PacketId.Log},
                 {typeof(DisconnectPacket), PacketId.Disconnect},
                 {typeof(ImagePacket), PacketId.Image},
-                {typeof(ConnectPacket), PacketId.Connect}
+                {typeof(ConnectPacket), PacketId.Connect},
+                {typeof(ServerListPacket), PacketId.ServerList}
             };
         }
     }
@@ -136,8 +137,8 @@ namespace ModUpdater.Net
     public class HandshakePacket : Packet
     {
         public SessionType Type { get; set; }
-        //Client
         public int Version { get; private set; }
+        //Client
         public string Username { get; set; }
 
         //Server
