@@ -70,18 +70,21 @@ namespace ModUpdater.Client
             Properties.Settings.Default.Server = txtServer.Text;
             Properties.Settings.Default.LaunchAfterUpdate = chkStartMC.Checked;
             Properties.Settings.Default.AutoUpdate = chkAuUpdate.Checked;
+            Properties.Settings.Default.Port = int.Parse(tempPortTxt.Text);
             if (!CanClose()) return;
-            Properties.Settings.Default.Save();
-            Properties.Settings.Default.Port = ConnectTo.Port;
-            Properties.Settings.Default.Server = ConnectTo.Address;
             if (Properties.Settings.Default.RememberServer)
-                Properties.Settings.Default.Save();
+            {
+                Properties.Settings.Default.Port = ConnectTo.Port;
+                Properties.Settings.Default.Server = ConnectTo.Address;
+            }
+            Properties.Settings.Default.Save();
             DialogResult = System.Windows.Forms.DialogResult.OK;
             Close();
         }
 
         private bool CanClose()
         {
+            if (MainForm.Instance.LocalAddress.ToString() == txtServer.Text) txtServer.Text = "127.0.0.1";
             IPEndPoint ip = new IPEndPoint(IPAddress.Parse(txtServer.Text), int.Parse(tempPortTxt.Text));
             Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             s.Connect(ip);
