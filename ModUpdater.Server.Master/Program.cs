@@ -25,6 +25,19 @@ namespace ModUpdater.Server.Master
     {
         static void Main(string[] args)
         {
+            Server s = new Server();
+            try
+            {
+                s.Start();
+                Console.WriteLine("Server stopped.");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            Console.WriteLine("Press any key to close.");
+            Console.ReadKey();
+
         }
     }
 }

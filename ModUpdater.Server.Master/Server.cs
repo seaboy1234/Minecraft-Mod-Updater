@@ -28,11 +28,13 @@ namespace ModUpdater.Server.Master
     class Server
     {
         public List<Slave> Servers { get; private set; }
+        private List<Client> clients;
         private TcpListener listen;
         private bool Online;
         public Server()
         {
             Servers = new List<Slave>();
+            clients = new List<Client>();
             Online = false;
             listen = new TcpListener(IPAddress.Any, Properties.Settings.Default.Port);
         }
@@ -40,6 +42,7 @@ namespace ModUpdater.Server.Master
         {
             Online = true;
             listen.Start();
+            Listen();
         }
         public void Stop()
         {
@@ -48,33 +51,48 @@ namespace ModUpdater.Server.Master
         }
         public void Listen()
         {
+            Console.WriteLine("Master Server at {0} is online and listening.", Properties.Settings.Default.Port);
             while (Online)
             {
                 Socket s = listen.AcceptSocket();
                 TaskManager.AddAsyncTask(delegate
                 {
-                    PacketHandler ph = new PacketHandler(s);
-                    ph.Handshake += new PacketEvent<HandshakePacket>(delegate(HandshakePacket p)
-                        {
-                            if (p.Type == HandshakePacket.SessionType.Server)
-                            {
-                                Servers.Add(new Slave(p, ph));
-                                return;
-                            }
-                            string[] srvs = new string[Servers.Count];
-                            string[] addrs = new string[Servers.Count];
-                            int[] ports = new int[Servers.Count];
-                            for(int i = 0; i < Servers.Count; i++)
-                            {
-                                srvs[i] = Servers[i].Name;
-                                addrs[i] = Servers[i].Address.ToString();
-                                ports[i] = Servers[i].Port;
-                            }
-                            Packet.Send(new ServerListPacket { Servers = srvs, Locations = addrs, Ports = ports }, ph.Stream);
-                            ph.Stop();
-                            ph = null;
-                        });
+                    Client c = new Client(this, new PacketHandler(s));
+                    while (s.Connected) ;
+                    c = null;
                 });
+            }
+        }
+        class Client
+        {
+            private Server Server;
+            private PacketHandler ph;
+            public Client(Server s, PacketHandler p)
+            {
+                Server = s;
+                ph = p;
+                ph.Start();
+                ph.Handshake += Handle;
+            }
+            private void Handle(HandshakePacket p)
+            {
+                if (p.Type == HandshakePacket.SessionType.Server)
+                {
+                    Slave sl = new Slave(p, ph);
+                    Server.Servers.Add(sl);
+                    Console.WriteLine("New Server: " + sl.ToString());
+                    return;
+                }
+                string[] srvs = new string[Server.Servers.Count];
+                string[] addrs = new string[Server.Servers.Count];
+                int[] ports = new int[Server.Servers.Count];
+                for (int i = 0; i < Server.Servers.Count; i++)
+                {
+                    srvs[i] = Server.Servers[i].Name;
+                    addrs[i] = Server.Servers[i].Address.ToString();
+                    ports[i] = Server.Servers[i].Port;
+                }
+                Packet.Send(new ServerListPacket { Servers = srvs, Locations = addrs, Ports = ports }, ph.Stream);
             }
         }
     }

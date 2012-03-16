@@ -36,5 +36,9 @@ namespace ModUpdater.Server.Master
             Port = p.Port;
             PacketHandler = ph;
         }
+        public override string ToString()
+        {
+            return String.Format("{0} ({1}:{2})", Name, Address.ToString(), Port);
+        }
     }
 }
