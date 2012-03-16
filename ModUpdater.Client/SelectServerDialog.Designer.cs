@@ -63,7 +63,9 @@ namespace ModUpdater.Client
             // lblDesc
             // 
             this.lblDesc.AutoSize = true;
+            this.lblDesc.BackColor = System.Drawing.Color.Transparent;
             this.lblDesc.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblDesc.ForeColor = System.Drawing.Color.White;
             this.lblDesc.Location = new System.Drawing.Point(53, 9);
             this.lblDesc.Name = "lblDesc";
             this.lblDesc.Size = new System.Drawing.Size(188, 13);
@@ -94,6 +96,7 @@ namespace ModUpdater.Client
             // 
             this.chkRemember.AutoSize = true;
             this.chkRemember.BackColor = System.Drawing.Color.Transparent;
+            this.chkRemember.ForeColor = System.Drawing.Color.White;
             this.chkRemember.Location = new System.Drawing.Point(93, 72);
             this.chkRemember.Name = "chkRemember";
             this.chkRemember.Size = new System.Drawing.Size(101, 17);
@@ -106,6 +109,7 @@ namespace ModUpdater.Client
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
             this.ClientSize = new System.Drawing.Size(287, 97);
             this.Controls.Add(this.chkRemember);
             this.Controls.Add(this.btnConnect);
