@@ -92,7 +92,7 @@ namespace ModUpdater.Net
                 LastSent = p;
                 MinecraftModUpdater.Logger.Log(Logger.Level.Info, string.Format("Sent packet {0}", id.ToString()));
             }
-            catch (Exception e) { MinecraftModUpdater.Logger.Log(e); }
+            catch (Exception e) { MinecraftModUpdater.Logger.Log(e); Console.WriteLine(e); }
             Busy = false;
         }
         public static void ResendLast(ModUpdaterNetworkStream Stream)
@@ -619,11 +619,14 @@ namespace ModUpdater.Net
         public override void Read(ModUpdaterNetworkStream s)
         {
             int i = s.ReadInt();
+            Servers = new string[i];
+            Locations = new string[i];
+            Ports = new int[i];
             for (int j = 0; j < i; j++)
             {
-                Servers[i] = s.ReadString();
-                Locations[i] = s.ReadString();
-                Ports[i] = s.ReadInt();
+                Servers[j] = s.ReadString();
+                Locations[j] = s.ReadString();
+                Ports[j] = s.ReadInt();
             }
 
         }
