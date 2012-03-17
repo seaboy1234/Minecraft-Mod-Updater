@@ -70,53 +70,13 @@ namespace ModUpdater.Client
         }
         public static void StartMinecraft()
         {
-            using (StreamWriter log = File.CreateText("log.txt"))
-            {
-                if (!File.Exists("Minecraft.exe"))
-                {
-                    Console.WriteLine("Downloading Minecraft.exe...");
-                    new WebClient().DownloadFile("https://s3.amazonaws.com/MinecraftDownload/launcher/Minecraft.exe", "Minecraft.exe");
-                }
-                Console.WriteLine("Starting Minecraft");
-                using (StreamWriter sw = File.AppendText("start.bat"))
-                {
-                    sw.WriteLine(@"SET APPDATA=%cd%");
-                    sw.WriteLine(@"Minecraft.exe {0} {1}", Properties.Settings.Default.Username, Properties.Settings.Default.Password);
-                    sw.Flush();
-                    sw.Close();
-                    sw.Dispose();
-                }
-                ProcessStartInfo info = new ProcessStartInfo("cmd", "/c start.bat");
-                info.RedirectStandardOutput = true;
-                info.RedirectStandardInput = true;
-                info.UseShellExecute = false;
-                info.CreateNoWindow = true;
-                System.Diagnostics.Process proc = new System.Diagnostics.Process();
-                proc.StartInfo = info;
-                proc.Start();
-                log.WriteLine(proc.StandardOutput.ReadToEnd());
-                while (File.Exists("Minecraft.exe"))
-                {
-                    try
-                    {
-                        File.Delete("Minecraft.exe");
-                        break;
-                    }
-                    catch { }
-                    System.Threading.Thread.Sleep(10000);
-                }
-                while (File.Exists("start.bat"))
-                {
-                    try
-                    {
-                        File.Delete("start.bat");
-                        break;
-                    }
-                    catch { }
-                    System.Threading.Thread.Sleep(10000);
-                }
-            }
+            throw new RewriteNeededException("Work in progress");
         }
 
+    }
+    public class RewriteNeededException : Exception
+    {
+        public RewriteNeededException() : base() { }
+        public RewriteNeededException(string Message) : base(Message) { }
     }
 }
