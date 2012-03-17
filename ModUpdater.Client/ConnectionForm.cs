@@ -92,8 +92,8 @@ namespace ModUpdater.Client
             ModUpdaterNetworkStream str = new ModUpdaterNetworkStream(s);
             Packet.Send(new HandshakePacket { Type = HandshakePacket.SessionType.ServerList }, str);
             Packet p = Packet.ReadPacket(str); //The server should only return a ServerList, right?
-            ServerListPacket sp = null;
-            if (!(p is ServerListPacket))
+            ServerListPacket sp = null; 
+            if (!(p is ServerListPacket)) //But just in case...
             {
                 Packet.Send(new DisconnectPacket(), str);
                 ConnectTo = new Server { Address = txtServer.Text, Port = int.Parse(tempPortTxt.Text) };
