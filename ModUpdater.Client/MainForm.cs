@@ -244,17 +244,18 @@ namespace ModUpdater.Client
 
         void ph_Image(ImagePacket p)
         {
+            Image i = Extras.ImageFromBytes(ph.Stream.DecryptBytes(p.Image));
             if (p.Type == ImagePacket.ImageType.Background)
             {
                 SplashScreen.BackgroundImage = Extras.ImageFromBytes(p.Image);
                 if (SplashScreen.GetScreen() != null)
                 {
-                    SplashScreen.GetScreen().Image.Image = Extras.ImageFromBytes(p.Image);
+                    SplashScreen.GetScreen().Image.Image = i;
                 }
             }
             else
             {
-                modImages.Images.Add(p.ShowOn, Extras.ImageFromBytes(p.Image));
+                modImages.Images.Add(p.ShowOn, i);
             }
         }
 

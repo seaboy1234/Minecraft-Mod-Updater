@@ -134,11 +134,13 @@ namespace ModUpdater.Server
             Packet.Send(new MetadataPacket { SData = new string[] { "splash_display", "Downloading Assets..." } }, ph.Stream);
             if (Server.BackgroundImage != null)
             {
-                Packet.Send(new ImagePacket { Type = ImagePacket.ImageType.Background, ShowOn = "", Image = Extras.BytesFromImage(Server.BackgroundImage) }, ph.Stream);
+                byte[] b = ph.Stream.EncryptBytes(Extras.BytesFromImage(Server.BackgroundImage));
+                Packet.Send(new ImagePacket { Type = ImagePacket.ImageType.Background, ShowOn = "", Image = b }, ph.Stream);
             }
             foreach (var v in Server.ModImages)
             {
-                Packet.Send(new ImagePacket { Type = ImagePacket.ImageType.Mod, ShowOn = v.Key.ModFile, Image = Extras.BytesFromImage(v.Value) }, ph.Stream);
+                byte[] b = ph.Stream.EncryptBytes(Extras.BytesFromImage(v.Value));
+                Packet.Send(new ImagePacket { Type = ImagePacket.ImageType.Mod, ShowOn = v.Key.ModFile, Image = b }, ph.Stream);
             }
             string[] mods = new string[allowedMods.Count];
             for (int i = 0; i < allowedMods.Count; i++)
