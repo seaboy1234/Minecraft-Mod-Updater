@@ -37,7 +37,6 @@ namespace ModUpdater.Client
         [STAThread]
         static void Main(string[] args)
         {
-            if (File.Exists("ModUpdater.Client.exe")) File.Delete("ModUpdater.Client.exe");
             if (args.Length > 0)
             {
                 foreach (string s in args)
@@ -51,17 +50,10 @@ namespace ModUpdater.Client
                         case "-debug":
                             ProgramOptions.Debug = true;
                             break;
-                        case "-updatemode":
-                            ProcessStartInfo i = new ProcessStartInfo();
-                            i.Arguments = "Security_Unlock_Code_Delta_Beta_7";
-                            TaskManager.AddAsyncTask(delegate { Process.Start(i); });
-                            Application.Exit();
-                            break;
                     }
                 }
             }
             ExceptionHandler.Init();
-            Console.WriteLine("Started.");
             WindowsPrincipal pricipal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
             ProgramOptions.Administrator = pricipal.IsInRole(WindowsBuiltInRole.Administrator);
             Application.EnableVisualStyles();
