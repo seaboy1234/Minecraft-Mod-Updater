@@ -94,7 +94,9 @@ namespace ModUpdater.Server
                     int l = 0;
                     for (int h = 0; h < abyte.Count; h++)
                     {
-                        Packet.Send(new FilePartPacket { Part = abyte[h].ToArray(), Index = l }, ph.Stream);
+                        byte[] b = abyte[h].ToArray();
+                        b = ph.Stream.EncryptBytes(b);
+                        Packet.Send(new FilePartPacket { Part = b, Index = l }, ph.Stream);
                         l += abyte[h].Count;
                     }
                     Packet.Send(new AllDonePacket { File = mod.ModFile }, ph.Stream);
