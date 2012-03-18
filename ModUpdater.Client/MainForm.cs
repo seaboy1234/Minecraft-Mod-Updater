@@ -37,7 +37,6 @@ namespace ModUpdater.Client
         ModFile CurrentDownload;
         public IPAddress LocalAddress;
         private PacketHandler ph;
-        private PacketHandler ph2;
         private Socket socket;
         public delegate void Void();
         private string[] PostDownload;
@@ -221,7 +220,6 @@ namespace ModUpdater.Client
                 ph.AllDone += new PacketEvent<AllDonePacket>(ph_AllDone);
                 ph.NextDownload += new PacketEvent<NextDownloadPacket>(ph_NextDownload);
                 ph.FilePart += new PacketEvent<FilePartPacket>(ph_FilePart);
-                ph.Connect += new PacketEvent<ConnectPacket>(ph_Connect);
                 ph.Image += new PacketEvent<ImagePacket>(ph_Image);
                 Debug.Assert("Packet Handlers registered.");
             });
@@ -258,16 +256,6 @@ namespace ModUpdater.Client
                 modImages.Images.Add(p.ShowOn, i);
             }
         }
-
-        void ph_Connect(ConnectPacket p)
-        {
-        }
-
-        void ph_ClientUpdate(ClientUpdatePacket p)
-        {
-            SplashScreen.UpdateStatusTextWithStatus("Downloading update of " + p.FileName, TypeOfMessage.Warning);
-        }
-
         void ph_FilePart(FilePartPacket p)
         {
             if (ExceptionHandler.ProgramCrashed)
@@ -357,7 +345,6 @@ namespace ModUpdater.Client
                 ph.AllDone -= new PacketEvent<AllDonePacket>(ph_AllDone);
                 ph.NextDownload -= new PacketEvent<NextDownloadPacket>(ph_NextDownload);
                 ph.FilePart -= new PacketEvent<FilePartPacket>(ph_FilePart);
-                ph.Connect -= new PacketEvent<ConnectPacket>(ph_Connect);
                 if (socket.Connected) socket.Disconnect(false);
                 Invoke(new Void(delegate
                 {
