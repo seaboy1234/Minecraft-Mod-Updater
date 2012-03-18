@@ -24,6 +24,7 @@ using System.Security.Principal;
 using System.Runtime.InteropServices;
 using System.Net;
 using ModUpdater.Utility;
+using System.Threading;
 
 namespace ModUpdater.Client
 {
@@ -64,16 +65,16 @@ namespace ModUpdater.Client
         {
             using (StreamWriter log = File.CreateText("log.txt"))
             {
-                if (!File.Exists("Minecraft.exe"))
+                if (!File.Exists("minecraft.jar"))
                 {
-                    Console.WriteLine("Downloading Minecraft.exe...");
-                    new WebClient().DownloadFile("https://s3.amazonaws.com/MinecraftDownload/launcher/Minecraft.exe", "Minecraft.exe");
+                    Console.WriteLine("Downloading minecraft.jar...");
+                    new WebClient().DownloadFile("https://s3.amazonaws.com/MinecraftDownload/launcher/minecraft.jar", "minecraft.jar");
                 }
                 Console.WriteLine("Starting Minecraft");
                 using (StreamWriter sw = File.AppendText("start.bat"))
                 {
                     sw.WriteLine(@"SET APPDATA=%cd%");
-                    sw.WriteLine(@"Minecraft.exe {0} {1}", Properties.Settings.Default.Username, Properties.Settings.Default.Password);
+                    sw.WriteLine(@"java -cp minecraft.jar net.minecraft.LauncherFrame --noupdate -u={0} -p={1}", Properties.Settings.Default.Username, Properties.Settings.Default.Password);
                     sw.Flush();
                     sw.Close();
                     sw.Dispose();
@@ -87,11 +88,11 @@ namespace ModUpdater.Client
                 proc.StartInfo = info;
                 proc.Start();
                 log.WriteLine(proc.StandardOutput.ReadToEnd());
-                while (File.Exists("Minecraft.exe"))
+                while (File.Exists("minecraft.jar"))
                 {
                     try
                     {
-                        File.Delete("Minecraft.exe");
+                        File.Delete("minecraft.jar");
                         break;
                     }
                     catch { }
