@@ -276,7 +276,8 @@ namespace ModUpdater.Client
             }
             while (SplashScreen.GetScreen().Loading) ;
             int i = p.Index;
-            foreach (byte b in p.Part)
+            byte[] d = ph.Stream.DecryptBytes(p.Part);
+            foreach (byte b in d)
             {
                 CurrentDownload.FileContents[i] = b;
                 i++;
