@@ -33,7 +33,6 @@ namespace ModUpdater.Server
         public string ClientID { get; private set; }
         public PacketHandler PacketHandler { get { return ph; } }
         private PacketHandler ph;
-        private PacketHandler ph2;
         private List<Mod> allowedMods;
         public Client(Socket s, Server sv)
         {
@@ -102,10 +101,6 @@ namespace ModUpdater.Server
                     Packet.Send(new AllDonePacket { File = mod.ModFile }, ph.Stream);
                     break;
             }
-        }
-        public void BeginDownloadProcess()
-        {
-
         }
         internal void RegisterClient(HandshakePacket p)
         {
