@@ -120,6 +120,13 @@ namespace ModUpdater.Server
                     Packet.Send(new HandshakePacket { Name = Config.ServerName, Port = Config.Port, Address = Address.ToString(), Type = HandshakePacket.SessionType.Server }, ph.Stream);
                 }
             }, 1000);
+            TaskManager.AddAsyncTask(delegate
+            {
+                if (Extras.CheckForUpdate())
+                {
+                    Console.WriteLine("There is a new version available for Minecraft Mod Updater.");
+                }
+            });
             Receive();
         }
         public void Dispose()
