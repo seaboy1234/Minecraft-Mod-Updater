@@ -26,6 +26,7 @@ using System.Diagnostics;
 using System.Drawing;
 using ModUpdater.Utility;
 using ModUpdater.Net;
+using System.Text;
 
 namespace ModUpdater.Client
 {
@@ -44,6 +45,7 @@ namespace ModUpdater.Client
         private string serverName = "";
         private float serverFontSize = 36;
         private ImageList modImages;
+        private bool warnDisconnect = true;
         public MainForm()
         {
             if (Instance == null) Instance = this;
@@ -197,7 +199,8 @@ namespace ModUpdater.Client
             modImages.ColorDepth = ColorDepth.Depth32Bit;
             TaskManager.AddAsyncTask(delegate
             {
-                while (s.Connected) ; 
+                while (s.Connected) ;
+                if (!warnDisconnect) return;
                 SplashScreen.UpdateStatusTextWithStatus("Lost connection to server.", TypeOfMessage.Error);
                 if (Visible) MessageBox.Show("Lost connection to server.");
                 else Thread.Sleep(5000);
@@ -245,7 +248,7 @@ namespace ModUpdater.Client
             Image i = Extras.ImageFromBytes(ph.Stream.DecryptBytes(p.Image));
             if (p.Type == ImagePacket.ImageType.Background)
             {
-                SplashScreen.BackgroundImage = Extras.ImageFromBytes(p.Image);
+                SplashScreen.BackgroundImage = i;
                 if (SplashScreen.GetScreen() != null)
                 {
                     SplashScreen.GetScreen().Image.Image = i;
@@ -446,6 +449,20 @@ namespace ModUpdater.Client
 
         void ph_Metadata(MetadataPacket p)
         {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < p.SData.Length; i++)
+            {
+                sb.AppendFormat("StringData {0}: {1}\r\n", i, p.SData[i]);
+            }
+            for (int i = 0; i < p.IData.Length; i++)
+            {
+                sb.AppendFormat("IntData {0}: {1}\r\n", i, p.IData[i]);
+            }
+            for (int i = 0; i < p.FData.Length; i++)
+            {
+                sb.AppendFormat("FloatData {0}: {1}\r\n", i, p.FData[i]);
+            }
+            Debug.Assert(sb.ToString());
             if (p.SData[0] == "shutdown")
             {
                 ServerShutdown = true;
@@ -464,6 +481,18 @@ namespace ModUpdater.Client
             {
                 SplashScreen.UpdateStatusText(p.SData[1]);
             }
+            else if (p.SData[0] == "require_version")
+            {
+                warnDisconnect = false;
+                SplashScreen.UpdateStatusTextWithStatus("This server requires " + p.SData[1] + " for you to connect.", TypeOfMessage.Error);
+                Thread.Sleep(3000);
+                SplashScreen.CloseSplashScreen();
+                Thread.Sleep(1000);
+                Invoke(new Void(delegate
+                {
+                    Close();
+                }));
+            }
         }
         struct Mod
         {
@@ -479,6 +508,7 @@ namespace ModUpdater.Client
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            warnDisconnect = false;
             MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Stopping logging.");
             try
             {

@@ -23,6 +23,7 @@ using System.Net.Sockets;
 using System.IO;
 using ModUpdater.Net;
 using ModUpdater.Utility;
+using System.Threading;
 
 namespace ModUpdater.Server
 {
@@ -111,8 +112,10 @@ namespace ModUpdater.Server
                 return;
             }
             ClientID = p.Username;
-            if (Packet.PROTOCOL_VERSION != p.Version)
+            if (MinecraftModUpdater.Version != p.Version)
             {
+                Packet.Send(new MetadataPacket { SData = new string[] { "require_version", MinecraftModUpdater.Version } }, ph.Stream);
+                Thread.Sleep(1000);
                 ph.Stop();
                 return;
             }
