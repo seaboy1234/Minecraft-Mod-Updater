@@ -137,7 +137,7 @@ namespace ModUpdater.Net
     public class HandshakePacket : Packet
     {
         public SessionType Type { get; set; }
-        public int Version { get; private set; }
+        public string Version { get; private set; }
         //Client
         public string Username { get; set; }
 
@@ -149,7 +149,7 @@ namespace ModUpdater.Net
         public override void Read(ModUpdaterNetworkStream s)
         {
             Type = (SessionType)s.ReadByte();
-            Version = s.ReadInt();
+            Version = s.ReadString();
             switch (Type)
             {
                 case SessionType.Client:
@@ -166,7 +166,7 @@ namespace ModUpdater.Net
         public override void Write(ModUpdaterNetworkStream s)
         {
             s.WriteByte((byte)Type);
-            s.WriteInt(PROTOCOL_VERSION);
+            s.WriteString(MinecraftModUpdater.Version);
             switch(Type)
             {
                 case SessionType.Client:
