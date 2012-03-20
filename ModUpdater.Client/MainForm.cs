@@ -23,22 +23,32 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.Drawing;
+using ModUpdater.Utility;
+using ModUpdater.Net;
+using System.Text;
 
 namespace ModUpdater.Client
 {
     public partial class MainForm : Form
     {
+        public static MainForm Instance { get; private set; }
         List<string> ModFiles = new List<string>();
         List<Mod> Mods = new List<Mod>();
         ModFile CurrentDownload;
+        public IPAddress LocalAddress;
         private PacketHandler ph;
-        private PacketHandler ph2;
         private Socket socket;
         public delegate void Void();
         private string[] PostDownload;
         private bool ServerShutdown = false;
+        private string serverName = "";
+        private float serverFontSize = 36;
+        private ImageList modImages;
+        private bool warnDisconnect = true;
         public MainForm()
         {
+            if (Instance == null) Instance = this;
             InitializeComponent();
         }
 
@@ -54,9 +64,8 @@ namespace ModUpdater.Client
                 if (Properties.Settings.Default.LaunchAfterUpdate)
                 {
                     SplashScreen.CloseSplashScreen();
-                    LoginForm l = new LoginForm();
                     Hide();
-                    l.ShowDialog();
+                    Program.StartMinecraft();
                 }
                 try
                 {
@@ -76,14 +85,19 @@ namespace ModUpdater.Client
                 }
                 TaskManager.AddAsyncTask(delegate
                 {
-                    SplashScreen.ShowSplashScreen();
-                    Thread.Sleep(100);
+                    SplashScreen.ShowSplashScreen();                    
                 });
             }
             TaskManager.AddDelayedAsyncTask(delegate
             {
                 SplashScreen.UpdateStatusText("Downloading Updates...");
-            }, 100);
+                SplashScreen.GetScreen().Invoke(new Void(delegate
+                {
+                    SplashScreen.GetScreen().label2.Font.Dispose();
+                    SplashScreen.GetScreen().label2.Font = new Font(FontFamily.GenericSansSerif, serverFontSize);
+                    SplashScreen.GetScreen().label2.Text = serverName;
+                }));
+            }, 300);
             TaskManager.AddDelayedAsyncTask(delegate
             {
                 foreach (object o in lsModsToDelete.Items)
@@ -106,7 +120,22 @@ namespace ModUpdater.Client
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            TaskManager.AddAsyncTask(delegate { throw new Exception("This is a test"); });
+            TaskManager.AddAsyncTask(delegate
+            {
+                string direction = "";
+                WebRequest request = WebRequest.Create("http://checkip.dyndns.org/");
+                using (WebResponse response = request.GetResponse())
+                {
+                    using (StreamReader stream = new StreamReader(response.GetResponseStream()))
+                    {
+                        direction = stream.ReadToEnd();
+                    }
+                }
+                int first = direction.IndexOf("Address: ") + 9;
+                int last = direction.LastIndexOf("</body>");
+                direction = direction.Substring(first, last - first);
+                LocalAddress = IPAddress.Parse(direction);
+            });
             Debug.Assert("Debug mode is enabled.  In-depth messages will be displayed.");
             if (ProgramOptions.Debug)
             {
@@ -116,7 +145,13 @@ namespace ModUpdater.Client
             {
                 MinecraftModUpdater.Logger.Log(Logger.Level.Warning, "Client is running in commandline.");
             }
-            if ((new ConnectionForm()).ShowDialog() != System.Windows.Forms.DialogResult.OK)
+            TaskManager.AddAsyncTask(delegate
+            {
+                if (Extras.CheckForUpdate())
+                    UpdateForm.Open();
+            });
+            ConnectionForm cf = new ConnectionForm();
+            if (cf.ShowDialog() != System.Windows.Forms.DialogResult.OK)
             {
                 Dispose();
                 return;
@@ -133,12 +168,15 @@ namespace ModUpdater.Client
             SplashScreen.UpdateStatusText("Connecting...");
             Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             socket = s;
-            Debug.Assert("Creating Opjects.");
+            Debug.Assert("Creating Objects.");
             try
             {
-                s.Connect(new IPEndPoint(IPAddress.Parse(Properties.Settings.Default.Server), 4713));
+                string srv = cf.ConnectTo.Address;
+                int port =  cf.ConnectTo.Port;
+                if (srv == LocalAddress.ToString()) srv = "127.0.0.1";
+                s.Connect(new IPEndPoint(IPAddress.Parse(srv), port));
             }
-            catch(Exception ex)
+            catch (SocketException ex)
             {
                 Debug.Assert(ex);
                 MessageBox.Show("There was an error while connecting to the update server.  I will now self destruct.");
@@ -152,10 +190,17 @@ namespace ModUpdater.Client
                 Close();
                 return;
             }
-            
+            catch(Exception ex)
+            {
+                ExceptionHandler.HandleException(ex);
+            }
+            modImages = new ImageList();
+            modImages.ImageSize = new Size(230, 180);
+            modImages.ColorDepth = ColorDepth.Depth32Bit;
             TaskManager.AddAsyncTask(delegate
             {
-                while (s.Connected) ; 
+                while (s.Connected) ;
+                if (!warnDisconnect) return;
                 SplashScreen.UpdateStatusTextWithStatus("Lost connection to server.", TypeOfMessage.Error);
                 if (Visible) MessageBox.Show("Lost connection to server.");
                 else Thread.Sleep(5000);
@@ -178,30 +223,53 @@ namespace ModUpdater.Client
                 ph.AllDone += new PacketEvent<AllDonePacket>(ph_AllDone);
                 ph.NextDownload += new PacketEvent<NextDownloadPacket>(ph_NextDownload);
                 ph.FilePart += new PacketEvent<FilePartPacket>(ph_FilePart);
-                ph.ClientUpdate += new PacketEvent<ClientUpdatePacket>(ph_ClientUpdate);
-                ph.Connect += new PacketEvent<ConnectPacket>(ph_Connect);
+                ph.Image += new PacketEvent<ImagePacket>(ph_Image);
                 Debug.Assert("Packet Handlers registered.");
-            }); 
+            });
+            if ((new LoginForm()).ShowDialog() != DialogResult.OK)
+            {
+                MinecraftModUpdater.Logger.Log(Logger.Level.Error, "Login failed");
+                SplashScreen.UpdateStatusTextWithStatus("Your login failed.", TypeOfMessage.Error);
+                Thread.Sleep(2000);
+                SplashScreen.CloseSplashScreen();
+                Thread.Sleep(400);
+                Close();
+                return;
+            }
             Thread.Sleep(1000);
             SplashScreen.UpdateStatusText("Connected to server.  Retreving Mod List.");
-            Packet.Send(new HandshakePacket(), ph.Stream);
+            Packet.Send(new HandshakePacket { Username = Properties.Settings.Default.Username }, ph.Stream);
             Debug.Assert("Sent Handshake Packet.");
             Thread.Sleep(100);
         }
 
-        void ph_Connect(ConnectPacket p)
+        void ph_Image(ImagePacket p)
         {
+            Image i = Extras.ImageFromBytes(ph.Stream.DecryptBytes(p.Image));
+            if (p.Type == ImagePacket.ImageType.Background)
+            {
+                SplashScreen.BackgroundImage = i;
+                if (SplashScreen.GetScreen() != null)
+                {
+                    SplashScreen.GetScreen().Image.Image = i;
+                }
+            }
+            else
+            {
+                modImages.Images.Add(p.ShowOn, i);
+            }
         }
-
-        void ph_ClientUpdate(ClientUpdatePacket p)
-        {
-            SplashScreen.UpdateStatusTextWithStatus("Downloading update of " + p.FileName, TypeOfMessage.Warning);
-        }
-
         void ph_FilePart(FilePartPacket p)
         {
+            if (ExceptionHandler.ProgramCrashed)
+            {
+                ph.Stop();
+                return;
+            }
+            while (SplashScreen.GetScreen().Loading) ;
             int i = p.Index;
-            foreach (byte b in p.Part)
+            byte[] d = ph.Stream.DecryptBytes(p.Part);
+            foreach (byte b in d)
             {
                 CurrentDownload.FileContents[i] = b;
                 i++;
@@ -231,6 +299,8 @@ namespace ModUpdater.Client
             else
                 SplashScreen.UpdateStatusTextWithStatus("Downloading " + p.ModName + "(Server Shutdown Mode)", TypeOfMessage.Warning);
             MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Starting download of " + p.ModName);
+            if(modImages.Images.ContainsKey(p.FileName))
+                SplashScreen.GetScreen().setDownloadPicture(modImages.Images[p.FileName]);
             PostDownload = p.PostDownloadCLI;
             string path = Properties.Settings.Default.MinecraftPath + "\\" + p.FileName.Replace(p.FileName.Split('\\').Last(), "").TrimEnd('\\').Replace("clientmods", "mods");
             bool exists = Directory.Exists(path);
@@ -247,29 +317,29 @@ namespace ModUpdater.Client
             });
             foreach (string s in PostDownload)
             {
-                ProcessStartInfo pr = new ProcessStartInfo("cmd", "/c " + s);
-                pr.CreateNoWindow = true;
-                pr.RedirectStandardOutput = true;
-                Process proc = new Process();
-                proc.StartInfo = pr;
-                proc.Start();
-                MinecraftModUpdater.Logger.Log(Logger.Level.Info, "[Post Download] " + proc.StandardOutput.ReadToEnd());
+                try
+                {
+                    ProcessStartInfo pr = new ProcessStartInfo("cmd", "/c " + s);
+                    pr.CreateNoWindow = true;
+                    pr.UseShellExecute = false;
+                    pr.RedirectStandardOutput = true;
+                    Process proc = new Process();
+                    proc.StartInfo = pr;
+                    proc.Start();
+                    MinecraftModUpdater.Logger.Log(Logger.Level.Info, "[Post Download] " + proc.StandardOutput.ReadToEnd());
+                }
+                catch (Exception e) { ExceptionHandler.HandleException(e); }
             }
             if (GetLastModToUpdate().File == p.File)
             {
-                Packet.Send(new LogPacket { LogMessages = MinecraftModUpdater.Logger.GetMessages() }, ph.Stream);
                 SplashScreen.UpdateStatusText("All files downloaded!");
                 Thread.Sleep(1000);
                 SplashScreen.CloseSplashScreen();
                 if (Properties.Settings.Default.LaunchAfterUpdate)
                 {
-                    LoginForm l = new LoginForm();
-                    Invoke(new Void(delegate
-                    {
-                        Hide();
-                    }));
-                    l.ShowDialog();
+                    Program.StartMinecraft();
                 }
+                Packet.Send(new LogPacket { LogMessages = MinecraftModUpdater.Logger.GetMessages() }, ph.Stream);
                 Packet.Send(new DisconnectPacket(), ph.Stream);
                 ph.Stop();
                 ph.Metadata -= new PacketEvent<MetadataPacket>(ph_Metadata);
@@ -278,8 +348,6 @@ namespace ModUpdater.Client
                 ph.AllDone -= new PacketEvent<AllDonePacket>(ph_AllDone);
                 ph.NextDownload -= new PacketEvent<NextDownloadPacket>(ph_NextDownload);
                 ph.FilePart -= new PacketEvent<FilePartPacket>(ph_FilePart);
-                ph.ClientUpdate -= new PacketEvent<ClientUpdatePacket>(ph_ClientUpdate);
-                ph.Connect -= new PacketEvent<ConnectPacket>(ph_Connect);
                 if (socket.Connected) socket.Disconnect(false);
                 Invoke(new Void(delegate
                 {
@@ -381,14 +449,49 @@ namespace ModUpdater.Client
 
         void ph_Metadata(MetadataPacket p)
         {
-            if (p.Data[0] == "shutdown")
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < p.SData.Length; i++)
+            {
+                sb.AppendFormat("StringData {0}: {1}\r\n", i, p.SData[i]);
+            }
+            for (int i = 0; i < p.IData.Length; i++)
+            {
+                sb.AppendFormat("IntData {0}: {1}\r\n", i, p.IData[i]);
+            }
+            for (int i = 0; i < p.FData.Length; i++)
+            {
+                sb.AppendFormat("FloatData {0}: {1}\r\n", i, p.FData[i]);
+            }
+            Debug.Assert(sb.ToString());
+            if (p.SData[0] == "shutdown")
             {
                 ServerShutdown = true;
                 if (SplashScreen.GetScreen() != null)
-                    SplashScreen.UpdateStatusTextWithStatus(p.Data[1], TypeOfMessage.Error);
+                    SplashScreen.UpdateStatusTextWithStatus(p.SData[1], TypeOfMessage.Error);
                 else
-                    MessageBox.Show(p.Data[1], "Server Shutdown");
-                MinecraftModUpdater.Logger.Log(Logger.Level.Error, "Server Shutdown.  Reason: " + p.Data[1]);
+                    MessageBox.Show(p.SData[1], "Server Shutdown");
+                MinecraftModUpdater.Logger.Log(Logger.Level.Error, "Server Shutdown.  Reason: " + p.SData[1]);
+            }
+            else if (p.SData[0] == "server_name")
+            {
+                serverName = p.SData[1];
+                serverFontSize = p.FData[0];
+            }
+            else if (p.SData[0] == "splash_display")
+            {
+                SplashScreen.UpdateStatusText(p.SData[1]);
+            }
+            else if (p.SData[0] == "require_version")
+            {
+                warnDisconnect = false;
+                SplashScreen.UpdateStatusTextWithStatus("This server requires " + p.SData[1] + " for you to connect.", TypeOfMessage.Error);
+                Thread.Sleep(3000);
+                SplashScreen.CloseSplashScreen();
+                Thread.Sleep(1000);
+                Invoke(new Void(delegate
+                {
+                    Close();
+                }));
             }
         }
         struct Mod
@@ -405,6 +508,7 @@ namespace ModUpdater.Client
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            warnDisconnect = false;
             MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Stopping logging.");
             try
             {

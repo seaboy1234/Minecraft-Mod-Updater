@@ -1,4 +1,4 @@
-﻿//    File:        ModUpdater.cs
+﻿//    File:        Program.cs
 //    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
 //    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
 //    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
@@ -18,30 +18,26 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ModUpdater.Utility;
 
-namespace ModUpdater
+namespace ModUpdater.Server.Master
 {
-    /// <summary>
-    /// Class contains basic information about the app
-    /// </summary>
-    public static class MinecraftModUpdater
+    class Program
     {
-        /// <summary>
-        /// The shortname.
-        /// </summary>
-        public const string ShortAppName = "Mod Updater";
-        /// <summary>
-        /// The name.
-        /// </summary>
-        public const string LongAppName = "Minecraft Mod Updater";
-        /// <summary>
-        /// The Mod Updater Version.
-        /// </summary>
-        public const string Version = "1.2.0";
-        /// <summary>
-        /// The Logger.
-        /// </summary>
-        public static readonly Logger Logger = new Logger();
+        static void Main(string[] args)
+        {
+            Server s = new Server();
+            try
+            {
+                s.Start();
+                Console.WriteLine("Server stopped.");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            Console.WriteLine("Press any key to close.");
+            Console.ReadKey();
+
+        }
     }
 }

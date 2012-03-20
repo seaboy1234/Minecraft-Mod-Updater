@@ -36,12 +36,22 @@ namespace ModUpdater.Server
          *         <Action>somecommand</Action>
          *         <Action>someothercommand</Action>
          *     </PostDownload>
+         *     <Whitelist>
+         *         <Username Value="somename" />
+         *         <Username Value="namesome" />
+         *     </Whitelist>
+         *     <Blacklist>
+         *         <Username Value="somename" />
+         *         <Username Value="namesome" />
+         *     </Blacklist>
          * </Mod>
          */
         public string ModName { get; private set; }
         public string Author { get; private set; }
         public string ModFile { get; private set; }
         public string[] PostDownloadCLI { get; private set; }
+        public List<string> WhitelistedUsers { get; private set; }
+        public List<string> BlacklistedUsers { get; private set; }
         private XmlDocument modFile;
         public Mod(string ConfigFile)
         {
@@ -84,6 +94,34 @@ namespace ModUpdater.Server
                     if (action.Name != "Action")
                         continue;
                     PostDownloadCLI[i] = action.InnerText;
+                    i++;
+                }
+            }
+            catch { }
+            try
+            {
+                WhitelistedUsers = new List<string>();
+                XmlNode node = n["Whitelist"];
+                int i = 0;
+                foreach (XmlNode user in node)
+                {
+                    if (user.Name != "Username")
+                        continue;
+                    WhitelistedUsers.Add(user.InnerText);
+                    i++;
+                }
+            }
+            catch { }
+            try
+            {
+                BlacklistedUsers = new List<string>();
+                XmlNode node = n["Blacklist"];
+                int i = 0;
+                foreach (XmlNode user in node)
+                {
+                    if (user.Name != "Username")
+                        continue;
+                    BlacklistedUsers.Add(user.InnerText);
                     i++;
                 }
             }

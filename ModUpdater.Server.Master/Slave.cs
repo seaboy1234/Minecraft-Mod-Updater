@@ -1,4 +1,4 @@
-﻿//    File:        ClientPacketHandler.cs
+﻿//    File:        Slave.cs
 //    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
 //    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
 //    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
@@ -18,12 +18,27 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Net.Sockets;
+using System.Net;
+using ModUpdater.Net;
 
-namespace ModUpdater.Client
+namespace ModUpdater.Server.Master
 {
-    class ClientPacketHandler : PacketHandler
+    class Slave
     {
-        public ClientPacketHandler(Socket s) : base(s) { }
+        public string Name { get; private set; }
+        public IPAddress Address { get; private set; }
+        public int Port { get; private set; }
+        public PacketHandler PacketHandler { get; private set; }
+        public Slave(HandshakePacket p, PacketHandler ph)
+        {
+            Name = p.Name;
+            Address = IPAddress.Parse(p.Address);
+            Port = p.Port;
+            PacketHandler = ph;
+        }
+        public override string ToString()
+        {
+            return String.Format("{0} ({1}:{2})", Name, Address.ToString(), Port);
+        }
     }
 }

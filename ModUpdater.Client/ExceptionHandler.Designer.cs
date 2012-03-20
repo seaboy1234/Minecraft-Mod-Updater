@@ -54,9 +54,11 @@ namespace ModUpdater.Client
             // 
             // txtError
             // 
+            this.txtError.BackColor = System.Drawing.Color.White;
             this.txtError.Location = new System.Drawing.Point(12, 63);
             this.txtError.Multiline = true;
             this.txtError.Name = "txtError";
+            this.txtError.ReadOnly = true;
             this.txtError.Size = new System.Drawing.Size(389, 287);
             this.txtError.TabIndex = 0;
             this.txtError.TextChanged += new System.EventHandler(this.txtError_TextChanged);
@@ -114,6 +116,7 @@ namespace ModUpdater.Client
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "ExceptionHandler";
             this.Text = "Exception Handler";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ExceptionHandler_FormClosed);
             this.Load += new System.EventHandler(this.ExceptionHandler_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

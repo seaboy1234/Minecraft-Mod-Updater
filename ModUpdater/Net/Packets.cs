@@ -1,4 +1,4 @@
-﻿//    File:        Mod.cs
+﻿//    File:        Packets.cs
 //    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
 //    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
 //    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
@@ -19,24 +19,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ModUpdater.Client.Lite
+namespace ModUpdater.Net
 {
-    public class Mod
+
+    public enum PacketId : byte
     {
-        public string Name { get; private set; }
-        public string File { get; set; }
-        public string Hash { get; set; }
-        public Mod(ModInfoPacket packet)
-        {
-            Name = packet.ModName;
-            File = packet.File;
-            Hash = packet.Hash;
-        }
-        public bool ModIsUpToDate()
-        {
-            if (Extras.GenerateHash(@".minecraft\" + File) == Hash)
-                return true;
-            return false;
-        }
+        /** Server <--> Client **/
+        Handshake, // <-->
+        EncryptionStatus, // -->
+        Ping, // -->
+        RequestMod, // <--
+        FilePart, // -->
+        ModInfo, // -->
+        ModList, // -->
+        AllDone, // -->
+        NextDownload, // -->
+        Admin, // <--
+        AdminUpload, // <--
+        AdminInfo, // <--
+        Log, // <--
+        Metadata, // <-->
+        Image, // -->
+        BeginDownload, // <--
+        Connect, // -->
+        ServerList, // MasterServer --> Client
+        Disconnect = 255 // <-- Notes: Disconnect Packet
     }
 }

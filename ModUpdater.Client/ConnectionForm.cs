@@ -23,11 +23,15 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using System.Net.Sockets;
+using System.Net;
+using ModUpdater.Net;
 
 namespace ModUpdater.Client
 {
     public partial class ConnectionForm : Form
     {
+        public Server ConnectTo;
         public ConnectionForm()
         {
             DialogResult = System.Windows.Forms.DialogResult.Cancel;
@@ -39,7 +43,7 @@ namespace ModUpdater.Client
         {
             if (Directory.Exists(".minecraft"))
             {
-                if (MessageBox.Show("I've found a valid minecraft folder in this directory.  Would you like me to use \"" + Environment.CurrentDirectory + "\\.minecraft\" as the minecraft directory?", "Make this prossess 10x easyer by pressing \"Yes\"", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
+                if (MessageBox.Show("I've found a valid minecraft folder in this directory.  Would you like me to use \"" + Environment.CurrentDirectory + "\\.minecraft\" as the minecraft directory?", "Make this prossess 10x easier by pressing \"Yes\"", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
                 {
                     txtMcPath.Text = Environment.CurrentDirectory + "\\.minecraft";
                     return;
@@ -64,19 +68,61 @@ namespace ModUpdater.Client
             }
             Properties.Settings.Default.MinecraftPath = txtMcPath.Text;
             Properties.Settings.Default.Server = txtServer.Text;
-            Properties.Settings.Default.LaunchAfterUpdate = checkBox1.Checked;
-            Properties.Settings.Default.AutoUpdate = checkBox2.Checked;
+            Properties.Settings.Default.LaunchAfterUpdate = chkStartMC.Checked;
+            Properties.Settings.Default.AutoUpdate = chkAuUpdate.Checked;
+            Properties.Settings.Default.Port = int.Parse(tempPortTxt.Text);
+            if (!CanClose()) return;
+            if (Properties.Settings.Default.RememberServer)
+            {
+                Properties.Settings.Default.Port = ConnectTo.Port;
+                Properties.Settings.Default.Server = ConnectTo.Address;
+            }
             Properties.Settings.Default.Save();
             DialogResult = System.Windows.Forms.DialogResult.OK;
             Close();
+        }
+
+        private bool CanClose()
+        {
+            while (MainForm.Instance.LocalAddress == null) ;
+            if (MainForm.Instance.LocalAddress.ToString() == txtServer.Text) txtServer.Text = "127.0.0.1";
+            IPEndPoint ip = new IPEndPoint(IPAddress.Parse(txtServer.Text), int.Parse(tempPortTxt.Text));
+            Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            s.Connect(ip);
+            ModUpdaterNetworkStream str = new ModUpdaterNetworkStream(s);
+            Packet.Send(new HandshakePacket { Type = HandshakePacket.SessionType.ServerList }, str);
+            Packet p = Packet.ReadPacket(str); //The server should only return a ServerList, right?
+            ServerListPacket sp = null; 
+            if (!(p is ServerListPacket)) //But just in case...
+            {
+                Packet.Send(new DisconnectPacket(), str);
+                ConnectTo = new Server { Address = txtServer.Text, Port = int.Parse(tempPortTxt.Text) };
+                str.Close();
+                s.Disconnect(false);
+                return true;
+            }
+            sp = (ServerListPacket)p;
+            List<Server> servers = new List<Server>();
+            for (int i = 0; i < sp.Servers.Length; i++)
+            {
+                Server srv = new Server { Address = sp.Locations[i], Name = sp.Servers[i], Port = sp.Ports[i] };
+                servers.Add(srv);
+            }
+            SelectServerDialog dial = new SelectServerDialog(servers.ToArray());
+            dial.ShowDialog();
+            if (dial.DialogResult != System.Windows.Forms.DialogResult.OK)
+                return false;
+            ConnectTo = dial.SelectedServer;
+            return true;
         }
 
         private void ConnectionForm_Load(object sender, EventArgs e)
         {
             txtServer.Text = Properties.Settings.Default.Server;
             txtMcPath.Text = Properties.Settings.Default.MinecraftPath;
-            checkBox1.Checked = Properties.Settings.Default.LaunchAfterUpdate;
-            checkBox2.Checked = Properties.Settings.Default.AutoUpdate;
+            chkStartMC.Checked = Properties.Settings.Default.LaunchAfterUpdate;
+            chkAuUpdate.Checked = Properties.Settings.Default.AutoUpdate;
+            tempPortTxt.Text = Properties.Settings.Default.Port.ToString();
             KeyDown += new KeyEventHandler(ConnectionForm_KeyDown);
         }
 
@@ -93,11 +139,11 @@ namespace ModUpdater.Client
 
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox2.Checked && !Properties.Settings.Default.AutoUpdate)
+            if (chkAuUpdate.Checked && !Properties.Settings.Default.AutoUpdate)
             {
                 if (MessageBox.Show("WARNING: Turning on the auto updater will automaticly download new updates.  ONLY use this on servers you FULLY TRUST. \r\nAre you sure you want to enable this feature?", "Mod Updater Warning", MessageBoxButtons.YesNo) != System.Windows.Forms.DialogResult.Yes)
                 {
-                    checkBox2.Checked = false;
+                    chkAuUpdate.Checked = false;
                 }
             }
         }

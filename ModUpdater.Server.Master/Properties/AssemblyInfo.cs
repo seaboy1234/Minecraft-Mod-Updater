@@ -21,11 +21,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ModUpdater.Client.SelfUpdateManager")]
+[assembly: AssemblyTitle("MasterServer")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ModUpdater.Client.SelfUpdateManager")]
+[assembly: AssemblyProduct("MasterServer")]
 [assembly: AssemblyCopyright("Copyright ©  2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -36,7 +36,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("1bb1096f-56b0-494d-90d1-00a941b4e058")]
+[assembly: Guid("86f111a0-5855-43d3-b8a2-012179ea8e26")]
 
 // Version information for an assembly consists of the following four values:
 //

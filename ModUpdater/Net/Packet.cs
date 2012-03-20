@@ -21,8 +21,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.IO;
+using ModUpdater.Utility;
 
-namespace ModUpdater
+namespace ModUpdater.Net
 {
     public abstract class Packet
     {
@@ -39,7 +40,7 @@ namespace ModUpdater
         public abstract void Write(ModUpdaterNetworkStream s);
 
         //Static Methods
-        public static Dictionary<PacketId, Type> Map = new Dictionary<PacketId, Type>();
+        public static Dictionary<Type, PacketId> Map = new Dictionary<Type, PacketId>();
         private static Packet LastSent;
         private static bool Busy = false;
         /// <summary>
@@ -55,12 +56,18 @@ namespace ModUpdater
             {
                 PacketId id = (PacketId)Stream.ReadByte();
                 if (id == PacketId.Disconnect) return null;
-                if (!Map.ContainsKey(id))
+                if (!Map.ContainsValue(id))
                 {
                     Stream.Flush();
                     return null;
                 }
-                Packet = Map[id];
+                foreach (var v in Map)
+                {
+                    if (v.Value == id)
+                    {
+                        Packet = v.Key;
+                    }
+                }
                 p = (Packet)Packet.GetConstructor(new Type[] { }).Invoke(null);
                 p.Read(Stream);
                 MinecraftModUpdater.Logger.Log(Logger.Level.Info, string.Format("Read packet {0}", id.ToString()));
@@ -85,7 +92,7 @@ namespace ModUpdater
                 LastSent = p;
                 MinecraftModUpdater.Logger.Log(Logger.Level.Info, string.Format("Sent packet {0}", id.ToString()));
             }
-            catch (Exception e) { MinecraftModUpdater.Logger.Log(e); }
+            catch (Exception e) { MinecraftModUpdater.Logger.Log(e); Console.WriteLine(e); }
             Busy = false;
         }
         public static void ResendLast(ModUpdaterNetworkStream Stream)
@@ -101,49 +108,82 @@ namespace ModUpdater
         {
             PacketId id = (PacketId)255;
             if (p == null) return id;
-            foreach (var v in Map)
-            {
-                if (p.GetType() == v.Value)
-                {
-                    id = v.Key;
-                }
-            }
-            return id;
+            if (Map.TryGetValue(p.GetType(), out id))
+                return id;
+            throw new KeyNotFoundException();
         }
         static Packet()
         {
-            Map = new Dictionary<PacketId,Type>
+            Map = new Dictionary<Type, PacketId>
             {
-                {PacketId.Handshake, typeof(HandshakePacket)},
-                {PacketId.RequestMod, typeof(RequestModPacket)},
-                {PacketId.FilePart, typeof(FilePartPacket)},
-                {PacketId.ModInfo, typeof(ModInfoPacket)},
-                {PacketId.Metadata, typeof(MetadataPacket)},
-                {PacketId.ModList, typeof(ModListPacket)},
-                {PacketId.EncryptionStatus, typeof(EncryptionStatusPacket)},
-                {PacketId.NextDownload, typeof(NextDownloadPacket)},
-                {PacketId.AllDone, typeof(AllDonePacket)},
-                {PacketId.Log, typeof(LogPacket)},
-                //{PacketId.ClientUpdate, typeof(ClientUpdatePacket)},
-                {PacketId.Disconnect, typeof(DisconnectPacket)},
-                //{PacketId.GoodBye, typeof(DisconnectPacket)},
-                //{PacketId.Image, typeof(ImagePacket)},
-                {PacketId.Connect, typeof(ConnectPacket)}
+                {typeof(HandshakePacket), PacketId.Handshake},
+                {typeof(RequestModPacket), PacketId.RequestMod},
+                {typeof(FilePartPacket), PacketId.FilePart},
+                {typeof(ModInfoPacket), PacketId.ModInfo},
+                {typeof(MetadataPacket), PacketId.Metadata},
+                {typeof(ModListPacket), PacketId.ModList},
+                {typeof(EncryptionStatusPacket), PacketId.EncryptionStatus},
+                {typeof(NextDownloadPacket), PacketId.NextDownload},
+                {typeof(AllDonePacket), PacketId.AllDone},
+                {typeof(LogPacket), PacketId.Log},
+                {typeof(DisconnectPacket), PacketId.Disconnect},
+                {typeof(ImagePacket), PacketId.Image},
+                {typeof(ConnectPacket), PacketId.Connect},
+                {typeof(ServerListPacket), PacketId.ServerList}
             };
         }
     }
     #region Packet Classes
     public class HandshakePacket : Packet
     {
-        public int Version { get; private set; }
+        public SessionType Type { get; set; }
+        public string Version { get; private set; }
+        //Client
+        public string Username { get; set; }
+
+        //Server
+        public string Address { get; set; }
+        public string Name { get; set; }
+        public int Port { get; set; }
+
         public override void Read(ModUpdaterNetworkStream s)
         {
-            Version = s.ReadInt();
+            Type = (SessionType)s.ReadByte();
+            Version = s.ReadString();
+            switch (Type)
+            {
+                case SessionType.Client:
+                    Username = s.ReadString();
+                    break;
+                case SessionType.Server:
+                    Address = s.ReadString();
+                    Name = s.ReadString();
+                    Port = s.ReadInt();
+                    break;
+            }
         }
 
         public override void Write(ModUpdaterNetworkStream s)
         {
-            s.WriteInt(PROTOCOL_VERSION);
+            s.WriteByte((byte)Type);
+            s.WriteString(MinecraftModUpdater.Version);
+            switch(Type)
+            {
+                case SessionType.Client:
+                    s.WriteString(Username);
+                    break;
+                case SessionType.Server:
+                    s.WriteString(Address);
+                    s.WriteString(Name);
+                    s.WriteInt(Port);
+                    break;
+            }
+        }
+        public enum SessionType : byte
+        {
+            Client,
+            Server,
+            ServerList
         }
     }
     public class RequestModPacket : Packet
@@ -334,26 +374,85 @@ namespace ModUpdater
     }
     public class MetadataPacket : Packet
     {
-        public string[] Data { get; set; }
+        public string[] SData { get; set; }
+        public int[] IData { get; set; }
+        public float[] FData { get; set; }
         public override void Read(ModUpdaterNetworkStream s)
         {
             int i = s.ReadInt();
-            Data = new string[i];
-            for (int j = 0; j < i; j++)
-            {
-                Data[j] = s.ReadString();
-            }
+            int j = s.ReadInt();
+            int k = s.ReadInt();
+            SData = new string[i];
+            IData = new int[j];
+            FData = new float[k];
+            if (i > 0)
+                for (int l = 0; l < i; l++)
+                {
+                    SData[l] = s.ReadString();
+                }
+            if (j > 0)
+                for (int l = 0; l < j; l++)
+                {
+                    IData[l] = s.ReadInt();
+                }
+            if (k > 0)
+                for (int l = 0; l < k; l++)
+                {
+                    FData[l] = s.ReadFloat();
+                }
         }
 
         public override void Write(ModUpdaterNetworkStream s)
         {
-            s.WriteInt(Data.Length);
-            foreach (string str in Data)
+            if (SData == null) s.WriteInt(0);
+            else s.WriteInt(SData.Length);
+            if (IData == null) s.WriteInt(0);
+            else s.WriteInt(IData.Length);
+            if (FData == null) s.WriteInt(0);
+            else s.WriteInt(FData.Length);
+            try
             {
-                s.WriteString(str);
+                if (SData.Length > 0)
+                    foreach (string str in SData)
+                    {
+                        s.WriteString(str);
+                    }
             }
+            catch (NullReferenceException) { } //The data is null.  What CAN we do?
+            try
+            {
+                if (IData.Length > 0)
+                    foreach (int i in IData)
+                    {
+                        s.WriteInt(i);
+                    }
+            }
+            catch (NullReferenceException) { } 
+            try
+            {
+                if (FData.Length > 0)
+                    foreach (float f in FData)
+                    {
+                        s.WriteFloat(f);
+                    }
+            }
+            catch (NullReferenceException) { }
         }
     }
+    public class BeginDownload : Packet
+    {
+        
+        public override void Read(ModUpdaterNetworkStream s)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Write(ModUpdaterNetworkStream s)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class AdminPacket : Packet
     {
         public string AdminName { get; set; }
@@ -472,39 +571,78 @@ namespace ModUpdater
     }
     public class ImagePacket : Packet
     {
+        public ImageType Type { get; set; }
+        public string ShowOn { get; set; }
         public byte[] Image { get; set; }
         public override void Read(ModUpdaterNetworkStream s)
         {
+            Type = (ImageType)((byte)s.ReadByte()); //Stupid ReadByte().  It's in NetworkStream and thus pretty much out of my control.
+            ShowOn = s.ReadString();
             int l = s.ReadInt();
             Image = s.ReadBytes(l);
         }
 
         public override void Write(ModUpdaterNetworkStream s)
         {
+            s.WriteByte((byte)Type);
+            s.WriteString(ShowOn);
             s.WriteInt(Image.Length);
             s.WriteBytes(Image);
+        }
+        public enum ImageType : byte
+        {
+            Background,
+            Mod
         }
     }
     public class ConnectPacket : Packet
     {
-        public int ClientID { get; set; }
         public IPAddress Address { get; set; }
         public int Port { get; set; }
         public override void Read(ModUpdaterNetworkStream s)
         {
-            ClientID = s.ReadInt();
             Address = new IPAddress(s.ReadBytes(4));
             Port = s.ReadInt();
         }
 
         public override void Write(ModUpdaterNetworkStream s)
         {
-            s.WriteInt(ClientID);
             s.WriteBytes(Address.GetAddressBytes());
             s.WriteInt(Port);
         }
     }
+    public class ServerListPacket : Packet
+    {
+        public string[] Servers { get; set; }
+        public string[] Locations { get; set; }
+        public int[] Ports { get; set; }
+        public override void Read(ModUpdaterNetworkStream s)
+        {
+            int i = s.ReadInt();
+            Servers = new string[i];
+            Locations = new string[i];
+            Ports = new int[i];
+            for (int j = 0; j < i; j++)
+            {
+                Servers[j] = s.ReadString();
+                Locations[j] = s.ReadString();
+                Ports[j] = s.ReadInt();
+            }
 
+        }
+
+        public override void Write(ModUpdaterNetworkStream s)
+        {
+            s.WriteInt(Servers.Length);
+            for (int i = 0; i < Servers.Length; i++)
+            {
+                s.WriteString(Servers[i]);
+                s.WriteString(Locations[i]);
+                s.WriteInt(Ports[i]);
+            }
+
+        }
+    }
     #endregion
     #region Exceptions
     public class PacketException : Exception

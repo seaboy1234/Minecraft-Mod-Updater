@@ -15,7 +15,7 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-namespace ModUpdater.Client.Lite.Properties {
+namespace ModUpdater.Server.Master.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -32,13 +32,13 @@ namespace ModUpdater.Client.Lite.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string Server {
+        [global::System.Configuration.DefaultSettingValueAttribute("8732")]
+        public int Port {
             get {
-                return ((string)(this["Server"]));
+                return ((int)(this["Port"]));
             }
             set {
-                this["Server"] = value;
+                this["Port"] = value;
             }
         }
     }

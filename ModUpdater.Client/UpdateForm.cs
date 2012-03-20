@@ -1,4 +1,4 @@
-﻿//    File:        Packets.cs
+﻿//    File:        UpdateForm.cs
 //    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
 //    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
 //    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
@@ -16,34 +16,32 @@
 //    limitations under the License.
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
+using System.Diagnostics;
 
-namespace ModUpdater
+namespace ModUpdater.Client
 {
-
-    public enum PacketId : byte
+    public partial class UpdateForm : Form
     {
-        /** Server <--> Client **/
-        Handshake, // <-->
-        EncryptionStatus, // -->
-        Ping, // -->
-        RequestMod, // <--
-        FilePart, // -->
-        ModInfo, // -->
-        ModList, // -->
-        AllDone, // -->
-        NextDownload, // -->
-        Admin, // <--
-        AdminUpload, // <--
-        AdminInfo, // <--
-        Log, // <--
-        Metadata, // <-->
-        ClientUpdate, // -->
-        Kick, // -->
-        Image, // -->  Notes: To be sent on second connection.
-        Connect, // --> Notes: Used to tell the client to make the second connection.
-        GoodBye, // <--
-        Disconnect = 255 // <-- Notes: Disconnect Packet
+        public UpdateForm()
+        {
+            InitializeComponent();
+            label2.Text = String.Format(label2.Text, MinecraftModUpdater.LongAppName);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Process.Start("https://github.com/seaboy1234/Minecraft-Mod-Updater/downloads");
+            Application.Exit();
+        }
+        public static void Open()
+        {
+            new UpdateForm().ShowDialog();
+        }
     }
 }

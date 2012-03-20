@@ -21,7 +21,7 @@ using System.Text;
 using System.Net.Sockets;
 using System.Threading;
 
-namespace ModUpdater
+namespace ModUpdater.Net
 {
     public class PacketHandler
     {
@@ -39,9 +39,10 @@ namespace ModUpdater
         public event PacketEvent<NextDownloadPacket> NextDownload;
         public event PacketEvent<LogPacket> Log;
         public event PacketEvent<AllDonePacket> AllDone;
-        public event PacketEvent<ClientUpdatePacket> ClientUpdate;
         public event PacketEvent<Packet> Disconnect;
         public event PacketEvent<ConnectPacket> Connect;
+        public event PacketEvent<ImagePacket> Image;
+        public event PacketEvent<ServerListPacket> ServerList;
         /*End Events*/
 
         public PacketHandler(Socket s)
@@ -99,9 +100,6 @@ namespace ModUpdater
                     case PacketId.FilePart:
                         FilePart.Invoke((FilePartPacket)p);
                         break;
-                    case PacketId.ClientUpdate:
-                        ClientUpdate.Invoke((ClientUpdatePacket)p);
-                        break;
                     case PacketId.Disconnect:
                         if (Disconnect != null)
                             Disconnect.Invoke(p);
@@ -109,6 +107,14 @@ namespace ModUpdater
                     case PacketId.Connect:
                         if (Connect != null)
                             Connect.Invoke((ConnectPacket)p);
+                        break;
+                    case PacketId.Image:
+                        if (Image != null)
+                            Image.Invoke((ImagePacket)p);
+                        break;
+                    case PacketId.ServerList:
+                        if (ServerList != null)
+                            ServerList.Invoke((ServerListPacket)p);
                         break;
                     default:
                         break;

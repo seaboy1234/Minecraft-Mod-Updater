@@ -22,8 +22,9 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Net;
 
-namespace ModUpdater
+namespace ModUpdater.Utility
 {
     public static class Extras
     {
@@ -84,6 +85,14 @@ namespace ModUpdater
         {
             Image i = Image.FromFile(path);
             return BytesFromImage(i);
+        }
+        public static bool CheckForUpdate()
+        {
+            WebClient c = new WebClient();
+            if (c.DownloadString("https://raw.github.com/seaboy1234/Minecraft-Mod-Updater/develop/version.txt") != MinecraftModUpdater.Version)
+                return true;
+            else 
+                return false;
         }
     }
 }

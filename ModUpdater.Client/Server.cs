@@ -1,4 +1,4 @@
-﻿//    File:        Logger.cs
+﻿//    File:        Server.cs
 //    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
 //    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
 //    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
@@ -19,36 +19,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ModUpdater
+namespace ModUpdater.Client
 {
-    public class Logger
+    public class Server
     {
-        List<string> StringLogs = new List<string>();
-        List<Level> LevelLogs = new List<Level>();
-        public enum Level
+        public string Name { get; set; }
+        public string Address { get; set; }
+        public int Port { get; set; }
+        public override string ToString()
         {
-            Info,
-            Warning,
-            Error
-        }
-        public void Log(Level l, string s)
-        {
-            StringLogs.Add(s);
-            LevelLogs.Add(l);
-            DebugMessageHandler.AssertCl("["+l.ToString().ToUpper()+"] " + s);
-        }
-        public void Log(Exception e)
-        {
-            Log(Level.Error, e.ToString());
-        }
-        public string[] GetMessages()
-        {
-            List<string> strs = new List<string>();
-            for(int i = 0; i < StringLogs.Count; i++)
-            {
-                strs.Add(string.Format("[{0}] {1}", LevelLogs[i].ToString().ToUpper(), StringLogs[i]));
-            }
-            return strs.ToArray();
+            return Name;
         }
     }
 }

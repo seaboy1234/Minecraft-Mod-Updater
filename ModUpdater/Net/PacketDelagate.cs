@@ -1,4 +1,4 @@
-﻿//    File:        Effects.cs
+﻿//    File:        PacketDelagate.cs
 //    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
 //    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
 //    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
@@ -18,20 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 
-namespace ModUpdater.Client.SelfUpdateManager
+namespace ModUpdater.Net
 {
-    static class Effects
-    {
-        public static void WriteLine(string message)
-        {
-            foreach (char c in message)
-            {
-                Console.Write(c);
-                Thread.Sleep(50);
-            }
-            Console.WriteLine();
-        }
-    }
+    public delegate void PacketEvent<T>(T p) where T : Packet;
 }

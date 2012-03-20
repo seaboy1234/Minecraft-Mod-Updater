@@ -23,7 +23,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 
-namespace ModUpdater
+namespace ModUpdater.Net
 {
     public class ModUpdaterNetworkStream : NetworkStream
     {
@@ -211,7 +211,7 @@ namespace ModUpdater
             }
             catch (Exception e) { Console.WriteLine(e); throw e; }
         }
-        private byte[] EncryptBytes(byte[] Input)
+        public byte[] EncryptBytes(byte[] Input)
         {
             try
             {
@@ -263,7 +263,7 @@ namespace ModUpdater
             String Output = Encoding.UTF8.GetString(xBuff);
             return Output;
         }
-        private byte[] DecryptBytes(byte[] Input)
+        public byte[] DecryptBytes(byte[] Input)
         {
             RijndaelManaged aes = new RijndaelManaged();
             aes.KeySize = 256;

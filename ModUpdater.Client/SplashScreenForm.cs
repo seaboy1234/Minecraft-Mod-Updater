@@ -31,6 +31,7 @@ namespace ModUpdater.Client
         delegate void StringParameterWithStatusDelegate(string Text, TypeOfMessage tom);
         delegate void SplashShowCloseDelegate();
         bool FadeOut = false;
+        public bool Loading = true;
 
         /// <summary>
         /// To ensure splash screen is closed using the API and not by keyboard or any other things
@@ -44,10 +45,13 @@ namespace ModUpdater.Client
         {
             InitializeComponent();
             this.label3.BackColor = Color.Transparent;
+            label3.Parent = Image;
             this.label3.ForeColor = Color.Green;
+            label2.Parent = Image;
             this.label2.BackColor = Color.Transparent;
             this.label2.Text = MinecraftModUpdater.LongAppName;
             this.Opacity = 0;
+            DownloadPicture.Parent = Image;
 
             //this.progressBar1.Parent = this.pictureBox1;
             //this.progressBar1.BackColor = Color.Transparent;
@@ -156,6 +160,10 @@ namespace ModUpdater.Client
             else
             {
                 this.Opacity += .05;
+                if (this.Opacity >= 1.0)
+                {
+                    Loading = false;
+                }
             }
         }
 

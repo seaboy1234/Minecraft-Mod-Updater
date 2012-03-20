@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Drawing;
 
 namespace ModUpdater.Client
 {
@@ -36,7 +37,7 @@ namespace ModUpdater.Client
     public static class SplashScreen
     {
         static SplashScreenForm sf = null;
-
+        public static Image BackgroundImage = null;
         /// <summary>
         /// Displays the splashscreen
         /// </summary>
@@ -45,6 +46,12 @@ namespace ModUpdater.Client
             if (sf == null)
             {
                 sf = new SplashScreenForm();
+                if (BackgroundImage != null)
+                {
+                    sf.Image.Image = BackgroundImage;
+                    sf.Image.Height = 400;
+                    sf.Image.Width = 640;
+                }
                 sf.ShowSplashScreen();
             }
         }
