@@ -40,6 +40,10 @@ namespace ModUpdater
         /// </summary>
         public const string Version = "1.2.0";
         /// <summary>
+        /// The branch of the Git repo.
+        /// </summary>
+        public const string Branch = "master";
+        /// <summary>
         /// The Logger.
         /// </summary>
         public static readonly Logger Logger = new Logger();
