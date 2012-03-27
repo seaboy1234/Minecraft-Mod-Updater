@@ -42,7 +42,7 @@ namespace ModUpdater
         /// <summary>
         /// The branch of the Git repo.
         /// </summary>
-        public const string Branch = "master";
+        public const string Branch = "develop";
         /// <summary>
         /// The Logger.
         /// </summary>
