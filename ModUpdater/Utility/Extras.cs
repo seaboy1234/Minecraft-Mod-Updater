@@ -89,7 +89,7 @@ namespace ModUpdater.Utility
         public static bool CheckForUpdate()
         {
             WebClient c = new WebClient();
-            if (c.DownloadString("https://raw.github.com/seaboy1234/Minecraft-Mod-Updater/develop/version.txt") != MinecraftModUpdater.Version)
+            if (c.DownloadString("https://raw.github.com/seaboy1234/Minecraft-Mod-Updater/" + MinecraftModUpdater.Branch + "/version.txt") != MinecraftModUpdater.Version)
                 return true;
             else 
                 return false;
