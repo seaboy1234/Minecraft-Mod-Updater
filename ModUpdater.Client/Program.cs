@@ -74,7 +74,7 @@ namespace ModUpdater.Client
                 using (StreamWriter sw = File.AppendText("start.bat"))
                 {
                     sw.WriteLine(@"SET APPDATA=%cd%");
-                    sw.WriteLine(@"java -cp minecraft.jar net.minecraft.LauncherFrame --noupdate -u={0} -p={1}", Properties.Settings.Default.Username, Properties.Settings.Default.Password);
+                    sw.WriteLine(@"java -cp minecraft.jar;.minecraft/bin/* net.minecraft.LauncherFrame -u={0} -p={1}", Properties.Settings.Default.Username, Properties.Settings.Default.Password);
                     sw.Flush();
                     sw.Close();
                     sw.Dispose();
