@@ -29,28 +29,13 @@ namespace ModUpdater.Net
         protected Socket sck;
         private bool IgnoreNext = false;
         private Thread NetworkThread;
-        /*Events*/
-        public event PacketEvent<FilePartPacket> FilePart;
-        public event PacketEvent<HandshakePacket> Handshake;
-        public event PacketEvent<MetadataPacket> Metadata;
-        public event PacketEvent<ModInfoPacket> ModInfo;
-        public event PacketEvent<ModListPacket> ModList;
-        public event PacketEvent<RequestModPacket> RequestMod;
-        public event PacketEvent<NextDownloadPacket> NextDownload;
-        public event PacketEvent<LogPacket> Log;
-        public event PacketEvent<AllDonePacket> AllDone;
-        public event PacketEvent<Packet> Disconnect;
-        public event PacketEvent<ConnectPacket> Connect;
-        public event PacketEvent<ImagePacket> Image;
-        public event PacketEvent<ServerListPacket> ServerList;
-        /*End Events*/
-        private Dictionary<PacketId, PacketEvent<Packet>> EventHandler;
+        private Dictionary<PacketId, PacketEvent> EventHandler;
 
         public PacketHandler(Socket s)
         {
             sck = s;
             NetworkThread = new Thread(new ThreadStart(delegate { while (sck.Connected) { Recv(); } }));
-            EventHandler = new Dictionary<PacketId, PacketEvent<Packet>>();
+            EventHandler = new Dictionary<PacketId, PacketEvent>();
         }
         /// <summary>
         /// Handles receving of packets.  This method should never be called from outside of this class.
@@ -67,6 +52,14 @@ namespace ModUpdater.Net
             {
                 p = Packet.ReadPacket(Stream);
                 id = Packet.GetPacketId(p);
+                if (id == PacketId.EncryptionStatus)
+                {
+                    EncryptionStatusPacket pa = p as EncryptionStatusPacket;
+                    Stream.IV = pa.EncryptionIV;
+                    Stream.Key = pa.EncryptionKey;
+                    Stream.Encrypted = pa.Encrypt;
+                    return;
+                }
                 foreach (var ph in EventHandler)
                 {
                     if (ph.Key == id)
@@ -99,7 +92,7 @@ namespace ModUpdater.Net
             sck.Disconnect(false);
             NetworkThread.Abort();
         }
-        public void RegisterPacketHandler(PacketId id, PacketEvent<Packet> handler)
+        public void RegisterPacketHandler(PacketId id, PacketEvent handler)
         {
             try
             {
