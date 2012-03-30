@@ -44,11 +44,13 @@ namespace ModUpdater.Net
         public event PacketEvent<ImagePacket> Image;
         public event PacketEvent<ServerListPacket> ServerList;
         /*End Events*/
+        private Dictionary<PacketId, PacketEvent<Packet>> EventHandler;
 
         public PacketHandler(Socket s)
         {
             sck = s;
             NetworkThread = new Thread(new ThreadStart(delegate { while (sck.Connected) { Recv(); } }));
+            EventHandler = new Dictionary<PacketId, PacketEvent<Packet>>();
         }
         /// <summary>
         /// Handles receving of packets.  This method should never be called from outside of this class.
@@ -65,59 +67,12 @@ namespace ModUpdater.Net
             {
                 p = Packet.ReadPacket(Stream);
                 id = Packet.GetPacketId(p);
-                switch (id)
+                foreach (var ph in EventHandler)
                 {
-                    case PacketId.EncryptionStatus:
-                        EncryptionStatusPacket pa = (EncryptionStatusPacket)p;
-                        Stream.Encrypted = pa.Encrypt;
-                        Stream.IV = pa.EncryptionIV;
-                        Stream.Key = pa.EncryptionKey;
-                        break;
-                    case PacketId.Handshake:
-                        Handshake.Invoke((HandshakePacket)p);
-                        break;
-                    case PacketId.Metadata:
-                        Metadata.Invoke((MetadataPacket)p);
-                        break;
-                    case PacketId.ModInfo:
-                        ModInfo.Invoke((ModInfoPacket)p);
-                        break;
-                    case PacketId.ModList:
-                        ModList.Invoke((ModListPacket)p);
-                        break;
-                    case PacketId.RequestMod:
-                        RequestMod.Invoke((RequestModPacket)p);
-                        break;
-                    case PacketId.AllDone:
-                        AllDone.Invoke((AllDonePacket)p);
-                        break;
-                    case PacketId.NextDownload:
-                        NextDownload.Invoke((NextDownloadPacket)p);
-                        break;
-                    case PacketId.Log:
-                        Log.Invoke((LogPacket)p);
-                        break;
-                    case PacketId.FilePart:
-                        FilePart.Invoke((FilePartPacket)p);
-                        break;
-                    case PacketId.Disconnect:
-                        if (Disconnect != null)
-                            Disconnect.Invoke(p);
-                        break;
-                    case PacketId.Connect:
-                        if (Connect != null)
-                            Connect.Invoke((ConnectPacket)p);
-                        break;
-                    case PacketId.Image:
-                        if (Image != null)
-                            Image.Invoke((ImagePacket)p);
-                        break;
-                    case PacketId.ServerList:
-                        if (ServerList != null)
-                            ServerList.Invoke((ServerListPacket)p);
-                        break;
-                    default:
-                        break;
+                    if (ph.Key == id)
+                    {
+                        ph.Value.Invoke(p);
+                    }
                 }
             }
             catch (Exception e)
@@ -143,6 +98,22 @@ namespace ModUpdater.Net
             Stream.Dispose();
             sck.Disconnect(false);
             NetworkThread.Abort();
+        }
+        public void RegisterPacketHandler(PacketId id, PacketEvent<Packet> handler)
+        {
+            try
+            {
+                EventHandler.Add(id, handler);
+            }
+            catch (Exception e) { throw e; }
+        }
+        public void RemovePacketHandler(PacketId id)
+        {
+            try
+            {
+                EventHandler.Remove(id);
+            }
+            catch (Exception e) { throw e; }
         }
     }
 }
