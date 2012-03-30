@@ -21,5 +21,5 @@ using System.Text;
 
 namespace ModUpdater.Net
 {
-    public delegate void PacketEvent<T>(T p) where T : Packet;
+    public delegate void PacketEvent(Packet p);
 }
