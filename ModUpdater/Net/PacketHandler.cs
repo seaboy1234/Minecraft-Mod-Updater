@@ -92,6 +92,11 @@ namespace ModUpdater.Net
             sck.Disconnect(false);
             NetworkThread.Abort();
         }
+        /// <summary>
+        /// Registers a packet handler.  This is NOT needed for an EncryptionStatus packet.
+        /// </summary>
+        /// <param name="id">The packet id.</param>
+        /// <param name="handler">The handler for the packet.</param>
         public void RegisterPacketHandler(PacketId id, PacketEvent handler)
         {
             try
@@ -100,6 +105,10 @@ namespace ModUpdater.Net
             }
             catch (Exception e) { throw e; }
         }
+        /// <summary>
+        /// Un-registers the packet handler for a packet.
+        /// </summary>
+        /// <param name="id">The packet id to un-register.</param>
         public void RemovePacketHandler(PacketId id)
         {
             try
