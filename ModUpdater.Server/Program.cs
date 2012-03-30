@@ -23,12 +23,21 @@ namespace ModUpdater.Server
 {
     class Program
     {
+        public static string ConfigPath = "Config.xml";
         static void Main(string[] args)
         {
-            Server s = new Server();
+            if (args.Length > 0)
+            {
+                foreach (string s in args)
+                {
+                    if(s.StartsWith("-config:") || s.StartsWith("-c:"))
+                            ConfigPath = GetValueOfParm(s);
+                }
+            }
+            Server server = new Server();
             try
             {
-                s.Start();
+                server.Start();
                 Console.WriteLine("Server stopped.");
             }
             catch (Exception e)
@@ -37,6 +46,22 @@ namespace ModUpdater.Server
                 Console.WriteLine("Press any key to close.");
                 Console.ReadKey();
             }
+        }
+        static string GetValueOfParm(string parm)
+        {
+            string[] sa = parm.Split(':');
+            if (sa.Length > 1)
+            {
+                string s = "";
+                for (int i = 1; i < sa.Length; i++)
+                {
+                    s += sa[i];
+                    s += ":";
+                }
+                s = s.Remove(s.Length - 1);
+                return s;
+            }
+            return "";
         }
     }
 }

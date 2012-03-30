@@ -52,8 +52,8 @@ namespace ModUpdater.Server
             config = new XmlDocument();
             try
             {
-                if (File.Exists("Config.xml"))
-                    config.Load("Config.xml");
+                if (File.Exists(Program.ConfigPath))
+                    config.Load(Program.ConfigPath);
             }
             catch { }
             XmlNodeList nodes = config.SelectNodes("/Config");
@@ -88,7 +88,7 @@ namespace ModUpdater.Server
             { MasterServer = ""; }
             try
             {
-                config.Save("Config.xml");
+                config.Save(Program.ConfigPath);
             }
             catch { } //XML file is not valid.
         }
@@ -134,11 +134,11 @@ namespace ModUpdater.Server
             master.InnerText = MasterServer;
             try
             {
-                config.Save("Config.xml");
+                config.Save(Program.ConfigPath);
             }
             catch
             {
-                File.WriteAllText("Config.xml", config.OuterXml);
+                File.WriteAllText(Program.ConfigPath, config.OuterXml);
             }
         }
     }
