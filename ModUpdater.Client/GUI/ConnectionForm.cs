@@ -27,7 +27,7 @@ using System.Net.Sockets;
 using System.Net;
 using ModUpdater.Net;
 
-namespace ModUpdater.Client
+namespace ModUpdater.Client.GUI
 {
     public partial class ConnectionForm : Form
     {

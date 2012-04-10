@@ -28,7 +28,7 @@ using ModUpdater.Utility;
 using ModUpdater.Net;
 using System.Text;
 
-namespace ModUpdater.Client
+namespace ModUpdater.Client.GUI
 {
     public partial class MainForm : Form
     {

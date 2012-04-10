@@ -26,7 +26,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Net;
 
-namespace ModUpdater.Client
+namespace ModUpdater.Client.GUI
 {
     public partial class LoginForm : Form
     {

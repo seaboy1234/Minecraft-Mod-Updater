@@ -93,42 +93,42 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConnectionForm.cs">
+    <Compile Include="GUI\ConnectionForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ConnectionForm.Designer.cs">
+    <Compile Include="GUI\ConnectionForm.Designer.cs">
       <DependentUpon>ConnectionForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Debug.cs" />
-    <Compile Include="ExceptionHandler.cs">
+    <Compile Include="Utility\Debug.cs" />
+    <Compile Include="GUI\ExceptionHandler.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ExceptionHandler.Designer.cs">
+    <Compile Include="GUI\ExceptionHandler.Designer.cs">
       <DependentUpon>ExceptionHandler.cs</DependentUpon>
     </Compile>
-    <Compile Include="SelectServerDialog.cs">
+    <Compile Include="GUI\SelectServerDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SelectServerDialog.Designer.cs">
+    <Compile Include="GUI\SelectServerDialog.Designer.cs">
       <DependentUpon>SelectServerDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Server.cs" />
-    <Compile Include="UpdateForm.cs">
+    <Compile Include="Utility\Server.cs" />
+    <Compile Include="GUI\UpdateForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="UpdateForm.Designer.cs">
+    <Compile Include="GUI\UpdateForm.Designer.cs">
       <DependentUpon>UpdateForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="LoginForm.cs">
+    <Compile Include="GUI\LoginForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="LoginForm.Designer.cs">
+    <Compile Include="GUI\LoginForm.Designer.cs">
       <DependentUpon>LoginForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="MainForm.cs">
+    <Compile Include="GUI\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MainForm.Designer.cs">
+    <Compile Include="GUI\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Lang.Designer.cs">
@@ -136,33 +136,33 @@
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="ModFile.cs" />
+    <Compile Include="Utility\ModFile.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProgramOptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SplashScreen.cs" />
-    <Compile Include="SplashScreenForm.cs">
+    <Compile Include="GUI\SplashScreenForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SplashScreenForm.designer.cs">
+    <Compile Include="GUI\SplashScreenForm.designer.cs">
       <DependentUpon>SplashScreenForm.cs</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="ConnectionForm.resx">
+    <EmbeddedResource Include="GUI\ConnectionForm.resx">
       <DependentUpon>ConnectionForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ExceptionHandler.resx">
+    <EmbeddedResource Include="GUI\ExceptionHandler.resx">
       <DependentUpon>ExceptionHandler.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SelectServerDialog.resx">
+    <EmbeddedResource Include="GUI\SelectServerDialog.resx">
       <DependentUpon>SelectServerDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UpdateForm.resx">
+    <EmbeddedResource Include="GUI\UpdateForm.resx">
       <DependentUpon>UpdateForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="LoginForm.resx">
+    <EmbeddedResource Include="GUI\LoginForm.resx">
       <DependentUpon>LoginForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MainForm.resx">
+    <EmbeddedResource Include="GUI\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -174,7 +174,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="SplashScreenForm.resx">
+    <EmbeddedResource Include="GUI\SplashScreenForm.resx">
       <DependentUpon>SplashScreenForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />

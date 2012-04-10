@@ -27,7 +27,7 @@ using System.IO;
 using System.Threading;
 using ModUpdater.Utility;
 
-namespace ModUpdater.Client
+namespace ModUpdater.Client.GUI
 {
     public partial class ExceptionHandler : Form
     {

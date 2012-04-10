@@ -25,6 +25,7 @@ using System.Runtime.InteropServices;
 using System.Net;
 using ModUpdater.Utility;
 using System.Threading;
+using ModUpdater.Client.GUI;
 
 namespace ModUpdater.Client
 {
