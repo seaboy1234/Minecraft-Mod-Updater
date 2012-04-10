@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Minecraft-mod-updater by seaboy1234</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/seaboy1234/Minecraft-Mod-Updater">Fork On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/seaboy1234/Minecraft-Mod-Updater/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/seaboy1234/Minecraft-Mod-Updater/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>Minecraft-mod-updater</h1>
+          <p>A tool for mod servers and for the connivance of players.</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/seaboy1234">seaboy1234</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></span>
+        </div>
+
+        <h2>The motivation</h2>
+
+<p>If you run a mod server, chances are your players have trouble keeping their mods and/or configs in-sync with your's.  It is for this very reason that I created the Minecraft Mod Updater(MCModUpdater for short), also, because some users just flat out refuse to listen to instruction and hate adding new mods even to just the mods folder.</p>
+
+<p>If you have ever played an only game(e.g. World of Warcraft or something of the like) you will be famillier with the game's updater(even Minecraft itself has this) whitch removes any pain installing updates to the game.  So with a goal for an end-product, and a motivation, I spent the time from late December to late January working on the basic design of the program.  In early Febuary, it reached a closed beta 1.0 then in late febuary, 1.1.  That was when this project reached the point where I wanted to go public with it.  So, I posted the project to Github and began working on 1.2.  1.2 was to be the point where I would post it to the Minecraftforum for a true test of its power.</p>
+
+<h2>The features</h2>
+
+<p>For the client:</p>
+
+<ul>
+<li>Auto Update Mode - when this mode is enabled, the client will bypass the update overview and automatically request all of the changed files.</li>
+<li>Account status checking - to avoid this program being used for piracy, before connecting to an update server, the client must login with a valid Minecraft account that has purchased the game.</li>
+<li>Server sent background image - while the client is connecting to the server, the server will send a background image that will be shown during the download process.</li>
+<li>Mod images - The server can send images to the client that will be shown during the download process of the mods.</li>
+<li><p>Custom Minecraft installation - to avoid corruption of the user's current Minecraft installation, MCModUpdater will use a custom path for Minecraft located in the installation folder of the updater itself.<br>
+For the server:</p></li>
+<li><p>An easy to use file structure - the server uses a file structure that for the most part, mirrors that of Minecraft.</p></li>
+<li><p>Mod white/blacklisting - if you don't want someone to have some mod that should only be used by OP's, you can whitelist that mod so that only people who you want will be sent it.  Or if you don't want somebody getting a recipe viewer, you can blacklist them. 
+And many more.</p></li>
+</ul>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
+    
+  </body>
+</html>
