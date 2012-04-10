@@ -65,16 +65,18 @@ namespace ModUpdater.Client
         {
             using (StreamWriter log = File.CreateText("log.txt"))
             {
-                if (!File.Exists("minecraft.jar"))
+                if (!File.Exists("launcher.jar"))
                 {
                     Console.WriteLine("Downloading minecraft.jar...");
-                    new WebClient().DownloadFile("https://s3.amazonaws.com/MinecraftDownload/launcher/minecraft.jar", "minecraft.jar");
+                    new WebClient().DownloadFile("https://s3.amazonaws.com/MinecraftDownload/launcher/minecraft.jar", "launcher.jar");
                 }
                 Console.WriteLine("Starting Minecraft");
                 using (StreamWriter sw = File.AppendText("start.bat"))
                 {
+                    sw.WriteLine(@"SetLocal");
                     sw.WriteLine(@"SET APPDATA=%cd%");
-                    sw.WriteLine(@"java -cp minecraft.jar;.minecraft/bin/* net.minecraft.LauncherFrame -u={0} -p={1}", Properties.Settings.Default.Username, Properties.Settings.Default.Password);
+                    sw.WriteLine(@"java -cp .minecraft\bin\$mods.jar;launcher.jar net.minecraft.LauncherFrame -u={0} -p={1}", Properties.Settings.Default.Username, Properties.Settings.Default.Password);
+                    sw.WriteLine(@"EndLocal");
                     sw.Flush();
                     sw.Close();
                     sw.Dispose();
@@ -88,11 +90,11 @@ namespace ModUpdater.Client
                 proc.StartInfo = info;
                 proc.Start();
                 log.WriteLine(proc.StandardOutput.ReadToEnd());
-                while (File.Exists("minecraft.jar"))
+                while (File.Exists("launcher.jar"))
                 {
                     try
                     {
-                        File.Delete("minecraft.jar");
+                        File.Delete("launcher.jar");
                         break;
                     }
                     catch { }
