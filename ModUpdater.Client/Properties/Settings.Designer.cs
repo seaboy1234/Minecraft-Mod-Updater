@@ -116,30 +116,6 @@ namespace ModUpdater.Client.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string Key {
-            get {
-                return ((string)(this["Key"]));
-            }
-            set {
-                this["Key"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string IV {
-            get {
-                return ((string)(this["IV"]));
-            }
-            set {
-                this["IV"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("4713")]
         public int Port {
             get {
@@ -159,6 +135,30 @@ namespace ModUpdater.Client.Properties {
             }
             set {
                 this["RememberServer"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool FirstRun {
+            get {
+                return ((bool)(this["FirstRun"]));
+            }
+            set {
+                this["FirstRun"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string JavaPath {
+            get {
+                return ((string)(this["JavaPath"]));
+            }
+            set {
+                this["JavaPath"] = value;
             }
         }
     }
