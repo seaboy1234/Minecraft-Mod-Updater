@@ -23,6 +23,8 @@ namespace ModUpdater.Client
 {
     public static class ProgramOptions
     {
+        public static string LatestVersion { get; set; }
+        public static string SessionID { get; set; }
         public static bool CommandLine { get; set; }
         public static bool Debug { get; set; }
         public static bool Administrator { get; set; }

@@ -1,0 +1,1 @@
+﻿To the best of my knowlage, this launcher MUST be written in java.  Sorry.

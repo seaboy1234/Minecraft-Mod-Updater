@@ -49,13 +49,9 @@ namespace ModUpdater.Client.GUI
             this.btnUpdate = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.txtMcPath = new System.Windows.Forms.TextBox();
-            this.btnFindMc = new System.Windows.Forms.Button();
             this.mcpathfinder = new System.Windows.Forms.FolderBrowserDialog();
-            this.chkStartMC = new System.Windows.Forms.CheckBox();
-            this.chkAuUpdate = new System.Windows.Forms.CheckBox();
             this.tempPortTxt = new System.Windows.Forms.TextBox();
+            this.btnOptions = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // txtServer
@@ -67,7 +63,7 @@ namespace ModUpdater.Client.GUI
             // 
             // btnUpdate
             // 
-            this.btnUpdate.Location = new System.Drawing.Point(134, 85);
+            this.btnUpdate.Location = new System.Drawing.Point(134, 58);
             this.btnUpdate.Name = "btnUpdate";
             this.btnUpdate.Size = new System.Drawing.Size(100, 23);
             this.btnUpdate.TabIndex = 1;
@@ -98,59 +94,6 @@ namespace ModUpdater.Client.GUI
             this.label2.TabIndex = 3;
             this.label2.Text = "Server";
             // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.BackColor = System.Drawing.Color.Transparent;
-            this.label3.ForeColor = System.Drawing.Color.White;
-            this.label3.Location = new System.Drawing.Point(12, 61);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(54, 26);
-            this.label3.TabIndex = 4;
-            this.label3.Text = "Minecraft \r\nPath";
-            // 
-            // txtMcPath
-            // 
-            this.txtMcPath.Location = new System.Drawing.Point(73, 58);
-            this.txtMcPath.Name = "txtMcPath";
-            this.txtMcPath.Size = new System.Drawing.Size(100, 20);
-            this.txtMcPath.TabIndex = 5;
-            // 
-            // btnFindMc
-            // 
-            this.btnFindMc.Location = new System.Drawing.Point(179, 56);
-            this.btnFindMc.Name = "btnFindMc";
-            this.btnFindMc.Size = new System.Drawing.Size(55, 23);
-            this.btnFindMc.TabIndex = 6;
-            this.btnFindMc.Text = "Browse";
-            this.btnFindMc.UseVisualStyleBackColor = true;
-            this.btnFindMc.Click += new System.EventHandler(this.btnFindMc_Click);
-            // 
-            // chkStartMC
-            // 
-            this.chkStartMC.AutoSize = true;
-            this.chkStartMC.BackColor = System.Drawing.Color.Transparent;
-            this.chkStartMC.ForeColor = System.Drawing.Color.White;
-            this.chkStartMC.Location = new System.Drawing.Point(15, 89);
-            this.chkStartMC.Name = "chkStartMC";
-            this.chkStartMC.Size = new System.Drawing.Size(101, 17);
-            this.chkStartMC.TabIndex = 7;
-            this.chkStartMC.Text = "Start Minecraft?";
-            this.chkStartMC.UseVisualStyleBackColor = false;
-            // 
-            // chkAuUpdate
-            // 
-            this.chkAuUpdate.AutoSize = true;
-            this.chkAuUpdate.BackColor = System.Drawing.Color.Transparent;
-            this.chkAuUpdate.ForeColor = System.Drawing.Color.White;
-            this.chkAuUpdate.Location = new System.Drawing.Point(15, 112);
-            this.chkAuUpdate.Name = "chkAuUpdate";
-            this.chkAuUpdate.Size = new System.Drawing.Size(128, 17);
-            this.chkAuUpdate.TabIndex = 8;
-            this.chkAuUpdate.Text = "Enable Auto-Update?";
-            this.chkAuUpdate.UseVisualStyleBackColor = false;
-            this.chkAuUpdate.CheckedChanged += new System.EventHandler(this.checkBox2_CheckedChanged);
-            // 
             // tempPortTxt
             // 
             this.tempPortTxt.Location = new System.Drawing.Point(179, 32);
@@ -159,19 +102,25 @@ namespace ModUpdater.Client.GUI
             this.tempPortTxt.TabIndex = 9;
             this.tempPortTxt.Text = "8732";
             // 
+            // btnOptions
+            // 
+            this.btnOptions.Location = new System.Drawing.Point(12, 60);
+            this.btnOptions.Name = "btnOptions";
+            this.btnOptions.Size = new System.Drawing.Size(75, 23);
+            this.btnOptions.TabIndex = 10;
+            this.btnOptions.Text = "Options";
+            this.btnOptions.UseVisualStyleBackColor = true;
+            this.btnOptions.Click += new System.EventHandler(this.btnOptions_Click);
+            // 
             // ConnectionForm
             // 
             this.AcceptButton = this.btnUpdate;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
-            this.ClientSize = new System.Drawing.Size(246, 132);
+            this.ClientSize = new System.Drawing.Size(246, 95);
+            this.Controls.Add(this.btnOptions);
             this.Controls.Add(this.tempPortTxt);
-            this.Controls.Add(this.chkAuUpdate);
-            this.Controls.Add(this.chkStartMC);
-            this.Controls.Add(this.btnFindMc);
-            this.Controls.Add(this.txtMcPath);
-            this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.btnUpdate);
@@ -194,12 +143,8 @@ namespace ModUpdater.Client.GUI
         private System.Windows.Forms.Button btnUpdate;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox txtMcPath;
-        private System.Windows.Forms.Button btnFindMc;
         private System.Windows.Forms.FolderBrowserDialog mcpathfinder;
-        private System.Windows.Forms.CheckBox chkStartMC;
-        private System.Windows.Forms.CheckBox chkAuUpdate;
         private System.Windows.Forms.TextBox tempPortTxt;
+        private System.Windows.Forms.Button btnOptions;
     }
 }
