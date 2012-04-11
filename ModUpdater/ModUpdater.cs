@@ -30,7 +30,7 @@ namespace ModUpdater
         /// <summary>
         /// The shortname.
         /// </summary>
-        public const string ShortAppName = "Mod Updater";
+        public const string ShortAppName = "MCModUpdater";
         /// <summary>
         /// The name.
         /// </summary>
