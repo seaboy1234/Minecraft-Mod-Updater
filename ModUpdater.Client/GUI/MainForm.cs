@@ -88,6 +88,8 @@ namespace ModUpdater.Client.GUI
                     SplashScreen.ShowSplashScreen();                    
                 });
             }
+            if(Properties.Settings.Default.FirstRun)
+                Program.UpdateMinecraft();
             TaskManager.AddDelayedAsyncTask(delegate
             {
                 SplashScreen.UpdateStatusText("Downloading Updates...");
@@ -150,6 +152,14 @@ namespace ModUpdater.Client.GUI
                 if (Extras.CheckForUpdate())
                     UpdateForm.Open();
             });
+            if (Properties.Settings.Default.FirstRun)
+            {
+                TaskManager.AddAsyncTask(delegate
+                {
+                    SplashScreen.ShowSplashScreen();
+                });
+                OnFirstRun();
+            }
             ConnectionForm cf = new ConnectionForm();
             if (cf.ShowDialog() != System.Windows.Forms.DialogResult.OK)
             {
@@ -241,6 +251,17 @@ namespace ModUpdater.Client.GUI
             Packet.Send(new HandshakePacket { Username = Properties.Settings.Default.Username }, ph.Stream);
             Debug.Assert("Sent Handshake Packet.");
             Thread.Sleep(100);
+        }
+
+        private void OnFirstRun()
+        {
+            Properties.Settings.Default.MinecraftPath = Environment.CurrentDirectory + "\\.minecraft";
+            Thread.Sleep(100);
+            SplashScreen.UpdateStatusText("Welcome to " + MinecraftModUpdater.ShortAppName + " Version " + MinecraftModUpdater.Version + ".");
+            OptionsForm of = new OptionsForm();
+            Thread.Sleep(2000);
+            of.ShowDialog();
+            SplashScreen.CloseSplashScreen();
         }
 
         void ph_Image(Packet pa)
@@ -339,10 +360,13 @@ namespace ModUpdater.Client.GUI
             {
                 SplashScreen.UpdateStatusText("All files downloaded!");
                 Thread.Sleep(1000);
-                SplashScreen.CloseSplashScreen();
                 if (Properties.Settings.Default.LaunchAfterUpdate)
                 {
                     Program.StartMinecraft();
+                }
+                else
+                {
+                    SplashScreen.CloseSplashScreen();
                 }
                 Packet.Send(new LogPacket { LogMessages = MinecraftModUpdater.Logger.GetMessages() }, ph.Stream);
                 Packet.Send(new DisconnectPacket(), ph.Stream);
