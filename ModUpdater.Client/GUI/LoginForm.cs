@@ -84,6 +84,9 @@ namespace ModUpdater.Client.GUI
             sr.Close();
             wr.Close();
             if (!responce.Contains(":")) return false;
+            string[] returndata = responce.Split(':');
+            ProgramOptions.SessionID = returndata[3];
+            ProgramOptions.LatestVersion = returndata[0];
             return true;
         }
     }
