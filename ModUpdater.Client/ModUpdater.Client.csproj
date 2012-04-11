@@ -103,11 +103,11 @@
     <Compile Include="GUI\ConnectionForm.Designer.cs">
       <DependentUpon>ConnectionForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\Utility\OptionDialog.cs">
+    <Compile Include="GUI\OptionsForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GUI\Utility\OptionDialog.Designer.cs">
-      <DependentUpon>OptionDialog.cs</DependentUpon>
+    <Compile Include="GUI\OptionsForm.Designer.cs">
+      <DependentUpon>OptionsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Utility\Debug.cs" />
     <Compile Include="GUI\ExceptionHandler.cs">
@@ -163,6 +163,9 @@
     <EmbeddedResource Include="GUI\ExceptionHandler.resx">
       <DependentUpon>ExceptionHandler.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OptionsForm.resx">
+      <DependentUpon>OptionsForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\SelectServerDialog.resx">
       <DependentUpon>SelectServerDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -174,9 +177,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GUI\Utility\OptionDialog.resx">
-      <DependentUpon>OptionDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -196,6 +196,9 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Lang.Designer.cs</LastGenOutput>
     </None>
+    <EmbeddedResource Include="Launcher\MCLaunch.class">
+        <LogicalName>MCLaunch.Launcher</LogicalName>
+    </EmbeddedResource>
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
