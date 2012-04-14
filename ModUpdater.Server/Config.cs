@@ -94,51 +94,18 @@ namespace ModUpdater.Server
         }
         public static void Save()
         {
-            bool rootexists = true;
-            XmlNodeList nodes = config.SelectNodes("/Config");
-            XmlNode n = nodes[0];
-            if (n == null) rootexists = false;
-            XmlElement port;
-            XmlElement maxclients;
-            XmlElement modspath;
-            XmlElement servername;
-            XmlElement master;
-            if (!rootexists)
+            using (StreamWriter sw = File.AppendText(Program.ConfigPath))
             {
-                XmlDeclaration dec = config.CreateXmlDeclaration("1.0", null, null);
-                config.AppendChild(dec);
-                XmlElement root = config.CreateElement("Config");
-                config.AppendChild(root);
-                port = config.CreateElement("Port");
-                root.AppendChild(port);
-                maxclients = config.CreateElement("MaxClients");
-                root.AppendChild(maxclients);
-                modspath = config.CreateElement("ModsPath");
-                root.AppendChild(modspath);
-                servername = config.CreateElement("ServerName");
-                root.AppendChild(servername);
-                master = config.CreateElement("MasterServer");
-            }
-            else
-            {
-                port = n["Port"];
-                maxclients = n["MaxClients"];
-                modspath = n["ModsPath"];
-                servername = n["ServerName"];
-                master = n["MasterServer"];
-            }
-            port.InnerText = Port.ToString();
-            maxclients.InnerText = MaxClients.ToString();
-            modspath.InnerText = ModsPath;
-            servername.InnerText = ServerName;
-            master.InnerText = MasterServer;
-            try
-            {
-                config.Save(Program.ConfigPath);
-            }
-            catch
-            {
-                File.WriteAllText(Program.ConfigPath, config.OuterXml);
+                sw.WriteLine("<?xml version=\"1.0\"?>");
+                sw.WriteLine("<Config>");
+                sw.WriteLine("  <ServerName>{0}</ServerName>", ServerName);
+                sw.WriteLine("  <Port>{0}</Port>", Port);
+                sw.WriteLine("  <MaxClients>{0}</MaxClients>", MaxClients);
+                sw.WriteLine("  <ModsPath>{0}</ModsPath>", ModsPath);
+                sw.WriteLine("  <MasterServer>{0}</MasterServer>", MasterServer);
+                sw.WriteLine("</Config>");
+                sw.Flush();
+                sw.Close();
             }
         }
     }
