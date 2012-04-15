@@ -94,6 +94,8 @@ namespace ModUpdater.Server
         }
         public static void Save()
         {
+            if (File.Exists(Program.ConfigPath))
+                File.Delete(Program.ConfigPath);
             using (StreamWriter sw = File.AppendText(Program.ConfigPath))
             {
                 sw.WriteLine("<?xml version=\"1.0\"?>");
