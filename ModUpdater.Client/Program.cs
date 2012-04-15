@@ -53,6 +53,10 @@ namespace ModUpdater.Client
                         case "-debug":
                             ProgramOptions.Debug = true;
                             break;
+                        case "-reset":
+                            Properties.Settings.Default.Reset();
+                            Properties.Settings.Default.Save();
+                            break;
                     }
                 }
             }
