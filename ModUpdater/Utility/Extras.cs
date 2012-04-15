@@ -94,5 +94,10 @@ namespace ModUpdater.Utility
             else 
                 return false;
         }
+        public static IPAddress GetAddressFromHostname(string hostname)
+        {
+            IPAddress[] ip = Dns.GetHostAddresses(hostname);
+            return ip.FirstOrDefault();
+        }
     }
 }

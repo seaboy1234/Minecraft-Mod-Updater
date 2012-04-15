@@ -184,7 +184,7 @@ namespace ModUpdater.Client.GUI
                 string srv = cf.ConnectTo.Address;
                 int port =  cf.ConnectTo.Port;
                 if (srv == LocalAddress.ToString()) srv = "127.0.0.1";
-                s.Connect(new IPEndPoint(IPAddress.Parse(srv), port));
+                ConnectionHandler.ConnectTo(s, srv, port);
             }
             catch (SocketException ex)
             {

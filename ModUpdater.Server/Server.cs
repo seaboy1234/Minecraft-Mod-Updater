@@ -112,8 +112,7 @@ namespace ModUpdater.Server
                     Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                     string ip = Config.MasterServer.Split(':')[0].Trim();
                     int port = int.Parse(Config.MasterServer.Split(':')[1].Trim());
-                    IPEndPoint ep = new IPEndPoint(IPAddress.Parse(ip), port);
-                    s.Connect(ep);
+                    ConnectionHandler.ConnectTo(s, ip, port);
                     PacketHandler ph = new PacketHandler(s);
                     ph.Start();
                     Thread.Sleep(1000);
