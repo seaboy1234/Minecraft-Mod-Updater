@@ -553,12 +553,8 @@ namespace ModUpdater.Client.GUI
                     Packet.Send(new LogPacket { LogMessages = MinecraftModUpdater.Logger.GetMessages() }, ph.Stream);
                     ph.Stop();
                 }
-                else
-                {
-                    string[] file = MinecraftModUpdater.Logger.GetMessages();
-
-                    File.WriteAllLines("ModUpdater.log", file);
-                }
+                string[] file = MinecraftModUpdater.Logger.GetMessages();
+                File.WriteAllLines("ModUpdater.log", file);
             }
             catch { }
         }
