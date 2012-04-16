@@ -113,6 +113,7 @@ namespace ModUpdater.Client.GUI
             {
                 button2.Enabled = false;
             }
+            BringToFront();
         }
 
         private void OptionsForm_FormClosing(object sender, FormClosingEventArgs e)
