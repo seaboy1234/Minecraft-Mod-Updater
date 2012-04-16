@@ -1,4 +1,20 @@
-﻿using System;
+﻿//    File:        LoginForm.cs
+//    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
+//    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
+//    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
+//
+//    Licensed under the Apache License, Version 2.0 (the "License");
+//    you may not use this file except in compliance with the License.
+//    You may obtain a copy of the License at
+//
+//        http://www.apache.org/licenses/LICENSE-2.0
+//
+//    Unless required by applicable law or agreed to in writing, software
+//    distributed under the License is distributed on an "AS IS" BASIS,
+//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//    See the License for the specific language governing permissions and
+//    limitations under the License.
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -35,59 +51,40 @@ namespace ModUpdater.Client
                 Properties.Settings.Default.Password = "";
             Properties.Settings.Default.RememberPassword = rempassword.Checked;
             Properties.Settings.Default.Save();
-            Hide();
-            StartMinecraft();
+            string error;
+            if (!VerifyAccount(out error))
+            {
+                MessageBox.Show("Unable to login to Minecraft.  " + error, "Error");
+                DialogResult = System.Windows.Forms.DialogResult.Abort;
+                Close();
+                return;
+            }
+            DialogResult = System.Windows.Forms.DialogResult.OK;
             Close();
         }
 
-        private void StartMinecraft()
+        private bool VerifyAccount(out string error)
         {
-            using (StreamWriter log = File.CreateText("log.txt"))
-            {
-                if (!File.Exists("Minecraft.exe"))
-                {
-                    Console.WriteLine("Downloading Minecraft.exe...");
-                    new WebClient().DownloadFile("https://s3.amazonaws.com/MinecraftDownload/launcher/Minecraft.exe", "Minecraft.exe");
-                }
-                Console.WriteLine("Starting Minecraft");
-                using (StreamWriter sw = File.AppendText("start.bat"))
-                {
-                    sw.WriteLine(@"SET APPDATA=%cd%");
-                    sw.WriteLine(@"Minecraft.exe {0} {1}", Properties.Settings.Default.Username, Properties.Settings.Default.Password);
-                    sw.Flush();
-                    sw.Close();
-                    sw.Dispose();
-                }
-                ProcessStartInfo info = new ProcessStartInfo("cmd", "/c start.bat");
-                info.RedirectStandardOutput = true;
-                info.RedirectStandardInput = true;
-                info.UseShellExecute = false;
-                info.CreateNoWindow = true;
-                System.Diagnostics.Process proc = new System.Diagnostics.Process();
-                proc.StartInfo = info;
-                proc.Start();
-                log.WriteLine(proc.StandardOutput.ReadToEnd());
-                while (File.Exists("Minecraft.exe"))
-                {
-                    try
-                    {
-                        File.Delete("Minecraft.exe");
-                        break;
-                    }
-                    catch { }
-                    System.Threading.Thread.Sleep(10000);
-                }
-                while (File.Exists("start.bat"))
-                {
-                    try
-                    {
-                        File.Delete("start.bat");
-                        break;
-                    }
-                    catch { }
-                    System.Threading.Thread.Sleep(10000);
-                }
-            }
+            string postdata = "user=" + Properties.Settings.Default.Username + "&password=" + Properties.Settings.Default.Password + "&version=" + int.MaxValue.ToString();
+            byte[] post = Encoding.UTF8.GetBytes(postdata);
+            WebRequest r = WebRequest.Create("https://login.minecraft.net");
+            r.Credentials = CredentialCache.DefaultCredentials;
+            ((HttpWebRequest)r).UserAgent = "Minecraft Mod Updater Login Manager";
+            r.Method = "POST";
+            r.ContentType = "application/x-www-form-urlencoded";
+            r.ContentLength = post.Length;
+            Stream s = r.GetRequestStream();
+            s.Write(post, 0, post.Length);
+            WebResponse wr = r.GetResponse();
+            s = wr.GetResponseStream();
+            StreamReader sr = new StreamReader(s);
+            string responce = sr.ReadToEnd();
+            error = responce;
+            s.Close();
+            sr.Close();
+            wr.Close();
+            if (!responce.Contains(":")) return false;
+            return true;
         }
     }
 }

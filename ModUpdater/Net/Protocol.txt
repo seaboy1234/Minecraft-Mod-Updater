@@ -1,11 +1,15 @@
 ﻿Packet Order
 Handshake --> Server
 EncryptionStatus --> Client
+Metadata[server_name] --> Client
+Image --> Client
 ModList --> Client
 Foreach mod
 	RequestMod (Info) --> Server
 	ModInfo --> Client
 	Client stores mod hash
+BeginDownload --> Server
+Server sends mod images.
 Foreach mod that needs updating
 	RequestMod (Download) --> Server
 	NextDownload --> Client
@@ -14,4 +18,4 @@ Foreach mod that needs updating
 	RequestMod (Config) --> Server
 	ModConfig --> Client
 Log --> Server
-ThankYou Client <--> Server
+Disconnect --> Server

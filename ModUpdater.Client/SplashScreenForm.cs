@@ -1,4 +1,20 @@
-﻿using System;
+﻿//    File:        SplashScreenForm.cs
+//    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
+//    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
+//    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
+//
+//    Licensed under the Apache License, Version 2.0 (the "License");
+//    you may not use this file except in compliance with the License.
+//    You may obtain a copy of the License at
+//
+//        http://www.apache.org/licenses/LICENSE-2.0
+//
+//    Unless required by applicable law or agreed to in writing, software
+//    distributed under the License is distributed on an "AS IS" BASIS,
+//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//    See the License for the specific language governing permissions and
+//    limitations under the License.
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -15,6 +31,7 @@ namespace ModUpdater.Client
         delegate void StringParameterWithStatusDelegate(string Text, TypeOfMessage tom);
         delegate void SplashShowCloseDelegate();
         bool FadeOut = false;
+        public bool Loading = true;
 
         /// <summary>
         /// To ensure splash screen is closed using the API and not by keyboard or any other things
@@ -28,10 +45,13 @@ namespace ModUpdater.Client
         {
             InitializeComponent();
             this.label3.BackColor = Color.Transparent;
+            label3.Parent = Image;
             this.label3.ForeColor = Color.Green;
+            label2.Parent = Image;
             this.label2.BackColor = Color.Transparent;
             this.label2.Text = MinecraftModUpdater.LongAppName;
             this.Opacity = 0;
+            DownloadPicture.Parent = Image;
 
             //this.progressBar1.Parent = this.pictureBox1;
             //this.progressBar1.BackColor = Color.Transparent;
@@ -140,6 +160,10 @@ namespace ModUpdater.Client
             else
             {
                 this.Opacity += .05;
+                if (this.Opacity >= 1.0)
+                {
+                    Loading = false;
+                }
             }
         }
 
