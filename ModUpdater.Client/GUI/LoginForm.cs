@@ -26,7 +26,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Net;
 
-namespace ModUpdater.Client
+namespace ModUpdater.Client.GUI
 {
     public partial class LoginForm : Form
     {
@@ -84,6 +84,9 @@ namespace ModUpdater.Client
             sr.Close();
             wr.Close();
             if (!responce.Contains(":")) return false;
+            string[] returndata = responce.Split(':');
+            ProgramOptions.SessionID = returndata[3];
+            ProgramOptions.LatestVersion = returndata[0];
             return true;
         }
     }

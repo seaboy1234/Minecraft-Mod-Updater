@@ -20,6 +20,8 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Xml;
+using System.Threading;
+using ModUpdater.Utility;
 
 namespace ModUpdater.Server
 {
@@ -127,6 +129,18 @@ namespace ModUpdater.Server
             }
             catch { }
             modFile.Save(ConfigFile);
+            if (ModFile.Contains("minecraft.jar"))
+            {
+                TaskManager.AddAsyncTask(delegate
+                {
+                    for (int i = 0; i < 10; i++)
+                    {
+                        Console.Beep();
+                        Thread.Sleep(50);
+                    }
+                    Console.WriteLine("WARNING: Sending minecraft.jar is not allowed under the Minecraft Terms of Use.  Please send jar mods in bin/jarmods.jar.");
+                });
+            }
         }
         public override string ToString()
         {

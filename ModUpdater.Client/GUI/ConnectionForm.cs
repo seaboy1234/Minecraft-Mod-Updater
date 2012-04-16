@@ -27,7 +27,7 @@ using System.Net.Sockets;
 using System.Net;
 using ModUpdater.Net;
 
-namespace ModUpdater.Client
+namespace ModUpdater.Client.GUI
 {
     public partial class ConnectionForm : Form
     {
@@ -38,38 +38,13 @@ namespace ModUpdater.Client
             InitializeComponent();
             
         }
-
-        private void btnFindMc_Click(object sender, EventArgs e)
-        {
-            if (Directory.Exists(".minecraft"))
-            {
-                if (MessageBox.Show("I've found a valid minecraft folder in this directory.  Would you like me to use \"" + Environment.CurrentDirectory + "\\.minecraft\" as the minecraft directory?", "Make this prossess 10x easier by pressing \"Yes\"", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
-                {
-                    txtMcPath.Text = Environment.CurrentDirectory + "\\.minecraft";
-                    return;
-                }
-                else
-                {
-                    MessageBox.Show("Fine, have it your way.", "Good Luck...");
-                }
-            }
-            if (mcpathfinder.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                txtMcPath.Text = mcpathfinder.SelectedPath;
-            else return;
-            if (!mcpathfinder.SelectedPath.Contains(".minecraft")) MessageBox.Show("It seems that you did not select a valid .minecraft folder.  If you are 100% sure you selected a valid minecraft install you can continue, though you may want to check just to be sure.");
-        }
-
         private void btnUpdate_Click(object sender, EventArgs e)
         {
-            if (txtMcPath.Text == "")
+            if (!Directory.Exists(Properties.Settings.Default.MinecraftPath))
             {
-                Directory.CreateDirectory(".minecraft");
-                btnFindMc_Click(null, null);
+                Directory.CreateDirectory(Properties.Settings.Default.MinecraftPath);
             }
-            Properties.Settings.Default.MinecraftPath = txtMcPath.Text;
             Properties.Settings.Default.Server = txtServer.Text;
-            Properties.Settings.Default.LaunchAfterUpdate = chkStartMC.Checked;
-            Properties.Settings.Default.AutoUpdate = chkAuUpdate.Checked;
             Properties.Settings.Default.Port = int.Parse(tempPortTxt.Text);
             if (!CanClose()) return;
             if (Properties.Settings.Default.RememberServer)
@@ -86,9 +61,16 @@ namespace ModUpdater.Client
         {
             while (MainForm.Instance.LocalAddress == null) ;
             if (MainForm.Instance.LocalAddress.ToString() == txtServer.Text) txtServer.Text = "127.0.0.1";
-            IPEndPoint ip = new IPEndPoint(IPAddress.Parse(txtServer.Text), int.Parse(tempPortTxt.Text));
             Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            s.Connect(ip);
+            try
+            {
+                ConnectionHandler.ConnectTo(s, txtServer.Text, int.Parse(tempPortTxt.Text));
+            }
+            catch
+            {
+                MessageBox.Show("Unable to connect to the server.");
+                return false;
+            }
             ModUpdaterNetworkStream str = new ModUpdaterNetworkStream(s);
             Packet.Send(new HandshakePacket { Type = HandshakePacket.SessionType.ServerList }, str);
             Packet p = Packet.ReadPacket(str); //The server should only return a ServerList, right?
@@ -119,9 +101,6 @@ namespace ModUpdater.Client
         private void ConnectionForm_Load(object sender, EventArgs e)
         {
             txtServer.Text = Properties.Settings.Default.Server;
-            txtMcPath.Text = Properties.Settings.Default.MinecraftPath;
-            chkStartMC.Checked = Properties.Settings.Default.LaunchAfterUpdate;
-            chkAuUpdate.Checked = Properties.Settings.Default.AutoUpdate;
             tempPortTxt.Text = Properties.Settings.Default.Port.ToString();
             KeyDown += new KeyEventHandler(ConnectionForm_KeyDown);
         }
@@ -133,19 +112,12 @@ namespace ModUpdater.Client
                 Properties.Settings.Default.Reset();
                 Properties.Settings.Default.Save();
                 txtServer.Text = Properties.Settings.Default.Server;
-                txtMcPath.Text = Properties.Settings.Default.MinecraftPath;
             }
         }
 
-        private void checkBox2_CheckedChanged(object sender, EventArgs e)
+        private void btnOptions_Click(object sender, EventArgs e)
         {
-            if (chkAuUpdate.Checked && !Properties.Settings.Default.AutoUpdate)
-            {
-                if (MessageBox.Show("WARNING: Turning on the auto updater will automaticly download new updates.  ONLY use this on servers you FULLY TRUST. \r\nAre you sure you want to enable this feature?", "Mod Updater Warning", MessageBoxButtons.YesNo) != System.Windows.Forms.DialogResult.Yes)
-                {
-                    chkAuUpdate.Checked = false;
-                }
-            }
+            new OptionsForm().ShowDialog();
         }
     }
 }

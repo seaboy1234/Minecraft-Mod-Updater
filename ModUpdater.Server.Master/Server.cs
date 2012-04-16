@@ -72,10 +72,11 @@ namespace ModUpdater.Server.Master
                 Server = s;
                 ph = p;
                 ph.Start();
-                ph.Handshake += Handle;
+                ph.RegisterPacketHandler(PacketId.Handshake, Handle);
             }
-            private void Handle(HandshakePacket p)
+            private void Handle(Packet pa)
             {
+                HandshakePacket p = pa as HandshakePacket;
                 if (p.Type == HandshakePacket.SessionType.Server)
                 {
                     Slave sl = new Slave(p, ph);

@@ -24,7 +24,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Diagnostics;
 
-namespace ModUpdater.Client
+namespace ModUpdater.Client.GUI
 {
     public partial class UpdateForm : Form
     {
