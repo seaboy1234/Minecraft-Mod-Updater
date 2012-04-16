@@ -1,4 +1,20 @@
-﻿namespace ModUpdater.Client
+﻿//    File:        ExceptionHandler.Designer.cs
+//    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
+//    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
+//    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
+//
+//    Licensed under the Apache License, Version 2.0 (the "License");
+//    you may not use this file except in compliance with the License.
+//    You may obtain a copy of the License at
+//
+//        http://www.apache.org/licenses/LICENSE-2.0
+//
+//    Unless required by applicable law or agreed to in writing, software
+//    distributed under the License is distributed on an "AS IS" BASIS,
+//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//    See the License for the specific language governing permissions and
+//    limitations under the License.
+namespace ModUpdater.Client
 {
     partial class ExceptionHandler
     {
@@ -38,9 +54,11 @@
             // 
             // txtError
             // 
+            this.txtError.BackColor = System.Drawing.Color.White;
             this.txtError.Location = new System.Drawing.Point(12, 63);
             this.txtError.Multiline = true;
             this.txtError.Name = "txtError";
+            this.txtError.ReadOnly = true;
             this.txtError.Size = new System.Drawing.Size(389, 287);
             this.txtError.TabIndex = 0;
             this.txtError.TextChanged += new System.EventHandler(this.txtError_TextChanged);
@@ -98,6 +116,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "ExceptionHandler";
             this.Text = "Exception Handler";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ExceptionHandler_FormClosed);
             this.Load += new System.EventHandler(this.ExceptionHandler_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

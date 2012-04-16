@@ -1,11 +1,27 @@
-﻿using System;
+﻿//    File:        PacketHandler.cs
+//    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
+//    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
+//    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
+//
+//    Licensed under the Apache License, Version 2.0 (the "License");
+//    you may not use this file except in compliance with the License.
+//    You may obtain a copy of the License at
+//
+//        http://www.apache.org/licenses/LICENSE-2.0
+//
+//    Unless required by applicable law or agreed to in writing, software
+//    distributed under the License is distributed on an "AS IS" BASIS,
+//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//    See the License for the specific language governing permissions and
+//    limitations under the License.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Net.Sockets;
 using System.Threading;
 
-namespace ModUpdater
+namespace ModUpdater.Net
 {
     public class PacketHandler
     {
@@ -23,9 +39,10 @@ namespace ModUpdater
         public event PacketEvent<NextDownloadPacket> NextDownload;
         public event PacketEvent<LogPacket> Log;
         public event PacketEvent<AllDonePacket> AllDone;
-        public event PacketEvent<ClientUpdatePacket> ClientUpdate;
         public event PacketEvent<Packet> Disconnect;
         public event PacketEvent<ConnectPacket> Connect;
+        public event PacketEvent<ImagePacket> Image;
+        public event PacketEvent<ServerListPacket> ServerList;
         /*End Events*/
 
         public PacketHandler(Socket s)
@@ -83,9 +100,6 @@ namespace ModUpdater
                     case PacketId.FilePart:
                         FilePart.Invoke((FilePartPacket)p);
                         break;
-                    case PacketId.ClientUpdate:
-                        ClientUpdate.Invoke((ClientUpdatePacket)p);
-                        break;
                     case PacketId.Disconnect:
                         if (Disconnect != null)
                             Disconnect.Invoke(p);
@@ -93,6 +107,14 @@ namespace ModUpdater
                     case PacketId.Connect:
                         if (Connect != null)
                             Connect.Invoke((ConnectPacket)p);
+                        break;
+                    case PacketId.Image:
+                        if (Image != null)
+                            Image.Invoke((ImagePacket)p);
+                        break;
+                    case PacketId.ServerList:
+                        if (ServerList != null)
+                            ServerList.Invoke((ServerListPacket)p);
                         break;
                     default:
                         break;

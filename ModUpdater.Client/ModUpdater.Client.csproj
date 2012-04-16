@@ -106,6 +106,19 @@
     <Compile Include="ExceptionHandler.Designer.cs">
       <DependentUpon>ExceptionHandler.cs</DependentUpon>
     </Compile>
+    <Compile Include="SelectServerDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SelectServerDialog.Designer.cs">
+      <DependentUpon>SelectServerDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Server.cs" />
+    <Compile Include="UpdateForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UpdateForm.Designer.cs">
+      <DependentUpon>UpdateForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="LoginForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -139,6 +152,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ExceptionHandler.resx">
       <DependentUpon>ExceptionHandler.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SelectServerDialog.resx">
+      <DependentUpon>SelectServerDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UpdateForm.resx">
+      <DependentUpon>UpdateForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LoginForm.resx">
       <DependentUpon>LoginForm.cs</DependentUpon>
@@ -175,10 +194,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ModUpdater.Client.SelfUpdateManager\ModUpdater.Client.SelfUpdateManager.csproj">
-      <Project>{6C71D4C0-19C2-484A-A3DE-B0CCA2CCB8D0}</Project>
-      <Name>ModUpdater.Client.SelfUpdateManager</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ModUpdater\ModUpdater.csproj">
       <Project>{A35F98A0-18D0-4FF4-9258-EF348095F8C8}</Project>
       <Name>ModUpdater</Name>

@@ -1,4 +1,20 @@
-﻿namespace ModUpdater.Client
+﻿//    File:        SplashScreenForm.designer.cs
+//    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
+//    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
+//    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
+//
+//    Licensed under the Apache License, Version 2.0 (the "License");
+//    you may not use this file except in compliance with the License.
+//    You may obtain a copy of the License at
+//
+//        http://www.apache.org/licenses/LICENSE-2.0
+//
+//    Unless required by applicable law or agreed to in writing, software
+//    distributed under the License is distributed on an "AS IS" BASIS,
+//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//    See the License for the specific language governing permissions and
+//    limitations under the License.
+namespace ModUpdater.Client
 {
     partial class SplashScreenForm
     {
@@ -35,7 +51,9 @@
             this.label3 = new System.Windows.Forms.Label();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.DownloadPicture = new System.Windows.Forms.PictureBox();
+            this.Image = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.DownloadPicture)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Image)).BeginInit();
             this.SuspendLayout();
             // 
             // progressBar1
@@ -52,7 +70,7 @@
             this.label2.BackColor = System.Drawing.Color.White;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.ForeColor = System.Drawing.Color.White;
-            this.label2.Location = new System.Drawing.Point(117, 9);
+            this.label2.Location = new System.Drawing.Point(17, 9);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(0, 55);
             this.label2.TabIndex = 3;
@@ -82,6 +100,16 @@
             this.DownloadPicture.TabIndex = 5;
             this.DownloadPicture.TabStop = false;
             // 
+            // Image
+            // 
+            this.Image.BackColor = System.Drawing.Color.Transparent;
+            this.Image.Image = ((System.Drawing.Image)(resources.GetObject("Image.Image")));
+            this.Image.Location = new System.Drawing.Point(0, 0);
+            this.Image.Name = "Image";
+            this.Image.Size = new System.Drawing.Size(640, 400);
+            this.Image.TabIndex = 6;
+            this.Image.TabStop = false;
+            // 
             // SplashScreenForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -89,9 +117,10 @@
             this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
             this.ClientSize = new System.Drawing.Size(640, 400);
             this.Controls.Add(this.DownloadPicture);
+            this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.progressBar1);
+            this.Controls.Add(this.Image);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "SplashScreenForm";
@@ -100,6 +129,7 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SplashScreenForm_FormClosing);
             this.Load += new System.EventHandler(this.SplashScreenForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.DownloadPicture)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Image)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -107,10 +137,11 @@
 
         #endregion
 
-        private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Timer timer1;
         internal System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.PictureBox DownloadPicture;
+        internal System.Windows.Forms.Label label2;
+        internal System.Windows.Forms.PictureBox Image;
     }
 }

@@ -1,4 +1,20 @@
-﻿using System;
+﻿//    File:        Server.cs
+//    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
+//    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
+//    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
+//
+//    Licensed under the Apache License, Version 2.0 (the "License");
+//    you may not use this file except in compliance with the License.
+//    You may obtain a copy of the License at
+//
+//        http://www.apache.org/licenses/LICENSE-2.0
+//
+//    Unless required by applicable law or agreed to in writing, software
+//    distributed under the License is distributed on an "AS IS" BASIS,
+//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//    See the License for the specific language governing permissions and
+//    limitations under the License.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +22,9 @@ using System.Net.Sockets;
 using System.Net;
 using System.IO;
 using System.Threading;
+using System.Drawing;
+using ModUpdater.Net;
+using ModUpdater.Utility;
 
 namespace ModUpdater.Server
 {
@@ -16,27 +35,51 @@ namespace ModUpdater.Server
         public TcpListener TcpServer { get; private set; }
         public TcpListener TcpServer2 { get; private set; }
         public IPAddress Address { get; private set; }
+        public Dictionary<Mod, Image> ModImages { get; private set; }
+        public Image BackgroundImage { get; private set; }
         bool Online { get; set; }
         public Server()
         {
+            Config.Load();
             Mods = new List<Mod>();
             Clients = new List<Client>();
-            TcpServer = new TcpListener(IPAddress.Any, 4713);
-            if (Directory.Exists(@"clientmods\xml")) Directory.Move(@"clientmods\xml", "xml");
-            if (Directory.Exists(@"clientmods\config")) Directory.Move(@"clientmods\config", "config");
-            if (Directory.Exists("clientmods")) Directory.Move("clientmods", "mods");
-            if (!Directory.Exists("mods")) Directory.CreateDirectory("mods");
-            if (!Directory.Exists("xml")) Directory.CreateDirectory("xml");
-            if (!Directory.Exists("config")) Directory.CreateDirectory("config");
-            foreach (string s in Directory.GetFiles("xml"))
+            TcpServer = new TcpListener(IPAddress.Any, Config.Port);
+            ModImages = new Dictionary<Mod, Image>();
+            SelfUpdate();
+            foreach (string s in Directory.GetFiles(Config.ModsPath + "/xml"))
             {
                 Mods.Add(new Mod(s));
             }
             foreach (Mod m in Mods)
             {
-                //Console.WriteLine(m.ToString());
+                if (File.Exists(Config.ModsPath + "/ModAssets/" + Path.GetFileName(m.ModFile) + ".png"))
+                {
+                    ModImages.Add(m, Image.FromFile(Config.ModsPath + "/ModAssets/" + Path.GetFileName(m.ModFile) + ".png"));
+                }
+            }
+            if (File.Exists(Config.ModsPath + "/assets/server_background.png"))
+            {
+                BackgroundImage = Image.FromFile(Config.ModsPath + "/assets/server_background.png");
             }
             Console.WriteLine("Registered {0} mods", Mods.Count);
+        }
+        private void SelfUpdate()
+        {
+            if (Config.ModsPath != ".")
+            {
+                try
+                {
+                    if (!Directory.Exists(Config.ModsPath)) Directory.CreateDirectory(Config.ModsPath);
+                    if (Directory.Exists("mods")) Directory.Move("mods", Config.ModsPath + "/mods");
+                    if (Directory.Exists("xml")) Directory.Move("xml", Config.ModsPath + "/xml");
+                    if (Directory.Exists("ModAssets")) Directory.Move("ModAssets", Config.ModsPath + "/ModAssets");
+                }
+                catch { }
+            }
+            if (!Directory.Exists(Config.ModsPath + "/mods")) Directory.CreateDirectory(Config.ModsPath + "/mods");
+            if (!Directory.Exists(Config.ModsPath + "/xml")) Directory.CreateDirectory(Config.ModsPath + "/xml");
+            if (!Directory.Exists(Config.ModsPath + "/assets")) Directory.CreateDirectory(Config.ModsPath + "/assets");
+            if (!Directory.Exists(Config.ModsPath + "/ModAssets")) Directory.CreateDirectory(Config.ModsPath + "/ModAssets");
         }
         public void Start()
         {
@@ -61,15 +104,38 @@ namespace ModUpdater.Server
             Console.WriteLine("Server IP Address is: " + Address.ToString());
             TcpServer.Start();
             Online = true;
-            TaskManager.AddDelayedAsyncTask(delegate { SimpleConsoleImputHandler(); }, 3000);
-            Receve();
+            TaskManager.AddAsyncTask(delegate { SimpleConsoleImputHandler(); });
+            TaskManager.AddDelayedAsyncTask(delegate
+            {
+                if (Config.MasterServer != "")
+                {
+                    Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    string ip = Config.MasterServer.Split(':')[0].Trim();
+                    int port = int.Parse(Config.MasterServer.Split(':')[1].Trim());
+                    IPEndPoint ep = new IPEndPoint(IPAddress.Parse(ip), port);
+                    s.Connect(ep);
+                    PacketHandler ph = new PacketHandler(s);
+                    ph.Start();
+                    Thread.Sleep(1000);
+                    Packet.Send(new HandshakePacket { Name = Config.ServerName, Port = Config.Port, Address = Address.ToString(), Type = HandshakePacket.SessionType.Server }, ph.Stream);
+                }
+            }, 1000);
+            TaskManager.AddAsyncTask(delegate
+            {
+                if (Extras.CheckForUpdate())
+                {
+                    Console.WriteLine("There is a new version available for Minecraft Mod Updater.");
+                }
+            });
+            Receive();
         }
         public void Dispose()
         {
             TcpServer.Stop();
             Online = false;
+            Config.Save();
         }
-        public void Receve()
+        public void Receive()
         {
             while (Online)
             {
@@ -86,6 +152,11 @@ namespace ModUpdater.Server
         }
         public void AcceptClient(Socket s)
         {
+            if (Clients.Count >= Config.MaxClients)
+            {
+                s.Disconnect(false);
+                return;
+            }
             Client c = new Client(s, this);
             Clients.Add(c);
             c.StartListening();
@@ -118,17 +189,47 @@ namespace ModUpdater.Server
                     case "stop":
                         foreach (Client c in Clients)
                         {
-                            Packet.Send(new MetadataPacket { Data = new string[] { "shutdown", "The Server is shutting down." } }, c.PacketHandler.Stream);
+                            Packet.Send(new MetadataPacket { SData = new string[] { "shutdown", "The Server is shutting down." } }, c.PacketHandler.Stream);
                         }
                         if (Clients.Count > 0) Console.WriteLine("Waiting for {0} clients to exit.", Clients.Count);
                         while (Clients.Count > 0) ;
                         Dispose();
+                        break;
+                    case "populate":
+                        foreach(string s in Directory.GetFiles(Config.ModsPath + "/mods"))
+                        {
+                            string[] file = new string[] {
+                                "<Mod>",
+                                "    <Name>" + Path.GetFileName(s) + "</Name>",
+                                "    <Author>null</Author>",
+                                "    <File>mods/" + Path.GetFileName(s) + "</File>",
+                                "    <PostDownload>",
+                                "        <Action>echo Example</Action>",
+                                "    </PostDownload>",
+                                "</Mod>" };
+                            File.WriteAllLines(Config.ModsPath + "/xml/" + Path.GetFileName(s) + ".xml", file);
+                        }
+                        Mods.Clear();
+                        ModImages.Clear();
+                        foreach (string s in Directory.GetFiles(Config.ModsPath + "/xml"))
+                        {
+                            Mods.Add(new Mod(s));
+                        }
+                        foreach (Mod m in Mods)
+                        {
+                            if (File.Exists(Config.ModsPath + "/ModAssets/" + Path.GetFileName(m.ModFile) + ".png"))
+                            {
+                                ModImages.Add(m, Image.FromFile(Config.ModsPath + "/ModAssets/" + Path.GetFileName(m.ModFile) + ".png"));
+                            }
+                        }
+                        Console.WriteLine("Registered {0} mods", Mods.Count);
                         break;
                     case "help":
                     case "?":
                     default:
                         Console.WriteLine("exit, stop - Safely stops the update server after all clients exit.");
                         Console.WriteLine("connected - Shows a list of connected clients.");
+                        Console.WriteLine("populate - Automagicly reads all of the files in the mods folder and creates XML files for them.");
                         break;
                 }
             }
