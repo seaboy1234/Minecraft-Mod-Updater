@@ -33,13 +33,14 @@ namespace ModUpdater.Client.GUI
     public partial class MainForm : Form
     {
         public static MainForm Instance { get; private set; }
-        List<string> ModFiles = new List<string>();
-        List<Mod> Mods = new List<Mod>();
-        ModFile CurrentDownload;
+        public ModFile CurrentDownload;
         public IPAddress LocalAddress;
+        public string ServerFolder { get { return serverName.Replace(' ', '_').Replace('.', '-').ToLower(); } }
+        public delegate void Void();
         private PacketHandler ph;
         private Socket socket;
-        public delegate void Void();
+        private List<string> ModFiles = new List<string>();
+        private List<Mod> Mods = new List<Mod>();
         private string[] PostDownload;
         private bool ServerShutdown = false;
         private string serverName = "";
@@ -255,8 +256,9 @@ namespace ModUpdater.Client.GUI
 
         private void OnFirstRun()
         {
-            Properties.Settings.Default.MinecraftPath = Environment.CurrentDirectory + "\\.minecraft";
-            Thread.Sleep(100);
+            Properties.Settings.Default.MinecraftPath = Environment.CurrentDirectory + "/Minecraft";
+            while (SplashScreen.GetScreen() == null) ;
+            while (SplashScreen.GetScreen().Opacity != 1.0) ;
             SplashScreen.UpdateStatusText("Welcome to " + MinecraftModUpdater.ShortAppName + " Version " + MinecraftModUpdater.Version + ".");
             OptionsForm of = new OptionsForm();
             Thread.Sleep(2000);
@@ -508,6 +510,8 @@ namespace ModUpdater.Client.GUI
             {
                 serverName = p.SData[1];
                 serverFontSize = p.FData[0];
+                Properties.Settings.Default.MinecraftPath = Environment.CurrentDirectory + "/Minecraft/" + ServerFolder;
+                MinecraftModUpdater.Logger.Log(Logger.Level.Info, Properties.Settings.Default.MinecraftPath);
             }
             else if (p.SData[0] == "splash_display")
             {

@@ -103,10 +103,10 @@ namespace ModUpdater.Client.Game
                 LoadJarURLs();
 
                 // Create the bin directory if it doesn't exist
-                if (!Directory.Exists(".minecraft/bin"))
-                    Directory.CreateDirectory(".minecraft/bin");
+                if (!Directory.Exists(Properties.Settings.Default.MinecraftPath + "/bin"))
+                    Directory.CreateDirectory(Properties.Settings.Default.MinecraftPath + "/bin");
 
-                string binDir = ".minecraft/bin";
+                string binDir = Properties.Settings.Default.MinecraftPath + "/bin";
                 if (this.latestVersion != null)
                 {
                     string versionFile = Path.Combine(binDir, "version");
@@ -183,9 +183,9 @@ namespace ModUpdater.Client.Game
         private void DownloadJars()
         {
             Dictionary<string, string> md5s = new Dictionary<string, string>();
-            if (File.Exists(Path.Combine(".minecraft/bin/", "md5s")))
+            if (File.Exists(Path.Combine(Properties.Settings.Default.MinecraftPath + "/bin/", "md5s")))
             {
-                foreach (string s in File.ReadAllLines(Path.Combine(".minecraft/bin/", "md5s")))
+                foreach (string s in File.ReadAllLines(Path.Combine(Properties.Settings.Default.MinecraftPath + "/bin/", "md5s")))
                 {
                     string key, value;
                     key = s.Split('=')[0].Trim();
@@ -250,7 +250,7 @@ namespace ModUpdater.Client.Game
                     {
                         lines.Add(v.Key + "=" + v.Value);
                     }
-                    File.WriteAllLines(Path.Combine(".minecraft/bin/", "md5s"), lines.ToArray());
+                    File.WriteAllLines(Path.Combine(Properties.Settings.Default.MinecraftPath + "/bin/", "md5s"), lines.ToArray());
 
                     int failedAttempts = 0;
                     const int MAX_FAILS = 3;
@@ -281,7 +281,7 @@ namespace ModUpdater.Client.Game
 
                         Stream dlStream = response.GetResponseStream();
                         using (FileStream fos =
-                            new FileStream(Path.Combine(".minecraft/bin", currentFile), FileMode.Create))
+                            new FileStream(Path.Combine(Properties.Settings.Default.MinecraftPath + "/bin", currentFile), FileMode.Create))
                         {
                             int fileSize = 0;
 
@@ -328,7 +328,7 @@ namespace ModUpdater.Client.Game
                                     {
                                         lines.Add(v.Key + "=" + v.Value);
                                     }
-                                    File.WriteAllLines(Path.Combine(".minecraft/bin/", "md5s"), lines.ToArray());
+                                    File.WriteAllLines(Path.Combine(Properties.Settings.Default.MinecraftPath + "/bin/", "md5s"), lines.ToArray());
                                 }
                                 else
                                 {
@@ -356,8 +356,8 @@ namespace ModUpdater.Client.Game
             State = EnumState.EXTRACTING_PACKAGES;
 
             string nativesJar =
-                Path.Combine(".minecraft/bin", Path.GetFileName((uriList[uriList.Length - 1].LocalPath)));
-            string nativesDir = Path.Combine(".minecraft/bin", "natives");
+                Path.Combine(Properties.Settings.Default.MinecraftPath + "/bin", Path.GetFileName((uriList[uriList.Length - 1].LocalPath)));
+            string nativesDir = Path.Combine(Properties.Settings.Default.MinecraftPath + "/bin", "natives");
 
             if (!Directory.Exists(nativesDir))
                 Directory.CreateDirectory(nativesDir);

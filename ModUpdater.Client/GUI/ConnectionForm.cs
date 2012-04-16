@@ -40,9 +40,9 @@ namespace ModUpdater.Client.GUI
         }
         private void btnUpdate_Click(object sender, EventArgs e)
         {
-            if (!Directory.Exists(".minecraft"))
+            if (!Directory.Exists(Properties.Settings.Default.MinecraftPath))
             {
-                Directory.CreateDirectory(".minecraft");
+                Directory.CreateDirectory(Properties.Settings.Default.MinecraftPath);
             }
             Properties.Settings.Default.Server = txtServer.Text;
             Properties.Settings.Default.Port = int.Parse(tempPortTxt.Text);

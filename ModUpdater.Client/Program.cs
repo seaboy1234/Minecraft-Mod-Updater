@@ -93,7 +93,7 @@ namespace ModUpdater.Client
             mcProcStart.FileName = javaPath;
             mcProcStart.Arguments = string.Format(
                 "-Xmx1024m -Xms1024m {0} \"{1}\" \"{2}\" \"{3}\"",
-                "MCLaunch", Path.GetFullPath(".minecraft"), username, sessionID);
+                "MCLaunch", Properties.Settings.Default.MinecraftPath, username, sessionID);
 
             mcProcStart.CreateNoWindow = true;
             mcProcStart.UseShellExecute = false;
