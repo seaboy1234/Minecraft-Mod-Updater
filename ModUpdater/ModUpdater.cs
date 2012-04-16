@@ -30,7 +30,7 @@ namespace ModUpdater
         /// <summary>
         /// The shortname.
         /// </summary>
-        public const string ShortAppName = "Mod Updater";
+        public const string ShortAppName = "MCModUpdater";
         /// <summary>
         /// The name.
         /// </summary>
@@ -38,7 +38,7 @@ namespace ModUpdater
         /// <summary>
         /// The Mod Updater Version.
         /// </summary>
-        public const string Version = "1.2.0_1";
+        public const string Version = "1.2.1";
         /// <summary>
         /// The branch of the Git repo.
         /// </summary>

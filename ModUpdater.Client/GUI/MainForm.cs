@@ -28,18 +28,19 @@ using ModUpdater.Utility;
 using ModUpdater.Net;
 using System.Text;
 
-namespace ModUpdater.Client
+namespace ModUpdater.Client.GUI
 {
     public partial class MainForm : Form
     {
         public static MainForm Instance { get; private set; }
-        List<string> ModFiles = new List<string>();
-        List<Mod> Mods = new List<Mod>();
-        ModFile CurrentDownload;
+        public ModFile CurrentDownload;
         public IPAddress LocalAddress;
+        public string ServerFolder { get { return serverName.Replace(' ', '_').Replace('.', '-').ToLower(); } }
+        public delegate void Void();
         private PacketHandler ph;
         private Socket socket;
-        public delegate void Void();
+        private List<string> ModFiles = new List<string>();
+        private List<Mod> Mods = new List<Mod>();
         private string[] PostDownload;
         private bool ServerShutdown = false;
         private string serverName = "";
@@ -88,6 +89,8 @@ namespace ModUpdater.Client
                     SplashScreen.ShowSplashScreen();                    
                 });
             }
+            if(Properties.Settings.Default.FirstRun)
+                Program.UpdateMinecraft();
             TaskManager.AddDelayedAsyncTask(delegate
             {
                 SplashScreen.UpdateStatusText("Downloading Updates...");
@@ -150,6 +153,14 @@ namespace ModUpdater.Client
                 if (Extras.CheckForUpdate())
                     UpdateForm.Open();
             });
+            if (Properties.Settings.Default.FirstRun)
+            {
+                TaskManager.AddAsyncTask(delegate
+                {
+                    SplashScreen.ShowSplashScreen();
+                });
+                OnFirstRun();
+            }
             ConnectionForm cf = new ConnectionForm();
             if (cf.ShowDialog() != System.Windows.Forms.DialogResult.OK)
             {
@@ -174,7 +185,7 @@ namespace ModUpdater.Client
                 string srv = cf.ConnectTo.Address;
                 int port =  cf.ConnectTo.Port;
                 if (srv == LocalAddress.ToString()) srv = "127.0.0.1";
-                s.Connect(new IPEndPoint(IPAddress.Parse(srv), port));
+                ConnectionHandler.ConnectTo(s, srv, port);
             }
             catch (SocketException ex)
             {
@@ -217,13 +228,13 @@ namespace ModUpdater.Client
             });
             TaskManager.AddAsyncTask(delegate
             {
-                ph.Metadata += new PacketEvent<MetadataPacket>(ph_Metadata);
-                ph.ModInfo += new PacketEvent<ModInfoPacket>(ph_ModInfo);
-                ph.ModList += new PacketEvent<ModListPacket>(ph_ModList);
-                ph.AllDone += new PacketEvent<AllDonePacket>(ph_AllDone);
-                ph.NextDownload += new PacketEvent<NextDownloadPacket>(ph_NextDownload);
-                ph.FilePart += new PacketEvent<FilePartPacket>(ph_FilePart);
-                ph.Image += new PacketEvent<ImagePacket>(ph_Image);
+                ph.RegisterPacketHandler(PacketId.Metadata, ph_Metadata);
+                ph.RegisterPacketHandler(PacketId.ModInfo, ph_ModInfo);
+                ph.RegisterPacketHandler(PacketId.ModList, ph_ModList);
+                ph.RegisterPacketHandler(PacketId.AllDone, ph_AllDone);
+                ph.RegisterPacketHandler(PacketId.NextDownload, ph_NextDownload);
+                ph.RegisterPacketHandler(PacketId.FilePart, ph_FilePart);
+                ph.RegisterPacketHandler(PacketId.Image, ph_Image);
                 Debug.Assert("Packet Handlers registered.");
             });
             if ((new LoginForm()).ShowDialog() != DialogResult.OK)
@@ -243,8 +254,21 @@ namespace ModUpdater.Client
             Thread.Sleep(100);
         }
 
-        void ph_Image(ImagePacket p)
+        private void OnFirstRun()
         {
+            Properties.Settings.Default.MinecraftPath = Environment.CurrentDirectory + "/Minecraft";
+            while (SplashScreen.GetScreen() == null) ;
+            while (SplashScreen.GetScreen().Opacity != 1.0) ;
+            SplashScreen.UpdateStatusText("Welcome to " + MinecraftModUpdater.ShortAppName + " Version " + MinecraftModUpdater.Version + ".");
+            OptionsForm of = new OptionsForm();
+            Thread.Sleep(2000);
+            of.ShowDialog();
+            SplashScreen.CloseSplashScreen();
+        }
+
+        void ph_Image(Packet pa)
+        {
+            ImagePacket p = pa as ImagePacket;
             Image i = Extras.ImageFromBytes(ph.Stream.DecryptBytes(p.Image));
             if (p.Type == ImagePacket.ImageType.Background)
             {
@@ -259,8 +283,10 @@ namespace ModUpdater.Client
                 modImages.Images.Add(p.ShowOn, i);
             }
         }
-        void ph_FilePart(FilePartPacket p)
+        void ph_FilePart(Packet pa)
         {
+            FilePartPacket p = pa as FilePartPacket;
+            
             if (ExceptionHandler.ProgramCrashed)
             {
                 ph.Stop();
@@ -283,8 +309,9 @@ namespace ModUpdater.Client
             });
         }
 
-        void ph_NextDownload(NextDownloadPacket p)
+        void ph_NextDownload(Packet pa)
         {
+            NextDownloadPacket p = pa as NextDownloadPacket;
             Thread.Sleep(100);
             SplashScreen.GetScreen().Invoke(new Void(delegate
             {
@@ -307,8 +334,9 @@ namespace ModUpdater.Client
             if (!exists) Directory.CreateDirectory(path);
         }
 
-        void ph_AllDone(AllDonePacket p)
+        void ph_AllDone(Packet pa)
         {
+            AllDonePacket p = pa as AllDonePacket;
             TaskManager.AddAsyncTask(delegate
             {
                 string path = Properties.Settings.Default.MinecraftPath + "\\" + p.File.Replace(p.File.Split('\\').Last(), "").TrimEnd('\\');
@@ -334,20 +362,23 @@ namespace ModUpdater.Client
             {
                 SplashScreen.UpdateStatusText("All files downloaded!");
                 Thread.Sleep(1000);
-                SplashScreen.CloseSplashScreen();
                 if (Properties.Settings.Default.LaunchAfterUpdate)
                 {
                     Program.StartMinecraft();
                 }
+                else
+                {
+                    SplashScreen.CloseSplashScreen();
+                }
                 Packet.Send(new LogPacket { LogMessages = MinecraftModUpdater.Logger.GetMessages() }, ph.Stream);
                 Packet.Send(new DisconnectPacket(), ph.Stream);
                 ph.Stop();
-                ph.Metadata -= new PacketEvent<MetadataPacket>(ph_Metadata);
-                ph.ModInfo -= new PacketEvent<ModInfoPacket>(ph_ModInfo);
-                ph.ModList -= new PacketEvent<ModListPacket>(ph_ModList);
-                ph.AllDone -= new PacketEvent<AllDonePacket>(ph_AllDone);
-                ph.NextDownload -= new PacketEvent<NextDownloadPacket>(ph_NextDownload);
-                ph.FilePart -= new PacketEvent<FilePartPacket>(ph_FilePart);
+                ph.RemovePacketHandler(PacketId.Metadata);
+                ph.RemovePacketHandler(PacketId.ModInfo);
+                ph.RemovePacketHandler(PacketId.ModList);
+                ph.RemovePacketHandler(PacketId.NextDownload);
+                ph.RemovePacketHandler(PacketId.FilePart);
+                ph.RemovePacketHandler(PacketId.AllDone);
                 if (socket.Connected) socket.Disconnect(false);
                 Invoke(new Void(delegate
                 {
@@ -373,8 +404,9 @@ namespace ModUpdater.Client
             }
             return s;
         }
-        void ph_ModList(ModListPacket p)
+        void ph_ModList(Packet pa)
         {
+            ModListPacket p = pa as ModListPacket;
             ModFiles.AddRange(p.Mods);
             foreach (string s in p.Mods)
             {
@@ -401,8 +433,9 @@ namespace ModUpdater.Client
                 }));
         }
 
-        void ph_ModInfo(ModInfoPacket p)
+        void ph_ModInfo(Packet pa)
         {
+            ModInfoPacket p = pa as ModInfoPacket;
             Mod m = new Mod { Author = p.Author, File = p.File, ModName = p.ModName, Hash = p.Hash };
             Mods.Add(m);
             string path = Properties.Settings.Default.MinecraftPath + "\\" + p.File.Replace(p.File.Split('\\').Last(), "").TrimEnd('\\').Replace("clientmods", "mods");
@@ -447,8 +480,9 @@ namespace ModUpdater.Client
             }
         }
 
-        void ph_Metadata(MetadataPacket p)
+        void ph_Metadata(Packet pa)
         {
+            MetadataPacket p = pa as MetadataPacket;
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < p.SData.Length; i++)
             {
@@ -476,6 +510,8 @@ namespace ModUpdater.Client
             {
                 serverName = p.SData[1];
                 serverFontSize = p.FData[0];
+                Properties.Settings.Default.MinecraftPath = Environment.CurrentDirectory + "/Minecraft/" + ServerFolder;
+                MinecraftModUpdater.Logger.Log(Logger.Level.Info, Properties.Settings.Default.MinecraftPath);
             }
             else if (p.SData[0] == "splash_display")
             {

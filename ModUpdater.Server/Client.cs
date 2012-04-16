@@ -38,10 +38,10 @@ namespace ModUpdater.Server
         public Client(Socket s, Server sv)
         {
             ph = new PacketHandler(s);
-            ph.Handshake += new PacketEvent<HandshakePacket>(RegisterClient);
-            ph.RequestMod += new PacketEvent<RequestModPacket>(RetreveMod);
-            ph.Log += new PacketEvent<LogPacket>(HandleLog);
-            ph.Disconnect += new PacketEvent<Packet>(HandleDisconnect);
+            ph.RegisterPacketHandler(PacketId.Handshake, RegisterClient);
+            ph.RegisterPacketHandler(PacketId.Log, HandleLog);
+            ph.RegisterPacketHandler(PacketId.RequestMod, RetreveMod);
+            ph.RegisterPacketHandler(PacketId.Disconnect, HandleDisconnect);
             Server = sv;
             IPAddress = (IPEndPoint)s.RemoteEndPoint;
             allowedMods = new List<Mod>();
@@ -56,14 +56,15 @@ namespace ModUpdater.Server
         }
         void HandleDisconnect(Packet p)
         {
-            ph.Handshake -= new PacketEvent<HandshakePacket>(RegisterClient);
-            ph.RequestMod -= new PacketEvent<RequestModPacket>(RetreveMod);
-            ph.Log -= new PacketEvent<LogPacket>(HandleLog);
-            ph.Disconnect -= new PacketEvent<Packet>(HandleDisconnect);
+            ph.RemovePacketHandler(PacketId.Handshake);
+            ph.RemovePacketHandler(PacketId.RequestMod);
+            ph.RemovePacketHandler(PacketId.Log);
+            ph.RemovePacketHandler(PacketId.Disconnect);
             ph.Stop();
         }
-        public void RetreveMod(RequestModPacket p)
+        public void RetreveMod(Packet pa)
         {
+            RequestModPacket p = pa as RequestModPacket;
             Mod mod = Server.Mods.Find(new Predicate<Mod>(delegate(Mod m)
             {
                 if (m.ModFile == p.FileName)
@@ -103,8 +104,9 @@ namespace ModUpdater.Server
                     break;
             }
         }
-        internal void RegisterClient(HandshakePacket p)
+        internal void RegisterClient(Packet pa)
         {
+            HandshakePacket p = pa as HandshakePacket;
             if (p.Type == HandshakePacket.SessionType.ServerList)
             {
                 Packet.Send(new DisconnectPacket(), ph.Stream);
@@ -148,8 +150,9 @@ namespace ModUpdater.Server
             Packet.Send(new ModListPacket { Mods = mods }, ph.Stream);
         }
 
-        internal void HandleLog(LogPacket p)
+        internal void HandleLog(Packet pa)
         {
+            LogPacket p = pa as LogPacket;
             string fullpath = @"clientlogs\" + IPAddress.Address.ToString() + @"\log_" + DateTime.Now.ToString().Replace(":", "-").Replace("/", ".") + ".txt";
             if (!Directory.Exists(Path.GetDirectoryName(fullpath)))
             {

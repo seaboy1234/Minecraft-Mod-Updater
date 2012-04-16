@@ -25,6 +25,8 @@ using System.Runtime.InteropServices;
 using System.Net;
 using ModUpdater.Utility;
 using System.Threading;
+using ModUpdater.Client.GUI;
+using ModUpdater.Client.Game;
 
 namespace ModUpdater.Client
 {
@@ -51,6 +53,10 @@ namespace ModUpdater.Client
                         case "-debug":
                             ProgramOptions.Debug = true;
                             break;
+                        case "-reset":
+                            Properties.Settings.Default.Reset();
+                            Properties.Settings.Default.Save();
+                            break;
                     }
                 }
             }
@@ -63,53 +69,98 @@ namespace ModUpdater.Client
         }
         public static void StartMinecraft()
         {
-            using (StreamWriter log = File.CreateText("log.txt"))
+            SplashScreen.CloseSplashScreen();
+            string javaPath, sessionID, username;
+            javaPath = Properties.Settings.Default.JavaPath;
+            username = Properties.Settings.Default.Username;
+            sessionID = ProgramOptions.SessionID;
+            using (FileStream output = File.Open("MCLaunch.class", FileMode.Create))
             {
-                if (!File.Exists("minecraft.jar"))
+                using (Stream input = System.Reflection.Assembly.
+                        GetCallingAssembly().GetManifestResourceStream("MCLaunch.Launcher"))
                 {
-                    Console.WriteLine("Downloading minecraft.jar...");
-                    new WebClient().DownloadFile("https://s3.amazonaws.com/MinecraftDownload/launcher/minecraft.jar", "minecraft.jar");
-                }
-                Console.WriteLine("Starting Minecraft");
-                using (StreamWriter sw = File.AppendText("start.bat"))
-                {
-                    sw.WriteLine(@"SET APPDATA=%cd%");
-                    sw.WriteLine(@"java -cp minecraft.jar net.minecraft.LauncherFrame --noupdate -u={0} -p={1}", Properties.Settings.Default.Username, Properties.Settings.Default.Password);
-                    sw.Flush();
-                    sw.Close();
-                    sw.Dispose();
-                }
-                ProcessStartInfo info = new ProcessStartInfo("cmd", "/c start.bat");
-                info.RedirectStandardOutput = true;
-                info.RedirectStandardInput = true;
-                info.UseShellExecute = false;
-                info.CreateNoWindow = true;
-                System.Diagnostics.Process proc = new System.Diagnostics.Process();
-                proc.StartInfo = info;
-                proc.Start();
-                log.WriteLine(proc.StandardOutput.ReadToEnd());
-                while (File.Exists("minecraft.jar"))
-                {
-                    try
+                    byte[] buffer = new byte[1024 * 2];
+                    int count = 0;
+                    while ((count = input.Read(buffer, 0, buffer.Length)) > 0)
                     {
-                        File.Delete("minecraft.jar");
-                        break;
+                        output.Write(buffer, 0, count);
                     }
-                    catch { }
-                    System.Threading.Thread.Sleep(10000);
-                }
-                while (File.Exists("start.bat"))
-                {
-                    try
-                    {
-                        File.Delete("start.bat");
-                        break;
-                    }
-                    catch { }
-                    System.Threading.Thread.Sleep(10000);
                 }
             }
+            Process minecraft = new Process();
+            ProcessStartInfo mcProcStart = new ProcessStartInfo();
+
+            mcProcStart.FileName = javaPath;
+            mcProcStart.Arguments = string.Format(
+                "-Xmx1024m -Xms1024m {0} \"{1}\" \"{2}\" \"{3}\"",
+                "MCLaunch", Properties.Settings.Default.MinecraftPath, username, sessionID);
+
+            mcProcStart.CreateNoWindow = true;
+            mcProcStart.UseShellExecute = false;
+            mcProcStart.RedirectStandardOutput = true;
+            mcProcStart.RedirectStandardError = true;
+
+            minecraft.StartInfo = mcProcStart;
+            minecraft.Start();
+            while (!minecraft.StandardOutput.EndOfStream)
+            {
+                Console.WriteLine(minecraft.StandardOutput.ReadLine());
+            }
+            while (!minecraft.StandardError.EndOfStream)
+            {
+                Console.WriteLine(minecraft.StandardError.ReadLine());
+            }
+            Thread.Sleep(1000);
+            File.Delete("MCLaunch.class");
+            if (Properties.Settings.Default.FirstRun)
+            {
+                Properties.Settings.Default.FirstRun = false;
+                Properties.Settings.Default.Save();
+            }
+        }
+        public static void UpdateMinecraft()
+        {
+            Thread.Sleep(100);
+            GameUpdater update = new GameUpdater(ProgramOptions.LatestVersion, "minecraft.jar", true);
+            SplashScreen.UpdateStatusText("Downloading Minecraft...");
+            Thread.Sleep(1000);
+            TaskManager.AddAsyncTask(delegate
+            {
+                SplashScreen.GetScreen().Invoke(new MainForm.Void(delegate
+                {
+                    SplashScreen.GetScreen().progressBar1.Value = 0;
+                    SplashScreen.GetScreen().progressBar1.Maximum = 100;
+                    SplashScreen.GetScreen().progressBar1.Style = ProgressBarStyle.Blocks;
+                }));
+                while (update.Progress != 100)
+                {
+                    SplashScreen.GetScreen().Invoke(new MainForm.Void(delegate
+                    {
+                        SplashScreen.GetScreen().progressBar1.Value = update.Progress;
+                        SplashScreen.UpdateStatusText(update.Status);
+                    }));
+                    Thread.Sleep(10);
+                }
+            });
+            update.UpdateGame();
+            while (update.Progress != 100) ;
         }
 
+        internal static bool TestJava(string p)
+        {
+            if (!File.Exists(p)) return false;
+            Process java = new Process();
+            ProcessStartInfo jStart = new ProcessStartInfo(p, "-version");
+            jStart.RedirectStandardOutput = true;
+            jStart.RedirectStandardError = true;
+            jStart.UseShellExecute = false;
+            jStart.CreateNoWindow = true;
+            java.StartInfo = jStart;
+            java.Start();
+            string jOutput = java.StandardError.ReadToEnd();
+            if (jOutput.Contains("Java(TM) SE Runtime Environment"))
+                return true;
+            return false;
+        }
     }
 }
