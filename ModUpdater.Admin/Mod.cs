@@ -20,8 +20,10 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Xml;
+using System.Threading;
+using ModUpdater.Utility;
 
-namespace ModUpdater.Server
+namespace ModUpdater.Admin
 {
     public class Mod
     {
@@ -32,36 +34,38 @@ namespace ModUpdater.Server
          *     <Name>ModName</Name>
          *     <Author>Author</Author>
          *     <File>mods\modfile.zip</File>
-         *     <ConfigFiles>
-         *         <File>mods\config\filename.txt</File>
-         *         <File>config\filename.txt</File>
-         *         <File>ModName\config\filename.txt</File>
-         *         <File>filename.txt</File>
-         *     </ConfigFiles>
+         *     <PostDownload>
+         *         <Action>somecommand</Action>
+         *         <Action>someothercommand</Action>
+         *     </PostDownload>
+         *     <Whitelist>
+         *         <Username Value="somename" />
+         *         <Username Value="namesome" />
+         *     </Whitelist>
+         *     <Blacklist>
+         *         <Username Value="somename" />
+         *         <Username Value="namesome" />
+         *     </Blacklist>
          * </Mod>
          */
-        public string ModName { get; private set; }
-        public string Author { get; private set; }
-        public string[] ModConfigs { get; private set; }
-        public string ModFile { get; private set; }
-
-        private XmlDocument modFile;
-        public Mod(string ConfigFile)
+        public string Name { get; set; }
+        public string Author { get; set; }
+        public string File { get; set; }
+        public string[] PostDownloadCLI { get; set; }
+        public List<string> WhitelistedUsers { get; set; }
+        public List<string> BlacklistedUsers { get; set; }
+        public Mod()
         {
-            FileStream fs = new FileStream(ConfigFile, FileMode.Open);
-            modFile = new XmlDocument();
-            modFile.Load(fs);
-            XmlNodeList nodes = modFile.GetElementsByTagName("Mod");
-            ModName = nodes[0].ChildNodes[0].InnerText;
-            Author = nodes[0].ChildNodes[1].InnerText;
-            ModFile = nodes[0].ChildNodes[2].InnerText;
-            ModConfigs = new string[nodes[0].ChildNodes[3].ChildNodes.Count];
-            int i = 0;
-            foreach (XmlNode n in nodes[0].ChildNodes[3].ChildNodes)
-            {
-                ModConfigs[i] = n.InnerText;
-                i++;
-            }
+            Name = "";
+            Author = "";
+            File = "";
+            PostDownloadCLI = new string[0];
+            WhitelistedUsers = new List<string>();
+            BlacklistedUsers = new List<string>();
+        }
+        public override string ToString()
+        {
+            return Name;
         }
     }
 }
