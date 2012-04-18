@@ -33,6 +33,7 @@ namespace ModUpdater.Server
         public Server Server {get; private set;}
         public string ClientID { get; private set; }
         public PacketHandler PacketHandler { get { return ph; } }
+        public bool Admin { get; private set; }
         private PacketHandler ph;
         private List<Mod> allowedMods;
         public Client(Socket s, Server sv)
@@ -113,6 +114,18 @@ namespace ModUpdater.Server
                 ph.Stop();
                 return;
             }
+            else if (p.Type == HandshakePacket.SessionType.Admin)
+            {
+                if (!Server.Administrators.Contains(p.Username))
+                {
+                    Packet.Send(new MetadataPacket { SData = new string[] { "admin_login" }, BData = new bool[] { false } }, ph.Stream);
+                    Packet.Send(new DisconnectPacket(), ph.Stream);
+                    ph.Stop();
+                    return;
+                }
+                Packet.Send(new MetadataPacket { SData = new string[] { "admin_login" }, BData = new bool[] { true } }, ph.Stream);
+                Admin = true;
+            }
             ClientID = p.Username;
             if (MinecraftModUpdater.Version != p.Version)
             {
@@ -124,23 +137,27 @@ namespace ModUpdater.Server
             Console.WriteLine("Client {0} connected. ({1})", ClientID, IPAddress.Address);
             Packet.Send(new EncryptionStatusPacket { Encrypt = true, EncryptionIV = ph.Stream.IV, EncryptionKey = ph.Stream.Key }, ph.Stream);
             ph.Stream.Encrypted = true;
-            for (int i = 0; i < Server.Mods.Count; i++)
-            {
-                if(Server.Mods[i].WhitelistedUsers.Contains(ClientID) || !Server.Mods[i].BlacklistedUsers.Contains(ClientID))
-                    allowedMods.Add(Server.Mods[i]);
-                else Console.WriteLine("NOT SENDING: " + Server.Mods[i].ModName);
-            }
+            allowedMods = Server.Mods;
             Packet.Send(new MetadataPacket { SData = new string[] { "server_name", Config.ServerName }, FData = new float[] { 24.0f } }, ph.Stream);
-            Packet.Send(new MetadataPacket { SData = new string[] { "splash_display", "Downloading Assets..." } }, ph.Stream);
-            if (Server.BackgroundImage != null)
+            if (!Admin)
             {
-                byte[] b = ph.Stream.EncryptBytes(Extras.BytesFromImage(Server.BackgroundImage));
-                Packet.Send(new ImagePacket { Type = ImagePacket.ImageType.Background, ShowOn = "", Image = b }, ph.Stream);
-            }
-            foreach (var v in Server.ModImages)
-            {
-                byte[] b = ph.Stream.EncryptBytes(Extras.BytesFromImage(v.Value));
-                Packet.Send(new ImagePacket { Type = ImagePacket.ImageType.Mod, ShowOn = v.Key.ModFile, Image = b }, ph.Stream);
+                for (int i = 0; i < Server.Mods.Count; i++)
+                {
+                    if (Server.Mods[i].WhitelistedUsers.Contains(ClientID) || !Server.Mods[i].BlacklistedUsers.Contains(ClientID))
+                        allowedMods.Add(Server.Mods[i]);
+                    else Console.WriteLine("NOT SENDING: " + Server.Mods[i].ModName);
+                }
+                Packet.Send(new MetadataPacket { SData = new string[] { "splash_display", "Downloading Assets..." } }, ph.Stream);
+                if (Server.BackgroundImage != null)
+                {
+                    byte[] b = ph.Stream.EncryptBytes(Extras.BytesFromImage(Server.BackgroundImage));
+                    Packet.Send(new ImagePacket { Type = ImagePacket.ImageType.Background, ShowOn = "", Image = b }, ph.Stream);
+                }
+                foreach (var v in Server.ModImages)
+                {
+                    byte[] b = ph.Stream.EncryptBytes(Extras.BytesFromImage(v.Value));
+                    Packet.Send(new ImagePacket { Type = ImagePacket.ImageType.Mod, ShowOn = v.Key.ModFile, Image = b }, ph.Stream);
+                }
             }
             string[] mods = new string[allowedMods.Count];
             for (int i = 0; i < allowedMods.Count; i++)

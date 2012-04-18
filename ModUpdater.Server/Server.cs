@@ -37,6 +37,7 @@ namespace ModUpdater.Server
         public IPAddress Address { get; private set; }
         public Dictionary<Mod, Image> ModImages { get; private set; }
         public Image BackgroundImage { get; private set; }
+        public List<string> Administrators { get; private set; }
         bool Online { get; set; }
         public Server()
         {
