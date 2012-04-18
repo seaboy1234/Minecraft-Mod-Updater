@@ -27,7 +27,7 @@ namespace ModUpdater.Net
 {
     public abstract class Packet
     {
-        public const int PROTOCOL_VERSION = 4;
+        public const int PROTOCOL_VERSION = 5;
         /// <summary>
         /// Reads this packet from the stream.
         /// </summary>
@@ -128,8 +128,8 @@ namespace ModUpdater.Net
                 {typeof(LogPacket), PacketId.Log},
                 {typeof(DisconnectPacket), PacketId.Disconnect},
                 {typeof(ImagePacket), PacketId.Image},
-                {typeof(ConnectPacket), PacketId.Connect},
-                {typeof(ServerListPacket), PacketId.ServerList}
+                {typeof(ServerListPacket), PacketId.ServerList},
+                {typeof(AdminFileInfoPacket), PacketId.AdminFileInfo}
             };
         }
     }
@@ -160,6 +160,9 @@ namespace ModUpdater.Net
                     Name = s.ReadString();
                     Port = s.ReadInt();
                     break;
+                case SessionType.Admin:
+                    Username = s.ReadString();
+                    break;
             }
         }
 
@@ -177,13 +180,17 @@ namespace ModUpdater.Net
                     s.WriteString(Name);
                     s.WriteInt(Port);
                     break;
+                case SessionType.Admin:
+                    s.WriteString(Username);
+                    break;
             }
         }
         public enum SessionType : byte
         {
             Client,
             Server,
-            ServerList
+            ServerList,
+            Admin
         }
     }
     public class RequestModPacket : Packet
@@ -246,20 +253,6 @@ namespace ModUpdater.Net
             s.WriteString(ModName);
             s.WriteString(File);
             s.WriteString(Hash);
-        }
-    }
-    public class ModMetadataPacket : Packet
-    {
-        public byte[] Part { get; set; }
-        public int StartPoint { get; set; }
-        public override void Read(ModUpdaterNetworkStream s)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Write(ModUpdaterNetworkStream s)
-        {
-            throw new NotImplementedException();
         }
     }
     public class ModListPacket : Packet
@@ -354,51 +347,40 @@ namespace ModUpdater.Net
             s.WriteString(File);
         }
     }
-    public class ClientUpdatePacket : Packet
-    {
-        public string FileName { get; set; }
-        public byte[] File { get; set; }
-        public override void Read(ModUpdaterNetworkStream s)
-        {
-            int len = s.ReadInt();
-            File = s.ReadBytes(len);
-            FileName = s.ReadString();
-        }
-
-        public override void Write(ModUpdaterNetworkStream s)
-        {
-            s.WriteInt(File.Length);
-            s.WriteBytes(File);
-            s.WriteString(FileName);
-        }
-    }
     public class MetadataPacket : Packet
     {
         public string[] SData { get; set; }
         public int[] IData { get; set; }
         public float[] FData { get; set; }
+        public bool[] BData { get; set; }
         public override void Read(ModUpdaterNetworkStream s)
         {
             int i = s.ReadInt();
             int j = s.ReadInt();
             int k = s.ReadInt();
+            int l = s.ReadInt();
             SData = new string[i];
             IData = new int[j];
             FData = new float[k];
             if (i > 0)
-                for (int l = 0; l < i; l++)
+                for (int h = 0; l < i; l++)
                 {
-                    SData[l] = s.ReadString();
+                    SData[h] = s.ReadString();
                 }
             if (j > 0)
-                for (int l = 0; l < j; l++)
+                for (int h = 0; l < j; l++)
                 {
-                    IData[l] = s.ReadInt();
+                    IData[h] = s.ReadInt();
                 }
             if (k > 0)
-                for (int l = 0; l < k; l++)
+                for (int h = 0; l < k; l++)
                 {
-                    FData[l] = s.ReadFloat();
+                    FData[h] = s.ReadFloat();
+                }
+            if (l > 0)
+                for (int h = 0; l < k; l++)
+                {
+                    BData[h] = s.ReadBoolean();
                 }
         }
 
@@ -410,6 +392,8 @@ namespace ModUpdater.Net
             else s.WriteInt(IData.Length);
             if (FData == null) s.WriteInt(0);
             else s.WriteInt(FData.Length);
+            if (BData == null) s.WriteInt(0);
+            else s.WriteInt(BData.Length);
             try
             {
                 if (SData.Length > 0)
@@ -437,99 +421,18 @@ namespace ModUpdater.Net
                     }
             }
             catch (NullReferenceException) { }
-        }
-    }
-    public class BeginDownload : Packet
-    {
-        
-        public override void Read(ModUpdaterNetworkStream s)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Write(ModUpdaterNetworkStream s)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class AdminPacket : Packet
-    {
-        public string AdminName { get; set; }
-        public string AdminPass { get; set; }
-        public override void Read(ModUpdaterNetworkStream s)
-        {
-            AdminName = s.ReadString();
-            AdminPass = s.ReadString();
-        }
-
-        public override void Write(ModUpdaterNetworkStream s)
-        {
-            s.WriteString(AdminName);
-            s.WriteString(AdminPass);
-        }
-    }
-    public class AdminUploadPacket : Packet
-    {
-        public string XmlName { get; set; }
-        public string ModName { get; set; }
-        public byte[] XmlFile { get; set; }
-        public byte[] ModFile { get; set; }
-        public int XmlLen { get; private set; }
-        public int ModLen { get; private set; }
-        public override void Read(ModUpdaterNetworkStream s)
-        {
-            XmlName = s.ReadString();
-            ModName = s.ReadString();
-            XmlLen = s.ReadInt();
-            ModLen = s.ReadInt();
-            XmlFile = s.ReadBytes(XmlLen);
-            ModFile = s.ReadBytes(ModLen);
-        }
-
-        public override void Write(ModUpdaterNetworkStream s)
-        {
-            s.WriteString(XmlName);
-            s.WriteString(ModName);
-            s.WriteInt(XmlLen);
-            s.WriteInt(ModLen);
-            s.WriteBytes(XmlFile);
-            s.WriteBytes(ModFile);
-        }
-    }
-    public class AdminConfigPacket : Packet
-    {
-        public int[] ConfigLen { get; set; }
-        public string[] ConfigFileNames { get; set; }
-        public byte[][] ConfigFiles { get; set; }
-
-        public override void Read(ModUpdaterNetworkStream s)
-        {
-            ConfigLen = new int[s.ReadInt()];
-            for (int i = 0; i < ConfigLen.Length; i++)
+            try
             {
-                ConfigFileNames[i] = s.ReadString();
-                ConfigFiles[i] = s.ReadBytes(ConfigLen[i]);
+                if (BData.Length > 0)
+                    foreach (bool b in BData)
+                    {
+                        s.WriteBoolean(b);
+                    }
             }
-        }
-
-        public override void Write(ModUpdaterNetworkStream s)
-        {
-            
+            catch (NullReferenceException) { }
         }
     }
-    public class AdminInfoPacket : Packet
-    {
-        public override void Read(ModUpdaterNetworkStream s)
-        {
-            throw new NotImplementedException();
-        }
 
-        public override void Write(ModUpdaterNetworkStream s)
-        {
-            throw new NotImplementedException();
-        }
-    }
     public class LogPacket : Packet
     {
         public int Length { get; private set; }
@@ -595,22 +498,6 @@ namespace ModUpdater.Net
             Mod
         }
     }
-    public class ConnectPacket : Packet
-    {
-        public IPAddress Address { get; set; }
-        public int Port { get; set; }
-        public override void Read(ModUpdaterNetworkStream s)
-        {
-            Address = new IPAddress(s.ReadBytes(4));
-            Port = s.ReadInt();
-        }
-
-        public override void Write(ModUpdaterNetworkStream s)
-        {
-            s.WriteBytes(Address.GetAddressBytes());
-            s.WriteInt(Port);
-        }
-    }
     public class ServerListPacket : Packet
     {
         public string[] Servers { get; set; }
@@ -641,6 +528,37 @@ namespace ModUpdater.Net
                 s.WriteInt(Ports[i]);
             }
 
+        }
+    }
+    public class AdminFileInfoPacket : Packet
+    {
+        public string ConfigName { get; set; }
+        public string[] ConfigFile { get; set; }
+        public int FileLength { get; set; }
+        public int FileChunkSize { get; set; }
+        public override void Read(ModUpdaterNetworkStream s)
+        {
+            ConfigName = s.ReadString();
+            int len = s.ReadInt();
+            ConfigFile = new string[len];
+            for (int i = 0; i < len; i++)
+            {
+                ConfigFile[i] = s.ReadString();
+            }
+            FileLength = s.ReadInt();
+            FileChunkSize = s.ReadInt();
+        }
+
+        public override void Write(ModUpdaterNetworkStream s)
+        {
+            s.WriteString(ConfigName);
+            s.WriteInt(ConfigFile.Length);
+            for (int i = 0; i < ConfigFile.Length; i++)
+            {
+                s.WriteString(ConfigFile[i]);
+            }
+            s.WriteInt(FileLength);
+            s.WriteInt(FileChunkSize);
         }
     }
     #endregion

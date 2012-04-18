@@ -27,22 +27,17 @@ namespace ModUpdater.Net
         /** Server <--> Client **/
         Handshake, // <-->
         EncryptionStatus, // -->
-        Ping, // -->
         RequestMod, // <--
-        FilePart, // -->
+        FilePart, // <--> Notes: only sent to the server from an admin client.
         ModInfo, // -->
         ModList, // -->
         AllDone, // -->
         NextDownload, // -->
-        Admin, // <--
-        AdminUpload, // <--
-        AdminInfo, // <--
         Log, // <--
         Metadata, // <-->
         Image, // -->
-        BeginDownload, // <--
-        Connect, // -->
         ServerList, // MasterServer --> Client
+        AdminFileInfo, // --> Admin Client
         Disconnect = 255 // <-- Notes: Disconnect Packet
     }
 }
