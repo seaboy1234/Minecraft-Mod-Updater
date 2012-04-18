@@ -23,13 +23,25 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace ModUpdater.Admin
+namespace ModUpdater.Admin.GUI
 {
     public partial class MainForm : Form
     {
+        private List<Mod> mods;
         public MainForm()
         {
             InitializeComponent();
+            mods = new List<Mod>();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            panel1.Controls.Add(new ControlEditMod("New Mod"));
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            panel1.Controls.Add(new ControlEditMod("Edit Mod", mods[listBox1.SelectedIndex]));
         }
     }
 }

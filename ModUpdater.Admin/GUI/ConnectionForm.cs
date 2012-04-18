@@ -23,7 +23,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace ModUpdater.Admin
+namespace ModUpdater.Admin.GUI
 {
     public partial class ConnectionForm : Form
     {

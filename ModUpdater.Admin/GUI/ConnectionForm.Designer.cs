@@ -1,4 +1,4 @@
-﻿//    File:        MainForm.Designer.cs
+﻿//    File:        ConnectionForm.Designer.cs
 //    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
 //    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
 //    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
@@ -14,9 +14,9 @@
 //    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
-namespace ModUpdater.Admin
+namespace ModUpdater.Admin.GUI
 {
-    partial class MainForm
+    partial class ConnectionForm
     {
         /// <summary>
         /// Required designer variable.
@@ -44,20 +44,11 @@ namespace ModUpdater.Admin
         /// </summary>
         private void InitializeComponent()
         {
-            this.SuspendLayout();
-            // 
-            // MainForm
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.components = new System.ComponentModel.Container();
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(581, 378);
-            this.Name = "MainForm";
-            this.Text = "Form1";
-            this.ResumeLayout(false);
-
+            this.Text = "ConnectionForm";
         }
 
         #endregion
     }
 }
-
