@@ -89,7 +89,7 @@ namespace ModUpdater.Client.GUI
                     SplashScreen.ShowSplashScreen();                    
                 });
             }
-            if(Properties.Settings.Default.FirstRun)
+            if (Properties.Settings.Default.FirstRun || !File.Exists(Properties.Settings.Default.MinecraftPath + "/bin/version"))
                 Program.UpdateMinecraft();
             TaskManager.AddDelayedAsyncTask(delegate
             {
