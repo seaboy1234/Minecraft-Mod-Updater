@@ -33,6 +33,7 @@ namespace ModUpdater.Server
         public Server Server {get; private set;}
         public string ClientID { get; private set; }
         public PacketHandler PacketHandler { get { return ph; } }
+        public EventHandler ClientDisconnected = delegate { };
         private PacketHandler ph;
         private List<Mod> allowedMods;
         public Client(Socket s, Server sv)
