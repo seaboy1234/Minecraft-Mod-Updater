@@ -54,13 +54,14 @@ namespace ModUpdater.Net
             Packet p = null;
             try
             {
-                PacketId id = (PacketId)Stream.ReadByte();
+                PacketId id = (PacketId)Stream.ReadNetworkByte();
                 if (id == PacketId.Disconnect) return null;
                 if (!Map.ContainsValue(id))
                 {
                     Stream.Flush();
                     return null;
                 }
+                MinecraftModUpdater.Logger.Log(Logger.Level.Info, string.Format("Read packet {0}", id.ToString()));
                 foreach (var v in Map)
                 {
                     if (v.Value == id)
@@ -70,7 +71,6 @@ namespace ModUpdater.Net
                 }
                 p = (Packet)Packet.GetConstructor(new Type[] { }).Invoke(null);
                 p.Read(Stream);
-                MinecraftModUpdater.Logger.Log(Logger.Level.Info, string.Format("Read packet {0}", id.ToString()));
             }
             catch (Exception e) { MinecraftModUpdater.Logger.Log(e); }
             return p;
@@ -87,7 +87,7 @@ namespace ModUpdater.Net
             try
             {
                 PacketId id = GetPacketId(p);
-                Stream.WriteByte((byte)id);
+                Stream.WriteNetworkByte((byte)id);
                 p.Write(Stream);
                 LastSent = p;
                 MinecraftModUpdater.Logger.Log(Logger.Level.Info, string.Format("Sent packet {0}", id.ToString()));
@@ -148,7 +148,7 @@ namespace ModUpdater.Net
 
         public override void Read(ModUpdaterNetworkStream s)
         {
-            Type = (SessionType)s.ReadByte();
+            Type = (SessionType)s.ReadNetworkByte();
             Version = s.ReadString();
             switch (Type)
             {
@@ -168,7 +168,7 @@ namespace ModUpdater.Net
 
         public override void Write(ModUpdaterNetworkStream s)
         {
-            s.WriteByte((byte)Type);
+            s.WriteNetworkByte((byte)Type);
             s.WriteString(MinecraftModUpdater.Version);
             switch(Type)
             {
@@ -199,13 +199,13 @@ namespace ModUpdater.Net
         public RequestType Type { get; set; }
         public override void Read(ModUpdaterNetworkStream s)
         {
-            Type = (RequestType)s.ReadByte();
+            Type = (RequestType)s.ReadNetworkByte();
             FileName = s.ReadString();
         }
 
         public override void Write(ModUpdaterNetworkStream s)
         {
-            s.WriteByte((byte)Type);
+            s.WriteNetworkByte((byte)Type);
             s.WriteString(FileName);
         }
         public enum RequestType : byte
@@ -363,22 +363,22 @@ namespace ModUpdater.Net
             IData = new int[j];
             FData = new float[k];
             if (i > 0)
-                for (int h = 0; l < i; l++)
+                for (int h = 0; h < i; h++)
                 {
                     SData[h] = s.ReadString();
                 }
             if (j > 0)
-                for (int h = 0; l < j; l++)
+                for (int h = 0; h < j; h++)
                 {
                     IData[h] = s.ReadInt();
                 }
             if (k > 0)
-                for (int h = 0; l < k; l++)
+                for (int h = 0; h < k; h++)
                 {
                     FData[h] = s.ReadFloat();
                 }
             if (l > 0)
-                for (int h = 0; l < k; l++)
+                for (int h = 0; h < k; h++)
                 {
                     BData[h] = s.ReadBoolean();
                 }
@@ -479,7 +479,7 @@ namespace ModUpdater.Net
         public byte[] Image { get; set; }
         public override void Read(ModUpdaterNetworkStream s)
         {
-            Type = (ImageType)((byte)s.ReadByte()); //Stupid ReadByte().  It's in NetworkStream and thus pretty much out of my control.
+            Type = (ImageType)((byte)s.ReadNetworkByte()); //Stupid ReadNetworkByte().  It's in NetworkStream and thus pretty much out of my control.
             ShowOn = s.ReadString();
             int l = s.ReadInt();
             Image = s.ReadBytes(l);
@@ -487,7 +487,7 @@ namespace ModUpdater.Net
 
         public override void Write(ModUpdaterNetworkStream s)
         {
-            s.WriteByte((byte)Type);
+            s.WriteNetworkByte((byte)Type);
             s.WriteString(ShowOn);
             s.WriteInt(Image.Length);
             s.WriteBytes(Image);

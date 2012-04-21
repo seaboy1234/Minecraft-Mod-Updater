@@ -46,6 +46,8 @@
   <ItemGroup>
     <Compile Include="DebugMessageHandler.cs" />
     <Compile Include="Net\ConnectionHandler.cs" />
+    <Compile Include="Net\DataType.cs" />
+    <Compile Include="Net\MalformedPacketException.cs" />
     <Compile Include="Utility\Extras.cs" />
     <Compile Include="Utility\Logger.cs" />
     <Compile Include="ModUpdater.cs" />
