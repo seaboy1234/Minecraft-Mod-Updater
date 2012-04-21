@@ -63,6 +63,7 @@ namespace ModUpdater.Server
             ph.RemovePacketHandler(PacketId.Log);
             ph.RemovePacketHandler(PacketId.Disconnect);
             ph.Stop();
+            ClientDisconnected(this, EventArgs.Empty);
         }
         public void RetreveMod(Packet pa)
         {

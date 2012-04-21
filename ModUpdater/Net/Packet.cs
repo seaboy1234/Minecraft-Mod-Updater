@@ -55,7 +55,6 @@ namespace ModUpdater.Net
             try
             {
                 PacketId id = (PacketId)Stream.ReadNetworkByte();
-                if (id == PacketId.Disconnect) return null;
                 if (!Map.ContainsValue(id))
                 {
                     Stream.Flush();
