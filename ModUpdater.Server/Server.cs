@@ -161,9 +161,11 @@ namespace ModUpdater.Server
             Clients.Add(c);
             c.StartListening();
             Thread.Sleep(1000);
-            while (s.Connected) Thread.Sleep(100);
-            c.Dispose();
-            Clients.Remove(c);
+            c.ClientDisconnected += delegate
+            {
+                c.Dispose();
+                Clients.Remove(c);
+            };
         }
         public void SimpleConsoleImputHandler()
         {
