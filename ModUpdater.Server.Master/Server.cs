@@ -58,8 +58,10 @@ namespace ModUpdater.Server.Master
                 TaskManager.AddAsyncTask(delegate
                 {
                     Client c = new Client(this, new PacketHandler(s));
-                    while (s.Connected) ;
-                    c = null;
+                    c.ClientDisconnected += delegate
+                    {
+                        c = null;
+                    };
                 });
             }
         }
@@ -67,6 +69,7 @@ namespace ModUpdater.Server.Master
         {
             private Server Server;
             private PacketHandler ph;
+            public event EventHandler ClientDisconnected = delegate { };
             public Client(Server s, PacketHandler p)
             {
                 Server = s;
@@ -94,6 +97,8 @@ namespace ModUpdater.Server.Master
                     ports[i] = Server.Servers[i].Port;
                 }
                 Packet.Send(new ServerListPacket { Servers = srvs, Locations = addrs, Ports = ports }, ph.Stream);
+                ph.Stop();
+                ClientDisconnected(this, EventArgs.Empty);
             }
         }
     }
