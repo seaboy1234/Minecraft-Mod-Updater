@@ -23,6 +23,7 @@ namespace ModUpdater.Server.Master
 {
     class Program
     {
+        public const string Version = "1.3.0_dev";
         static void Main(string[] args)
         {
             Server s = new Server();
@@ -37,7 +38,6 @@ namespace ModUpdater.Server.Master
             }
             Console.WriteLine("Press any key to close.");
             Console.ReadKey();
-
         }
     }
 }

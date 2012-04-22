@@ -32,6 +32,7 @@ namespace ModUpdater.Client
 {
     static class Program
     {
+        public const string Version = "1.3.0_dev";
         [DllImport("kernel32.dll")]
         private static extern int AllocConsole();
         /// <summary>

@@ -150,8 +150,9 @@ namespace ModUpdater.Client.GUI
             }
             TaskManager.AddAsyncTask(delegate
             {
-                if (Extras.CheckForUpdate())
-                    UpdateForm.Open();
+                string ver;
+                if (Extras.CheckForUpdate("client", Program.Version, out ver))
+                    UpdateForm.Open(ver);
             });
             if (Properties.Settings.Default.FirstRun)
             {
@@ -520,7 +521,7 @@ namespace ModUpdater.Client.GUI
             else if (p.SData[0] == "require_version")
             {
                 warnDisconnect = false;
-                SplashScreen.UpdateStatusTextWithStatus("This server requires " + p.SData[1] + " for you to connect.", TypeOfMessage.Error);
+                SplashScreen.UpdateStatusTextWithStatus("This server requires API version " + p.SData[1] + " for you to connect.", TypeOfMessage.Error);
                 Thread.Sleep(3000);
                 SplashScreen.CloseSplashScreen();
                 Thread.Sleep(1000);
