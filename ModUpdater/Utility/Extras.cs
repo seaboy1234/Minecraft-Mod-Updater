@@ -86,13 +86,24 @@ namespace ModUpdater.Utility
             Image i = Image.FromFile(path);
             return BytesFromImage(i);
         }
-        public static bool CheckForUpdate()
+        public static bool CheckForUpdate(string key, string value, out string newVer)
         {
             WebClient c = new WebClient();
-            if (c.DownloadString("https://raw.github.com/seaboy1234/Minecraft-Mod-Updater/" + MinecraftModUpdater.Branch + "/version.txt") != MinecraftModUpdater.Version)
-                return true;
-            else 
-                return false;
+            string raw = c.DownloadString("https://raw.github.com/seaboy1234/Minecraft-Mod-Updater/" + MinecraftModUpdater.Branch + "/version.txt");
+            c.Dispose();
+            Dictionary<string, string> pairs = new Dictionary<string, string>();
+            MinecraftModUpdater.Logger.Log(Logger.Level.Info, raw);
+            foreach (string s in raw.Split('\\'))
+            {
+                string _key = s.Split('=')[0];
+                string _value = s.Split('=')[1];
+                pairs.Add(_key, _value);
+            }
+            newVer = "";
+            if (!pairs.ContainsKey(key)) return false;
+            newVer = pairs[key];
+            if (pairs[key] != value || pairs["core"] != MinecraftModUpdater.Version) return true;
+            return false;
         }
         public static IPAddress GetAddressFromHostname(string hostname)
         {

@@ -52,6 +52,14 @@ namespace ModUpdater.Server.Master
         public void Listen()
         {
             Console.WriteLine("Master Server at {0} is online and listening.", Properties.Settings.Default.Port);
+            TaskManager.AddAsyncTask(delegate
+            {
+                string ver;
+                if (Extras.CheckForUpdate("master", Program.Version, out ver))
+                {
+                    Console.WriteLine("Version {0} is now available for Minecraft Mod Updater.", ver);
+                }
+            });
             while (Online)
             {
                 Socket s = listen.AcceptSocket();

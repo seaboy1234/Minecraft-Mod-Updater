@@ -23,6 +23,7 @@ namespace ModUpdater.Server
 {
     class Program
     {
+        public const string Version = "1.2.2";
         public static string ConfigPath = "Config.xml";
         static void Main(string[] args)
         {

@@ -121,9 +121,10 @@ namespace ModUpdater.Server
             }, 1000);
             TaskManager.AddAsyncTask(delegate
             {
-                if (Extras.CheckForUpdate())
+                string ver;
+                if (Extras.CheckForUpdate("server", Program.Version, out ver))
                 {
-                    Console.WriteLine("There is a new version available for Minecraft Mod Updater.");
+                    Console.WriteLine("Version {0} is now available for Minecraft Mod Updater.", ver);
                 }
             });
             Receive();

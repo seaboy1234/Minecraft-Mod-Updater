@@ -197,7 +197,7 @@
       <LastGenOutput>Lang.Designer.cs</LastGenOutput>
     </None>
     <EmbeddedResource Include="Launcher\MCLaunch.class">
-        <LogicalName>MCLaunch.Launcher</LogicalName>
+      <LogicalName>MCLaunch.Launcher</LogicalName>
     </EmbeddedResource>
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
