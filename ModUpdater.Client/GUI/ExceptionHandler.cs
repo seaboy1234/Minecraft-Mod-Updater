@@ -51,7 +51,8 @@ namespace ModUpdater.Client.GUI
             sb.AppendLine();
             sb.AppendLine("----------------------------------------------------------------");
             sb.AppendLine("Application: " + MinecraftModUpdater.LongAppName);
-            sb.AppendLine("Version: " + MinecraftModUpdater.Version);
+            sb.AppendLine("Version: " + Program.Version);
+            sb.AppendLine("API Version: " + MinecraftModUpdater.Version);
             sb.AppendLine("OS: " + Environment.OSVersion.ToString());
             sb.AppendLine("Framework Version: " + System.Runtime.InteropServices.RuntimeEnvironment.GetSystemVersion());
             sb.AppendLine();
