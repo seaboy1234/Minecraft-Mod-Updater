@@ -43,7 +43,6 @@ namespace ModUpdater.Client.GUI
 
         private void ExceptionHandler_Load(object sender, EventArgs e)
         {
-            ProgramCrashed = true;
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("Minecraft Mod Updater has crashed.");
             sb.AppendLine("Please make an error report about this including everything below the line.");
@@ -63,15 +62,27 @@ namespace ModUpdater.Client.GUI
         }
         public static void HandleException(Exception e)
         {
-            MainForm.Instance.Invoke(new MainForm.Void(delegate
+            if (ProgramCrashed) return;
+            ProgramCrashed = true;
+            try
             {
-                new ExceptionHandler(e).ShowDialog();
-            }));
+                MainForm.Instance.Invoke(new MainForm.Void(delegate
+                {
+                    new ExceptionHandler(e).ShowDialog();
+                }));
+            }
+            catch { new ExceptionHandler(e).ShowDialog(); }
         }
         public static void Init()
         {
             TaskManager.ExceptionRaised += new TaskManager.Error(HandleException);
+            Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
+        }
+
+        static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
+        {
+            HandleException(e.Exception);
         }
         static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
