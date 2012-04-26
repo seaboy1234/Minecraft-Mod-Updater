@@ -27,12 +27,13 @@ using ModUpdater.Utility;
 using System.Threading;
 using ModUpdater.Client.GUI;
 using ModUpdater.Client.Game;
+using Ionic.Zip;
 
 namespace ModUpdater.Client
 {
     static class Program
     {
-        public const string Version = "1.2.2";
+        public const string Version = "1.2.2_3";
         [DllImport("kernel32.dll")]
         private static extern int AllocConsole();
         /// <summary>
@@ -144,7 +145,21 @@ namespace ModUpdater.Client
                 }
             });
             update.UpdateGame();
-            while (update.Progress != 100) ;
+            while (update.Progress != 100) Thread.Sleep(50);
+            using (ZipFile zf = ZipFile.Read(Path.Combine(Properties.Settings.Default.MinecraftPath, "bin", "minecraft.jar")))
+            {
+                List<ZipEntry> delete = new List<ZipEntry>();
+                foreach (ZipEntry ze in zf)
+                {
+                    if (ze.FileName.Contains("META-INF"))
+                        delete.Add(ze);
+                }
+                foreach (ZipEntry ze in delete)
+                {
+                    zf.RemoveEntry(ze);
+                }
+                zf.Save();
+            }
         }
 
         internal static bool TestJava(string p)

@@ -47,20 +47,28 @@ namespace ModUpdater.Server
             IPAddress = (IPEndPoint)s.RemoteEndPoint;
             allowedMods = new List<Mod>();
         }
+
+        void ClientLeft(object sender, EventArgs e)
+        {
+            ClientDisconnected(this, EventArgs.Empty);
+            ph.Stop();
+        }
         public void StartListening()
         {
             ph.Start();
-        }
-        public void Dispose()
-        {
-            ph.Stop();
+            ph.Stream.StreamDisposed += ClientLeft;
         }
         void HandleDisconnect(Packet p)
         {
-            ph.RemovePacketHandler(PacketId.Handshake);
-            ph.RemovePacketHandler(PacketId.RequestMod);
-            ph.RemovePacketHandler(PacketId.Log);
-            ph.RemovePacketHandler(PacketId.Disconnect);
+            TaskManager.AddAsyncTask(delegate
+            {
+                ph.RemovePacketHandler(PacketId.Handshake);
+                ph.RemovePacketHandler(PacketId.RequestMod);
+                ph.RemovePacketHandler(PacketId.Log);
+                ph.RemovePacketHandler(PacketId.Disconnect);
+            });
+            ph.Stream.StreamDisposed -= ClientLeft;
+            ClientDisconnected(this, EventArgs.Empty);
             ph.Stop();
         }
         public void RetreveMod(Packet pa)
