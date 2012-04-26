@@ -65,7 +65,7 @@ namespace ModUpdater.Client
             if (sf != null)
             {
                 sf.CloseSplashScreen();
-                sf = null;
+                //sf = null;
             }
         }
 
@@ -90,6 +90,12 @@ namespace ModUpdater.Client
 
             if (sf != null)
                 sf.UpdateStatusTextWithStatus(Text, tom);
+        }
+
+        public static void AdvanceProgressBar(int by = 10)
+        {
+            if (sf != null && sf.progressBar1.Value + by <= sf.progressBar1.Maximum)
+                sf.progressBar1.Value += by;
         }
         public static SplashScreenForm GetScreen()
         {
