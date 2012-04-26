@@ -25,30 +25,34 @@ namespace ModUpdater.Utility
     public static class TaskManager
     {
         public delegate void Task();
-        private delegate void ThreadExit(Thread t);
-        private static event ThreadExit te;
         private static int CurrentTaskId = 0;
         public delegate void Error(Exception e);
-        public static event Error ExceptionRaised;
+        public static event Error ExceptionRaised = delegate { };
+        private static List<Thread> TaskThreads;
+        private static object taskLock;
+        private static Queue<Task> TaskQueue;
+
+        static TaskManager()
+        {
+            TaskThreads = new List<Thread>(15);
+            TaskQueue = new Queue<Task>();
+            taskLock = new object();
+            Thread.Sleep(100);
+            for (int i = 0; i < 15; i++)
+            {
+                Thread t = new Thread(ManageTaskThread, 10000);
+                t.IsBackground = true;
+                t.Name = "Task Thread " + (TaskThreads.Count + 1);
+                t.Start();
+            }
+        }
         /// <summary>
         /// Runs the task on a new thread.
         /// </summary>
         /// <param name="t">The Task to run.</param>
         public static void AddAsyncTask(Task t)
         {
-            if (te == null) te += new ThreadExit(TaskManager_ThreadExit);
-            Thread tr = new Thread(new ThreadStart(delegate { PerformTask(t); }));
-            tr.IsBackground = true;
-            tr.Name = "Task: " + CurrentTaskId.ToString();
-            tr.Start();
-        }
-
-        static void TaskManager_ThreadExit(Thread t)
-        {
-            if (t != Thread.CurrentThread)
-            {
-                t.Join();
-            }
+            TaskQueue.Enqueue(t);
         }
         /// <summary>
         /// Runs a task on a new thread after a spefifyed amount of time.
@@ -57,34 +61,16 @@ namespace ModUpdater.Utility
         /// <param name="delayInMs">The time to wait before running the task.  In miliseconds</param>
         public static void AddDelayedAsyncTask(Task t, int delayInMs)
         {
-            if (te == null) te += new ThreadExit(TaskManager_ThreadExit);
-            Thread tr = new Thread(new ThreadStart(delegate { Thread.Sleep(delayInMs); PerformTask(t); }));
-            tr.IsBackground = true;
-            tr.Name = "Task: " + CurrentTaskId.ToString();
-            tr.Start();
-        }
-        /// <summary>
-        /// Runs a task on the same thread.
-        /// </summary>
-        /// <param name="t">The task to run</param>
-        public static void AddSyncTask(Task t)
-        {
-            PerformTask(t);
-        }
-        /// <summary>
-        /// Runs a task after a spefifyed amount of time.
-        /// </summary>
-        /// <param name="t">The Task to run</param>
-        /// <param name="delayInMs">The time to wait before running the task.  In miliseconds</param>
-        public static void AddDelayedSyncTask(Task t, int delayInMs)
-        {
-            Thread.Sleep(delayInMs);
-            PerformTask(t);
+            AddAsyncTask(delegate
+            {
+                Thread.Sleep(delayInMs);
+                PerformTask(t);
+            });
         }
         private static void PerformTask(Task t)
         {
-            int tid = CurrentTaskId;
             CurrentTaskId++;
+            int tid = CurrentTaskId;
             try
             {
                 MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Running Task Id: " + tid.ToString());
@@ -98,11 +84,33 @@ namespace ModUpdater.Utility
             {
                 MinecraftModUpdater.Logger.Log(Logger.Level.Error, "Error on task " + tid.ToString());
                 MinecraftModUpdater.Logger.Log(e);
-                if (ExceptionRaised != null)
-                    ExceptionRaised.Invoke(e);
+                ExceptionRaised.Invoke(e);
             }
-            Thread.CurrentThread.Abort();
-            //te.Invoke(Thread.CurrentThread);
+        }
+        /// <summary>
+        /// Manage the current thread as a task thread.
+        /// </summary>
+        private static void ManageTaskThread()
+        {
+            TaskThreads.Add(Thread.CurrentThread);
+            int tLoopId = TaskThreads.Count;
+            while (true)
+            {
+                try
+                {
+                        if (TaskQueue.Peek() != null)
+                        {
+                            Task t;
+                            lock (taskLock)
+                            {
+                                t = TaskQueue.Dequeue();
+                            }
+                            PerformTask(t);
+                        }
+                }
+                catch { } //Queue is most likly empty, no real need to do anything.
+                Thread.Sleep(250);
+            }
         }
     }
 }
