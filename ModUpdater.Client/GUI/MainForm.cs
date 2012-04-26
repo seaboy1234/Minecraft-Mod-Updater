@@ -60,6 +60,8 @@ namespace ModUpdater.Client.GUI
 
         private void btnConfirm_Click(object sender, EventArgs e)
         {
+            if (Properties.Settings.Default.FirstRun || !File.Exists(Properties.Settings.Default.MinecraftPath + "/bin/version"))
+                Program.UpdateMinecraft();
             if (lsModsToUpdate.Items.Count == 0)
             {
                 if (Properties.Settings.Default.LaunchAfterUpdate)
@@ -89,8 +91,6 @@ namespace ModUpdater.Client.GUI
                     SplashScreen.ShowSplashScreen();                    
                 });
             }
-            if(Properties.Settings.Default.FirstRun)
-                Program.UpdateMinecraft();
             TaskManager.AddDelayedAsyncTask(delegate
             {
                 SplashScreen.UpdateStatusText("Downloading Updates...");
@@ -175,7 +175,6 @@ namespace ModUpdater.Client.GUI
             Debug.Assert("Launching Program.");
             Thread.Sleep(500);
             SplashScreen.UpdateStatusTextWithStatus("Preparing to connect to the update server...", TypeOfMessage.Warning);
-            this.Opacity = .0;
             Thread.Sleep(3000);
             SplashScreen.UpdateStatusText("Connecting...");
             Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -409,6 +408,7 @@ namespace ModUpdater.Client.GUI
         {
             ModListPacket p = pa as ModListPacket;
             ModFiles.AddRange(p.Mods);
+            if (p.Mods.Length == 0) { goto open; }
             foreach (string s in p.Mods)
             {
                 Packet.Send(new RequestModPacket { FileName = s, Type = RequestModPacket.RequestType.Info }, ph.Stream);
@@ -425,10 +425,10 @@ namespace ModUpdater.Client.GUI
                         lsModsToDelete.Items.Add(Path.GetFileName(s));
                     }));
             }
+            open:
             if (!Properties.Settings.Default.AutoUpdate)
                 Invoke(new Void(delegate
                 {
-                    Opacity = 1;
                     SplashScreen.CloseSplashScreen();
                     Show();
                 }));

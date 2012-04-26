@@ -152,20 +152,23 @@ namespace ModUpdater.Server
         }
         public void AcceptClient(Socket s)
         {
-            if (Clients.Count >= Config.MaxClients)
+            try
             {
-                s.Disconnect(false);
-                return;
+                if (Clients.Count >= Config.MaxClients)
+                {
+                    s.Disconnect(false);
+                    return;
+                }
+                Client c = new Client(s, this);
+                Clients.Add(c);
+                c.StartListening();
+                Thread.Sleep(1000);
+                c.ClientDisconnected += delegate
+                {
+                    Clients.Remove(c);
+                };
             }
-            Client c = new Client(s, this);
-            Clients.Add(c);
-            c.StartListening();
-            Thread.Sleep(1000);
-            c.ClientDisconnected += delegate
-            {
-                c.Dispose();
-                Clients.Remove(c);
-            };
+            catch (Exception e) { Console.WriteLine(e); }
         }
         public void SimpleConsoleImputHandler()
         {
