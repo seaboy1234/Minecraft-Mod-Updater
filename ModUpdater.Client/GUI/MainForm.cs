@@ -151,8 +151,9 @@ namespace ModUpdater.Client.GUI
             TaskManager.AddAsyncTask(delegate
             {
                 string ver;
-                if (Extras.CheckForUpdate("client", Program.Version, out ver))
-                    UpdateForm.Open(ver);
+                bool api;
+                if (Extras.CheckForUpdate("client", Program.Version, out ver, out api))
+                    UpdateForm.Open(ver, api);
             });
             if (Properties.Settings.Default.FirstRun)
             {

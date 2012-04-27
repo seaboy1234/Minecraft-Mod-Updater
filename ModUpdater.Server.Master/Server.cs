@@ -55,9 +55,14 @@ namespace ModUpdater.Server.Master
             TaskManager.AddAsyncTask(delegate
             {
                 string ver;
-                if (Extras.CheckForUpdate("master", Program.Version, out ver))
+                bool api;
+                if (Extras.CheckForUpdate("master", Program.Version, out ver, out api))
                 {
-                    Console.WriteLine("Version {0} is now available for Minecraft Mod Updater.", ver);
+                    if (!api) 
+                        Console.WriteLine("Version {0} is now available for Minecraft Mod Updater.", ver);
+                    else
+                        Console.WriteLine("Version {0} is now available for Minecraft Mod Updater API.", ver);
+
                 }
             });
             while (Online)
@@ -78,12 +83,19 @@ namespace ModUpdater.Server.Master
             private Server Server;
             private PacketHandler ph;
             public event EventHandler ClientDisconnected = delegate { };
+            private Slave slave;
             public Client(Server s, PacketHandler p)
             {
                 Server = s;
                 ph = p;
                 ph.Start();
                 ph.RegisterPacketHandler(PacketId.Handshake, Handle);
+            }
+
+            void Stream_StreamDisposed(object sender, EventArgs e)
+            {
+                Server.Servers.Remove(slave);
+                Console.WriteLine("Server left: " + slave.ToString());
             }
             private void Handle(Packet pa)
             {
@@ -93,6 +105,8 @@ namespace ModUpdater.Server.Master
                     Slave sl = new Slave(p, ph);
                     Server.Servers.Add(sl);
                     Console.WriteLine("New Server: " + sl.ToString());
+                    slave = sl;
+                    ph.Stream.StreamDisposed += new EventHandler(Stream_StreamDisposed);
                     return;
                 }
                 string[] srvs = new string[Server.Servers.Count];
