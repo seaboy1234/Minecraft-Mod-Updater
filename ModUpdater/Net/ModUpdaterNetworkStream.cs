@@ -22,6 +22,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
+using ModUpdater.Utility;
 
 namespace ModUpdater.Net
 {
@@ -31,6 +32,7 @@ namespace ModUpdater.Net
         public byte[] Key { get; set; }
         public byte[] IV { get; set; }
         public bool Encrypted { get; set; }
+        public event EventHandler StreamDisposed = delegate { };
         private Random r = new Random();
 
         public ModUpdaterNetworkStream(Socket s)
@@ -44,6 +46,10 @@ namespace ModUpdater.Net
 
         protected override void Dispose(bool disposing)
         {
+            TaskManager.AddAsyncTask(delegate
+            {
+                StreamDisposed.Invoke(null, EventArgs.Empty);
+            });
             base.Dispose(disposing);
             Disposed = true;
         }
