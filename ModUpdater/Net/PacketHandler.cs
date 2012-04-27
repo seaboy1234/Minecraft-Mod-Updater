@@ -30,7 +30,7 @@ namespace ModUpdater.Net
         private bool IgnoreNext = false;
         private Thread NetworkThread;
         private Dictionary<PacketId, PacketEvent> EventHandler;
-
+        private List<Packet> PacketBacklog;
         public PacketHandler(Socket s)
         {
             sck = s;
@@ -52,6 +52,7 @@ namespace ModUpdater.Net
             {
                 p = Packet.ReadPacket(Stream);
                 id = Packet.GetPacketId(p);
+                PacketBacklog.Add(p);
                 if (id == PacketId.EncryptionStatus)
                 {
                     EncryptionStatusPacket pa = p as EncryptionStatusPacket;
@@ -116,6 +117,14 @@ namespace ModUpdater.Net
                 EventHandler.Remove(id);
             }
             catch (Exception e) { throw e; }
+        }
+        /// <summary>
+        /// Gets a backlog of all recived packets.
+        /// </summary>
+        /// <returns>Array of packets containing every packet recived during this session.</returns>
+        public Packet[] GetBacklog()
+        {
+            return PacketBacklog.ToArray();
         }
     }
 }
