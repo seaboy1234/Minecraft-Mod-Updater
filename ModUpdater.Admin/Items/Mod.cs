@@ -23,7 +23,7 @@ using System.Xml;
 using System.Threading;
 using ModUpdater.Utility;
 
-namespace ModUpdater.Admin
+namespace ModUpdater.Admin.Items
 {
     public class Mod
     {
