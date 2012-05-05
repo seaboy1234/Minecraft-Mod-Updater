@@ -341,8 +341,8 @@ namespace ModUpdater.Client.GUI
             TaskManager.AddAsyncTask(delegate
             {
                 string path = Properties.Settings.Default.MinecraftPath + "\\" + p.File.Replace(p.File.Split('\\').Last(), "").TrimEnd('\\');
-                File.WriteAllBytes(path + "\\" + Path.GetFileName(p.File), CurrentDownload.FileContents);
-                MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Downloaded " + path + "\\" + Path.GetFileName(p.File));
+                File.WriteAllBytes(path + "\\" + p.File, CurrentDownload.FileContents);
+                MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Downloaded " + path + "\\" + p.File);
             });
             foreach (string s in PostDownload)
             {
