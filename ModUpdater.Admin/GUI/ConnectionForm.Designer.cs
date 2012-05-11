@@ -45,7 +45,6 @@ namespace ModUpdater.Admin.GUI
         private void InitializeComponent()
         {
             this.lsSrvs = new System.Windows.Forms.ListBox();
-            this.progStatus = new System.Windows.Forms.ProgressBar();
             this.btnCancel = new System.Windows.Forms.Button();
             this.txtSvr = new System.Windows.Forms.TextBox();
             this.txtUsernm = new System.Windows.Forms.TextBox();
@@ -58,6 +57,7 @@ namespace ModUpdater.Admin.GUI
             this.lblPasswd = new System.Windows.Forms.Label();
             this.btnConnect = new System.Windows.Forms.Button();
             this.lblStatus = new System.Windows.Forms.Label();
+            this.updaterProgressBar1 = new ModUpdater.Controls.ProgressBar();
             this.SuspendLayout();
             // 
             // lsSrvs
@@ -66,21 +66,14 @@ namespace ModUpdater.Admin.GUI
             this.lsSrvs.Location = new System.Drawing.Point(0, 27);
             this.lsSrvs.Name = "lsSrvs";
             this.lsSrvs.Size = new System.Drawing.Size(120, 108);
-            this.lsSrvs.TabIndex = 0;
-            // 
-            // progStatus
-            // 
-            this.progStatus.Location = new System.Drawing.Point(1, 150);
-            this.progStatus.Name = "progStatus";
-            this.progStatus.Size = new System.Drawing.Size(382, 25);
-            this.progStatus.TabIndex = 1;
+            this.lsSrvs.TabIndex = 6;
             // 
             // btnCancel
             // 
             this.btnCancel.Location = new System.Drawing.Point(229, 109);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
-            this.btnCancel.TabIndex = 2;
+            this.btnCancel.TabIndex = 5;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
@@ -90,28 +83,29 @@ namespace ModUpdater.Admin.GUI
             this.txtSvr.Location = new System.Drawing.Point(189, 31);
             this.txtSvr.Name = "txtSvr";
             this.txtSvr.Size = new System.Drawing.Size(100, 20);
-            this.txtSvr.TabIndex = 3;
+            this.txtSvr.TabIndex = 0;
             // 
             // txtUsernm
             // 
             this.txtUsernm.Location = new System.Drawing.Point(189, 57);
             this.txtUsernm.Name = "txtUsernm";
             this.txtUsernm.Size = new System.Drawing.Size(100, 20);
-            this.txtUsernm.TabIndex = 4;
+            this.txtUsernm.TabIndex = 2;
             // 
             // txtPort
             // 
             this.txtPort.Location = new System.Drawing.Point(295, 31);
             this.txtPort.Name = "txtPort";
             this.txtPort.Size = new System.Drawing.Size(58, 20);
-            this.txtPort.TabIndex = 5;
+            this.txtPort.TabIndex = 1;
             // 
             // txtPasswd
             // 
             this.txtPasswd.Location = new System.Drawing.Point(189, 83);
             this.txtPasswd.Name = "txtPasswd";
             this.txtPasswd.Size = new System.Drawing.Size(100, 20);
-            this.txtPasswd.TabIndex = 6;
+            this.txtPasswd.TabIndex = 3;
+            this.txtPasswd.UseSystemPasswordChar = true;
             // 
             // lblSrvs
             // 
@@ -163,7 +157,7 @@ namespace ModUpdater.Admin.GUI
             this.btnConnect.Location = new System.Drawing.Point(148, 109);
             this.btnConnect.Name = "btnConnect";
             this.btnConnect.Size = new System.Drawing.Size(75, 23);
-            this.btnConnect.TabIndex = 12;
+            this.btnConnect.TabIndex = 4;
             this.btnConnect.Text = "Connect";
             this.btnConnect.UseVisualStyleBackColor = true;
             this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
@@ -172,17 +166,29 @@ namespace ModUpdater.Admin.GUI
             // 
             this.lblStatus.AutoSize = true;
             this.lblStatus.BackColor = System.Drawing.Color.Transparent;
-            this.lblStatus.Location = new System.Drawing.Point(126, 134);
+            this.lblStatus.Location = new System.Drawing.Point(12, 138);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(94, 13);
-            this.lblStatus.TabIndex = 13;
+            this.lblStatus.TabIndex = 7;
             this.lblStatus.Text = "Connection Status";
+            // 
+            // updaterProgressBar1
+            // 
+            this.updaterProgressBar1.BackColor = System.Drawing.Color.Transparent;
+            this.updaterProgressBar1.EndColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(211)))), ((int)(((byte)(0)))));
+            this.updaterProgressBar1.Location = new System.Drawing.Point(0, 154);
+            this.updaterProgressBar1.Name = "updaterProgressBar1";
+            this.updaterProgressBar1.Size = new System.Drawing.Size(383, 32);
+            this.updaterProgressBar1.StartColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(211)))), ((int)(((byte)(0)))));
+            this.updaterProgressBar1.Step = 20;
+            this.updaterProgressBar1.TabIndex = 8;
             // 
             // ConnectionForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(384, 177);
+            this.ClientSize = new System.Drawing.Size(384, 188);
+            this.Controls.Add(this.updaterProgressBar1);
             this.Controls.Add(this.lblStatus);
             this.Controls.Add(this.btnConnect);
             this.Controls.Add(this.lblPasswd);
@@ -195,7 +201,6 @@ namespace ModUpdater.Admin.GUI
             this.Controls.Add(this.txtUsernm);
             this.Controls.Add(this.txtSvr);
             this.Controls.Add(this.btnCancel);
-            this.Controls.Add(this.progStatus);
             this.Controls.Add(this.lsSrvs);
             this.Name = "ConnectionForm";
             this.Text = "Connect To Server";
@@ -208,7 +213,6 @@ namespace ModUpdater.Admin.GUI
         #endregion
 
         private System.Windows.Forms.ListBox lsSrvs;
-        private System.Windows.Forms.ProgressBar progStatus;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.TextBox txtSvr;
         private System.Windows.Forms.TextBox txtUsernm;
@@ -221,5 +225,6 @@ namespace ModUpdater.Admin.GUI
         private System.Windows.Forms.Label lblPasswd;
         private System.Windows.Forms.Button btnConnect;
         private System.Windows.Forms.Label lblStatus;
+        private Controls.ProgressBar updaterProgressBar1;
     }
 }

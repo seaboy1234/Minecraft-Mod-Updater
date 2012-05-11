@@ -22,6 +22,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using ModUpdater.Admin.Items;
 
 namespace ModUpdater.Admin.GUI
 {
@@ -42,6 +43,16 @@ namespace ModUpdater.Admin.GUI
         private void button2_Click(object sender, EventArgs e)
         {
             panel1.Controls.Add(new ControlEditMod("Edit Mod", mods[listBox1.SelectedIndex]));
+        }
+
+        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBox1.SelectedItem != null)
+            {
+                button2.Enabled = true;
+                return;
+            }
+            button2.Enabled = false;
         }
     }
 }

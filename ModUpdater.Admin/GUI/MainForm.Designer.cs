@@ -58,6 +58,7 @@ namespace ModUpdater.Admin.GUI
             this.listBox1.Name = "listBox1";
             this.listBox1.Size = new System.Drawing.Size(139, 355);
             this.listBox1.TabIndex = 0;
+            this.listBox1.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
             // 
             // panel1
             // 
@@ -78,6 +79,7 @@ namespace ModUpdater.Admin.GUI
             // 
             // button2
             // 
+            this.button2.Enabled = false;
             this.button2.Location = new System.Drawing.Point(157, 41);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 23);
