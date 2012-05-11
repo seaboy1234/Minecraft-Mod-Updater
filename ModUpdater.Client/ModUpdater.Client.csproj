@@ -97,11 +97,23 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Game\GameUpdater.cs" />
+    <Compile Include="GUI\CommandPromptForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\CommandPromptForm.Designer.cs">
+      <DependentUpon>CommandPromptForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\ConnectionForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GUI\ConnectionForm.Designer.cs">
       <DependentUpon>ConnectionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\ModInfoForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\ModInfoForm.Designer.cs">
+      <DependentUpon>ModInfoForm.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\OptionsForm.cs">
       <SubType>Form</SubType>
@@ -122,6 +134,7 @@
     <Compile Include="GUI\SelectServerDialog.Designer.cs">
       <DependentUpon>SelectServerDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Utility\Mod.cs" />
     <Compile Include="Utility\Server.cs" />
     <Compile Include="GUI\UpdateForm.cs">
       <SubType>Form</SubType>
@@ -157,11 +170,17 @@
     <Compile Include="GUI\SplashScreenForm.designer.cs">
       <DependentUpon>SplashScreenForm.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="GUI\CommandPromptForm.resx">
+      <DependentUpon>CommandPromptForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\ConnectionForm.resx">
       <DependentUpon>ConnectionForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\ExceptionHandler.resx">
       <DependentUpon>ExceptionHandler.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\ModInfoForm.resx">
+      <DependentUpon>ModInfoForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\OptionsForm.resx">
       <DependentUpon>OptionsForm.cs</DependentUpon>

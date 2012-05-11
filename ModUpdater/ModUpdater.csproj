@@ -37,6 +37,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -45,6 +46,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DebugMessageHandler.cs" />
+    <Compile Include="Controls\ProgressBar.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Net\ConnectionHandler.cs" />
     <Compile Include="Net\DataType.cs" />
     <Compile Include="Net\MalformedPacketException.cs" />
@@ -65,6 +69,11 @@
   <ItemGroup>
     <Content Include="icon.ico" />
     <Content Include="Net\Protocol.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Controls\ProgressBar.resx">
+      <DependentUpon>ProgressBar.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
