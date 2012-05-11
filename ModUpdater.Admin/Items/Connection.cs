@@ -14,15 +14,12 @@
 //    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using ModUpdater.Net;
-using ModUpdater.Admin.Items;
-using System.IO;
+using ModUpdater.Utility;
 
 namespace ModUpdater.Admin.Items
 {
@@ -58,12 +55,23 @@ namespace ModUpdater.Admin.Items
 
         public void Connect()
         {
+            CurrentStep = ProgressStep.ConnectingToMinecraft;
             Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             Socket.Connect(Server.IPAddress, Server.Port);
             PacketHandler = new PacketHandler(Socket);
             PacketHandler.Start();
             string reason = "";
-            if (!Login(ref reason)) throw new LoginFailedException(reason);
+            CurrentStep = ProgressStep.LoggingIn;
+            if (!Login(ref reason))
+            {
+                TaskManager.AddDelayedAsyncTask(delegate
+                {
+                    CurrentStep = ProgressStep.LoginFailed;
+                }, 500);
+                throw new LoginFailedException(reason);
+            }
+            CurrentStep = ProgressStep.Connecting;
+            PacketHandler.RegisterPacketHandler(PacketId.Handshake, ModListPacketHandler);
             Packet.Send(new HandshakePacket { Type = HandshakePacket.SessionType.Admin, Username = username }, PacketHandler.Stream);
         }
         public void RegisterUser(string username, string password)
@@ -71,7 +79,10 @@ namespace ModUpdater.Admin.Items
             this.username = username;
             this.password = password;
         }
-
+        private void ModListPacketHandler(Packet pa)
+        {
+            ModListPacket p = pa as ModListPacket;
+        }
         private bool Login(ref string reason)
         {
             string postdata = "user=" + username + "&password=" + password + "&version=" + int.MaxValue.ToString();
@@ -83,6 +94,7 @@ namespace ModUpdater.Admin.Items
             r.ContentType = "application/x-www-form-urlencoded";
             r.ContentLength = post.Length;
             Stream s = r.GetRequestStream();
+            CurrentStep = ProgressStep.LoggingIn;
             s.Write(post, 0, post.Length);
             WebResponse wr = r.GetResponse();
             s = wr.GetResponseStream();
