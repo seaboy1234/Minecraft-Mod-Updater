@@ -34,11 +34,11 @@ namespace ModUpdater.Utility
         /// Runs the task on a new thread.
         /// </summary>
         /// <param name="t">The Task to run.</param>
-        public static void AddAsyncTask(Task t)
+        public static void AddAsyncTask(Task t, bool background = true)
         {
             if (te == null) te += new ThreadExit(TaskManager_ThreadExit);
             Thread tr = new Thread(new ThreadStart(delegate { PerformTask(t); }));
-            tr.IsBackground = true;
+            tr.IsBackground = background;
             tr.Name = "Task: " + CurrentTaskId.ToString();
             tr.Start();
         }
