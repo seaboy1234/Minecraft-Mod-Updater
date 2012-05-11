@@ -38,6 +38,8 @@ namespace ModUpdater.Net
         Image, // -->
         ServerList, // MasterServer --> Client
         AdminFileInfo, // --> Admin Client
+        AdminChangelog, // <-- AC
+
         Disconnect = 255 // <-- Notes: Disconnect Packet
     }
 }
