@@ -26,17 +26,38 @@ namespace ModUpdater.Client
         public string Name { get; set; }
         public string FileName { get; set; }
         public byte[] FileContents { get; set; }
-        public ModFile(string n, string f, int i)
+
+        protected bool disposed = false;
+
+        public ModFile(string n, string f, long i)
         {
             Name = n;
             FileName = f;
             FileContents = new byte[i];
         }
+        #region Dispose Code
+        ~ModFile()
+        {
+            Dispose(false);
+        }
         public void Dispose()
         {
-            Name = null;
-            FileName = null;
-            FileContents = null;
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    Name = null;
+                    FileName = null;
+                }
+                FileContents = null;
+                disposed = true;
+            }
+        }
+        #endregion
     }
 }
