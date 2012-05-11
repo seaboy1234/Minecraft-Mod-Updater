@@ -33,8 +33,6 @@ namespace ModUpdater.Client
     static class Program
     {
         public const string Version = "1.3.0_dev";
-        [DllImport("kernel32.dll")]
-        private static extern int AllocConsole();
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -48,7 +46,7 @@ namespace ModUpdater.Client
                     switch (s)
                     {
                         case "-commandline":
-                            AllocConsole();
+                            CommandPromptForm.Open();
                             ProgramOptions.CommandLine = true;
                             break;
                         case "-debug":
@@ -66,6 +64,10 @@ namespace ModUpdater.Client
             ProgramOptions.Administrator = pricipal.IsInRole(WindowsBuiltInRole.Administrator);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            TaskManager.AddAsyncTask(delegate
+            {
+                //throw new SystemException("Error", new SystemException("Other Error"));
+            });
             Application.Run(new MainForm());
         }
         public static void StartMinecraft()
@@ -121,6 +123,13 @@ namespace ModUpdater.Client
         }
         public static void UpdateMinecraft()
         {
+            if (SplashScreen.GetScreen() == null)
+            {
+                TaskManager.AddAsyncTask(delegate
+                {
+                    SplashScreen.ShowSplashScreen();
+                });
+            }
             Thread.Sleep(100);
             GameUpdater update = new GameUpdater(ProgramOptions.LatestVersion, "minecraft.jar", true);
             SplashScreen.UpdateStatusText("Downloading Minecraft...");
@@ -130,8 +139,7 @@ namespace ModUpdater.Client
                 SplashScreen.GetScreen().Invoke(new MainForm.Void(delegate
                 {
                     SplashScreen.GetScreen().progressBar1.Value = 0;
-                    SplashScreen.GetScreen().progressBar1.Maximum = 100;
-                    SplashScreen.GetScreen().progressBar1.Style = ProgressBarStyle.Blocks;
+                    SplashScreen.GetScreen().progressBar1.MaxValue = 100;
                 }));
                 while (update.Progress != 100)
                 {
