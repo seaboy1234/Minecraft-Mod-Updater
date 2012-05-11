@@ -22,6 +22,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using ModUpdater.Admin.Items;
 
 namespace ModUpdater.Admin.GUI
 {
@@ -48,12 +49,17 @@ namespace ModUpdater.Admin.GUI
             }
             foreach (string s in Mod.WhitelistedUsers)
             {
-                txtPostDownload.AppendText(s + "\r\n");
+                txtWhitelist.AppendText(s + "\r\n");
             }
             foreach (string s in Mod.BlacklistedUsers)
             {
-                txtPostDownload.AppendText(s + "\r\n");
+                txtBlacklist.AppendText(s + "\r\n");
             }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
