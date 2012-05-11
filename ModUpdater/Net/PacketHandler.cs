@@ -34,8 +34,9 @@ namespace ModUpdater.Net
         public PacketHandler(Socket s)
         {
             sck = s;
-            NetworkThread = new Thread(new ThreadStart(delegate { while (sck.Connected) { Recv(); } }));
+            NetworkThread = new Thread(new ThreadStart(delegate { while (sck.Connected) { Recv(); } Stop(); }));
             EventHandler = new Dictionary<PacketId, PacketEvent>();
+            PacketBacklog = new List<Packet>();
         }
         /// <summary>
         /// Handles receving of packets.  This method should never be called from outside of this class.
