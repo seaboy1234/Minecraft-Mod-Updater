@@ -22,6 +22,7 @@ using System.IO;
 using System.Xml;
 using System.Threading;
 using ModUpdater.Utility;
+using ModUpdater.Net;
 
 namespace ModUpdater.Server
 {
@@ -46,6 +47,9 @@ namespace ModUpdater.Server
          *         <Username Value="somename" />
          *         <Username Value="namesome" />
          *     </Blacklist>
+         *     <Description>
+         *         Some words about the mod to explain it to users
+         *     </Description>
          * </Mod>
          */
         public string ModName { get; private set; }
@@ -54,10 +58,14 @@ namespace ModUpdater.Server
         public string[] PostDownloadCLI { get; private set; }
         public List<string> WhitelistedUsers { get; private set; }
         public List<string> BlacklistedUsers { get; private set; }
+        public long FileSize { get; private set; }
+        public string Description { get; private set; }
+        private List<List<byte>> FileParts;
         private XmlDocument modFile;
         public Mod(string ConfigFile)
         {
             modFile = new XmlDocument();
+            FileParts = new List<List<byte>>();
             modFile.Load(ConfigFile);
             XmlNodeList nodes = modFile.SelectNodes("/Mod");
             XmlNode n = nodes[0];
@@ -65,17 +73,20 @@ namespace ModUpdater.Server
             {
                 ModName = n["Name"].InnerText;
             }
-            catch { }
+            catch
+            {
+                n.AppendChild(modFile.CreateElement("Name", "Name", "/Mod"));
+            }
             try
             {
                 Author = n["Author"].InnerText;
             }
-            catch { }
+            catch { n.AppendChild(modFile.CreateElement("Author", "Author", "/Mod")); }
             try
             {
                 ModFile = n["File"].InnerText;
             }
-            catch { }
+            catch { n.AppendChild(modFile.CreateElement("File", "File", "/Mod")); }
             try
             {
                 XmlNode cfg = n["ConfigFiles"];
@@ -99,7 +110,7 @@ namespace ModUpdater.Server
                     i++;
                 }
             }
-            catch { }
+            catch { n.AppendChild(modFile.CreateElement("PostDownload", "PostDownload", "/Mod")); }
             try
             {
                 WhitelistedUsers = new List<string>();
@@ -113,7 +124,7 @@ namespace ModUpdater.Server
                     i++;
                 }
             }
-            catch { }
+            catch { n.AppendChild(modFile.CreateElement("Whitelist", "Whitelist", "/Mod")); }
             try
             {
                 BlacklistedUsers = new List<string>();
@@ -127,7 +138,12 @@ namespace ModUpdater.Server
                     i++;
                 }
             }
-            catch { }
+            catch { n.AppendChild(modFile.CreateElement("Blacklist", "Blacklist", "/Mod")); }
+            try
+            {
+                Author = n["Description"].InnerText;
+            }
+            catch { n.AppendChild(modFile.CreateElement("Description", "Description", "/Mod")); }
             modFile.Save(ConfigFile);
             if (ModFile.Contains("minecraft.jar"))
             {
@@ -141,6 +157,35 @@ namespace ModUpdater.Server
                     Console.WriteLine("WARNING: Sending minecraft.jar is not allowed under the Minecraft Terms of Use.  Please send jar mods in bin/jarmods.jar.");
                 });
             }
+
+            byte[] file = File.ReadAllBytes(Config.ModsPath + "\\" + ModFile);
+            int k = 0;
+            FileSize = file.Length;
+            for (int i = 0; i < file.Length; i += 2048)
+            {
+                FileParts.Add(new List<byte>());
+                for (int j = i; j < i + 2048; j++)
+                {
+                    if (file.Length > j)
+                        FileParts[k].Add(file[j]);
+                }
+                k++;
+            }
+        }
+        internal void SendFileTo(Client c)
+        {
+            PacketHandler ph = c.PacketHandler;
+            Packet.Send(new NextDownloadPacket { ModName = ModName, FileName = ModFile, FileSize = FileSize, PostDownloadCLI = PostDownloadCLI, ChunkSize = FileParts.Count }, ph.Stream);
+            int l = 0;
+            for (int h = 0; h < FileParts.Count; h++)
+            {
+                byte[] b = FileParts[h].ToArray();
+                b = c.PacketHandler.Stream.EncryptBytes(b);
+                Packet.Send(new FilePartPacket { Part = b, Index = l }, ph.Stream);
+                l += FileParts[h].Count;
+            }
+            Packet.Send(new AllDonePacket { File = ModFile }, ph.Stream);
+
         }
         public override string ToString()
         {

@@ -85,32 +85,10 @@ namespace ModUpdater.Server
             switch (p.Type)
             {
                 case RequestModPacket.RequestType.Info:
-                    Packet.Send(new ModInfoPacket { Author = mod.Author, File = mod.ModFile, ModName = mod.ModName, Hash = Extras.GenerateHash(Config.ModsPath + "\\" + mod.ModFile) }, ph.Stream);
+                    Packet.Send(new ModInfoPacket { Author = mod.Author, File = mod.ModFile, ModName = mod.ModName, Hash = Extras.GenerateHash(Config.ModsPath + "\\" + mod.ModFile), FileSize = mod.FileSize }, ph.Stream);
                     break;
                 case RequestModPacket.RequestType.Download:
-                    byte[] file = File.ReadAllBytes(Config.ModsPath + "\\" + mod.ModFile);
-                    List<List<byte>> abyte = new List<List<byte>>();
-                    int k = 0;
-                    for (int i = 0; i < file.Length; i+= 2048)
-                    {
-                        abyte.Add(new List<byte>());
-                        for (int j = i; j < i + 2048; j++)
-                        {
-                            if(file.Length > j)
-                                abyte[k].Add(file[j]);
-                        }
-                        k++;
-                    }
-                    Packet.Send(new NextDownloadPacket { ModName = mod.ModName, FileName = mod.ModFile, Length = file.Length, PostDownloadCLI = mod.PostDownloadCLI, ChunkSize = abyte.Count }, ph.Stream);
-                    int l = 0;
-                    for (int h = 0; h < abyte.Count; h++)
-                    {
-                        byte[] b = abyte[h].ToArray();
-                        b = ph.Stream.EncryptBytes(b);
-                        Packet.Send(new FilePartPacket { Part = b, Index = l }, ph.Stream);
-                        l += abyte[h].Count;
-                    }
-                    Packet.Send(new AllDonePacket { File = mod.ModFile }, ph.Stream);
+                    mod.SendFileTo(this);
                     break;
             }
         }
@@ -146,7 +124,6 @@ namespace ModUpdater.Server
             Console.WriteLine("Client {0} connected. ({1})", ClientID, IPAddress.Address);
             Packet.Send(new EncryptionStatusPacket { Encrypt = true, EncryptionIV = ph.Stream.IV, EncryptionKey = ph.Stream.Key }, ph.Stream);
             ph.Stream.Encrypted = true;
-            allowedMods = Server.Mods;
             Packet.Send(new MetadataPacket { SData = new string[] { "server_name", Config.ServerName }, FData = new float[] { 24.0f } }, ph.Stream);
             if (!Admin)
             {
@@ -168,12 +145,14 @@ namespace ModUpdater.Server
                     Packet.Send(new ImagePacket { Type = ImagePacket.ImageType.Mod, ShowOn = v.Key.ModFile, Image = b }, ph.Stream);
                 }
             }
+            else { allowedMods = Server.Mods; }
             string[] mods = new string[allowedMods.Count];
             for (int i = 0; i < allowedMods.Count; i++)
             {
                 mods[i] = allowedMods[i].ModFile;
             }
             Packet.Send(new ModListPacket { Mods = mods }, ph.Stream);
+            Console.WriteLine("{0} Logged in.", this.ClientID);
         }
 
         internal void HandleLog(Packet pa)
