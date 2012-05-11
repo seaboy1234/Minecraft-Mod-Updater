@@ -35,14 +35,17 @@ namespace ModUpdater.Client.GUI
         public Exception Exception;
         private bool Locked = false;
         private string Report;
-        public ExceptionHandler(Exception e)
+        private object ExceptionSender;
+        public ExceptionHandler(Exception e, object sender)
         {
+            ExceptionSender = sender;
             Exception = e;
             InitializeComponent();
         }
 
         private void ExceptionHandler_Load(object sender, EventArgs e)
         {
+            if (ExceptionSender == null) ExceptionSender = this;
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("Minecraft Mod Updater has crashed.");
             sb.AppendLine("Please make an error report about this including everything below the line.");
@@ -54,13 +57,14 @@ namespace ModUpdater.Client.GUI
             sb.AppendLine("API Version: " + MinecraftModUpdater.Version);
             sb.AppendLine("OS: " + Environment.OSVersion.ToString());
             sb.AppendLine("Framework Version: " + System.Runtime.InteropServices.RuntimeEnvironment.GetSystemVersion());
+            sb.AppendLine("Exception Sender: " + ExceptionSender.GetType().FullName);
             sb.AppendLine();
             sb.AppendLine(Exception.ToString());
             txtError.Text = sb.ToString();
             Locked = true;
             Report = txtError.Text;
         }
-        public static void HandleException(Exception e)
+        public static void HandleException(Exception e, object sender)
         {
             if (ProgramCrashed) return;
             ProgramCrashed = true;
@@ -68,25 +72,30 @@ namespace ModUpdater.Client.GUI
             {
                 MainForm.Instance.Invoke(new MainForm.Void(delegate
                 {
-                    new ExceptionHandler(e).ShowDialog();
+                    new ExceptionHandler(e, sender).ShowDialog();
                 }));
             }
-            catch { new ExceptionHandler(e).ShowDialog(); }
+            catch { new ExceptionHandler(e, sender).ShowDialog(); }
         }
         public static void Init()
         {
-            TaskManager.ExceptionRaised += new TaskManager.Error(HandleException);
+            TaskManager.ExceptionRaised += new TaskManager.Error(TaskManager_ExceptionRaised);
             Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
         }
 
+        static void TaskManager_ExceptionRaised(Exception e)
+        {
+            HandleException(e, null);
+        }
+
         static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
         {
-            HandleException(e.Exception);
+            HandleException(e.Exception, sender);
         }
         static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            HandleException((Exception)e.ExceptionObject);
+            HandleException((Exception)e.ExceptionObject, sender);
         }
 
         private void btnReport_Click(object sender, EventArgs e)
@@ -98,6 +107,7 @@ namespace ModUpdater.Client.GUI
                 sw.WriteLine(txtError.Text);
                 sw.Close();
             }
+            Locked = false;
             Close();
         }
 
@@ -112,6 +122,7 @@ namespace ModUpdater.Client.GUI
 
         private void btnClose_Click(object sender, EventArgs e)
         {
+            Locked = false;
             Close();
         }
 
@@ -123,7 +134,13 @@ namespace ModUpdater.Client.GUI
 
         private void ExceptionHandler_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Application.Exit();
+            if(!Locked)
+                Application.Exit();
+        }
+
+        private void ExceptionHandler_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (Locked) e.Cancel = true;
         }
     }
 }

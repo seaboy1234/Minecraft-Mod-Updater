@@ -16,17 +16,17 @@
 //    limitations under the License.
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using System.Diagnostics;
-using System.Drawing;
-using ModUpdater.Utility;
 using ModUpdater.Net;
-using System.Text;
+using ModUpdater.Utility;
 
 namespace ModUpdater.Client.GUI
 {
@@ -37,6 +37,7 @@ namespace ModUpdater.Client.GUI
         public IPAddress LocalAddress;
         public string ServerFolder { get { return serverName.Replace(' ', '_').Replace('.', '-').ToLower(); } }
         public delegate void Void();
+
         private PacketHandler ph;
         private Socket socket;
         private List<string> ModFiles = new List<string>();
@@ -47,6 +48,7 @@ namespace ModUpdater.Client.GUI
         private float serverFontSize = 36;
         private ImageList modImages;
         private bool warnDisconnect = true;
+
         public MainForm()
         {
             if (Instance == null) Instance = this;
@@ -203,7 +205,7 @@ namespace ModUpdater.Client.GUI
             }
             catch(Exception ex)
             {
-                ExceptionHandler.HandleException(ex);
+                ExceptionHandler.HandleException(ex, this);
             }
             modImages = new ImageList();
             modImages.ImageSize = new Size(230, 180);
@@ -302,10 +304,12 @@ namespace ModUpdater.Client.GUI
             }
             TaskManager.AddAsyncTask(delegate
             {
-                SplashScreen.GetScreen().Invoke(new Void(delegate
-                {
-                    SplashScreen.GetScreen().progressBar1.PerformStep();
-                }));
+                
+                    SplashScreen.GetScreen().Invoke(new Void(delegate
+                    {
+                        SplashScreen.AdvanceProgressBar();
+                    }));
+                
             });
         }
 
@@ -318,7 +322,7 @@ namespace ModUpdater.Client.GUI
                 SplashScreen.GetScreen().progressBar1.Value = 0;
                 SplashScreen.GetScreen().progressBar1.Maximum = p.ChunkSize * 10;
                 SplashScreen.GetScreen().progressBar1.Style = ProgressBarStyle.Blocks;
-                SplashScreen.GetScreen().progressBar1.PerformStep();
+                SplashScreen.AdvanceProgressBar();
             }));
             CurrentDownload = new ModFile(p.ModName, p.FileName, p.Length);
             if(!ServerShutdown)
@@ -356,7 +360,7 @@ namespace ModUpdater.Client.GUI
                     proc.Start();
                     MinecraftModUpdater.Logger.Log(Logger.Level.Info, "[Post Download] " + proc.StandardOutput.ReadToEnd());
                 }
-                catch (Exception e) { ExceptionHandler.HandleException(e); }
+                catch (Exception e) { ExceptionHandler.HandleException(e, this); }
             }
             if (GetLastModToUpdate().File == p.File)
             {

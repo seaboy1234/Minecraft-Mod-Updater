@@ -121,6 +121,7 @@ namespace ModUpdater.Client
         }
         public static void UpdateMinecraft()
         {
+            if (SplashScreen.GetScreen() == null) { TaskManager.AddAsyncTask(delegate { SplashScreen.ShowSplashScreen(); }); }
             Thread.Sleep(100);
             GameUpdater update = new GameUpdater(ProgramOptions.LatestVersion, "minecraft.jar", true);
             SplashScreen.UpdateStatusText("Downloading Minecraft...");
