@@ -27,27 +27,6 @@ namespace ModUpdater.Admin.Items
 {
     public class Mod
     {
-        /*
-         * Standard Mod File Format
-         * <?xml version="1.0"?>
-         * <Mod>
-         *     <Name>ModName</Name>
-         *     <Author>Author</Author>
-         *     <File>mods\modfile.zip</File>
-         *     <PostDownload>
-         *         <Action>somecommand</Action>
-         *         <Action>someothercommand</Action>
-         *     </PostDownload>
-         *     <Whitelist>
-         *         <Username Value="somename" />
-         *         <Username Value="namesome" />
-         *     </Whitelist>
-         *     <Blacklist>
-         *         <Username Value="somename" />
-         *         <Username Value="namesome" />
-         *     </Blacklist>
-         * </Mod>
-         */
         public string Name { get; set; }
         public string Author { get; set; }
         public string File { get; set; }
