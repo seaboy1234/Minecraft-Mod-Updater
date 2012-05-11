@@ -27,6 +27,7 @@ using System.Drawing;
 using ModUpdater.Utility;
 using ModUpdater.Net;
 using System.Text;
+using ModUpdater.Client.Utility;
 
 namespace ModUpdater.Client.GUI
 {
@@ -60,12 +61,12 @@ namespace ModUpdater.Client.GUI
 
         private void btnConfirm_Click(object sender, EventArgs e)
         {
-            if (Properties.Settings.Default.FirstRun || !File.Exists(Properties.Settings.Default.MinecraftPath + "/bin/version"))
-                Program.UpdateMinecraft();
             if (lsModsToUpdate.Items.Count == 0)
             {
                 if (Properties.Settings.Default.LaunchAfterUpdate)
                 {
+                    if (Properties.Settings.Default.FirstRun || !File.Exists(Properties.Settings.Default.MinecraftPath + "/bin/version"))
+                        Program.UpdateMinecraft();
                     SplashScreen.CloseSplashScreen();
                     Hide();
                     Program.StartMinecraft();
@@ -91,6 +92,11 @@ namespace ModUpdater.Client.GUI
                     SplashScreen.ShowSplashScreen();                    
                 });
             }
+            while (SplashScreen.GetScreen() == null) ;
+            while (SplashScreen.GetScreen().Opacity != 1) ;
+            if (Properties.Settings.Default.FirstRun || !File.Exists(Properties.Settings.Default.MinecraftPath + "/bin/version"))
+                Program.UpdateMinecraft();
+
             TaskManager.AddDelayedAsyncTask(delegate
             {
                 SplashScreen.UpdateStatusText("Downloading Updates...");
@@ -176,7 +182,9 @@ namespace ModUpdater.Client.GUI
             Thread.Sleep(500);
             SplashScreen.UpdateStatusTextWithStatus("Preparing to connect to the update server...", TypeOfMessage.Warning);
             Thread.Sleep(3000);
+            SplashScreen.GetScreen().progressBar1.Step = 20;
             SplashScreen.UpdateStatusText("Connecting...");
+            SplashScreen.GetScreen().progressBar1.PerformStep();
             Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             socket = s;
             Debug.Assert("Creating Objects.");
@@ -186,6 +194,7 @@ namespace ModUpdater.Client.GUI
                 int port =  cf.ConnectTo.Port;
                 if (srv == LocalAddress.ToString()) srv = "127.0.0.1";
                 ConnectionHandler.ConnectTo(s, srv, port);
+                SplashScreen.GetScreen().progressBar1.PerformStep();
             }
             catch (SocketException ex)
             {
@@ -208,6 +217,7 @@ namespace ModUpdater.Client.GUI
             modImages = new ImageList();
             modImages.ImageSize = new Size(230, 180);
             modImages.ColorDepth = ColorDepth.Depth32Bit;
+            SplashScreen.GetScreen().progressBar1.PerformStep();
             TaskManager.AddAsyncTask(delegate
             {
                 while (s.Connected) ;
@@ -236,6 +246,7 @@ namespace ModUpdater.Client.GUI
                 ph.RegisterPacketHandler(PacketId.FilePart, ph_FilePart);
                 ph.RegisterPacketHandler(PacketId.Image, ph_Image);
                 Debug.Assert("Packet Handlers registered.");
+                SplashScreen.GetScreen().progressBar1.PerformStep();
             });
             if ((new LoginForm()).ShowDialog() != DialogResult.OK)
             {
@@ -252,6 +263,7 @@ namespace ModUpdater.Client.GUI
             Packet.Send(new HandshakePacket { Username = Properties.Settings.Default.Username }, ph.Stream);
             Debug.Assert("Sent Handshake Packet.");
             Thread.Sleep(100);
+            SplashScreen.GetScreen().progressBar1.PerformStep();
         }
 
         private void OnFirstRun()
@@ -302,10 +314,7 @@ namespace ModUpdater.Client.GUI
             }
             TaskManager.AddAsyncTask(delegate
             {
-                SplashScreen.GetScreen().Invoke(new Void(delegate
-                {
-                    SplashScreen.GetScreen().progressBar1.PerformStep();
-                }));
+                SplashScreen.GetScreen().progressBar1.PerformStep();
             });
         }
 
@@ -313,14 +322,10 @@ namespace ModUpdater.Client.GUI
         {
             NextDownloadPacket p = pa as NextDownloadPacket;
             Thread.Sleep(100);
-            SplashScreen.GetScreen().Invoke(new Void(delegate
-            {
-                SplashScreen.GetScreen().progressBar1.Value = 0;
-                SplashScreen.GetScreen().progressBar1.Maximum = p.ChunkSize * 10;
-                SplashScreen.GetScreen().progressBar1.Style = ProgressBarStyle.Blocks;
-                SplashScreen.GetScreen().progressBar1.PerformStep();
-            }));
-            CurrentDownload = new ModFile(p.ModName, p.FileName, p.Length);
+            SplashScreen.GetScreen().progressBar1.Value = 0;
+            SplashScreen.GetScreen().progressBar1.MaxValue = p.ChunkSize * 10;
+            SplashScreen.GetScreen().progressBar1.PerformStep();
+            CurrentDownload = new ModFile(p.ModName, p.FileName, p.FileSize);
             if(!ServerShutdown)
                 SplashScreen.UpdateStatusText("Downloading " + p.ModName);
             else
@@ -437,7 +442,7 @@ namespace ModUpdater.Client.GUI
         void ph_ModInfo(Packet pa)
         {
             ModInfoPacket p = pa as ModInfoPacket;
-            Mod m = new Mod { Author = p.Author, File = p.File, ModName = p.ModName, Hash = p.Hash };
+            Mod m = new Mod { Author = p.Author, File = p.File, ModName = p.ModName, Hash = p.Hash, Size = p.FileSize };
             Mods.Add(m);
             string path = Properties.Settings.Default.MinecraftPath + "\\" + p.File.Replace(p.File.Split('\\').Last(), "").TrimEnd('\\').Replace("clientmods", "mods");
             string s = "";
@@ -502,7 +507,11 @@ namespace ModUpdater.Client.GUI
             {
                 ServerShutdown = true;
                 if (SplashScreen.GetScreen() != null)
+                {
                     SplashScreen.UpdateStatusTextWithStatus(p.SData[1], TypeOfMessage.Error);
+                    SplashScreen.GetScreen().progressBar1.StartColor = Color.FromArgb(210, 202, 0);
+                    SplashScreen.GetScreen().progressBar1.EndColor = Color.FromArgb(210, 202, 0);
+                }
                 else
                     MessageBox.Show(p.SData[1], "Server Shutdown");
                 MinecraftModUpdater.Logger.Log(Logger.Level.Error, "Server Shutdown.  Reason: " + p.SData[1]);
@@ -531,18 +540,6 @@ namespace ModUpdater.Client.GUI
                 }));
             }
         }
-        struct Mod
-        {
-            public string ModName;
-            public string Author;
-            public string File;
-            public string Hash;
-            public override string ToString()
-            {
-                return ModName;
-            }
-        }
-
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             warnDisconnect = false;
@@ -559,6 +556,10 @@ namespace ModUpdater.Client.GUI
             }
             catch { }
         }
-        
+
+        private void ListBox_DoubleClick_Handler(object sender, EventArgs e)
+        {
+            new ModInfoForm((Mod)((ListBox)sender).SelectedItem).ShowDialog();
+        }        
     }
 }

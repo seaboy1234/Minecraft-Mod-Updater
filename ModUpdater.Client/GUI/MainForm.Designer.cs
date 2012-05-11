@@ -63,6 +63,7 @@ namespace ModUpdater.Client.GUI
             this.lsMods.Name = "lsMods";
             this.lsMods.Size = new System.Drawing.Size(115, 225);
             this.lsMods.TabIndex = 0;
+            this.lsMods.DoubleClick += new System.EventHandler(this.ListBox_DoubleClick_Handler);
             // 
             // label1
             // 
@@ -82,6 +83,7 @@ namespace ModUpdater.Client.GUI
             this.lsModsToUpdate.Name = "lsModsToUpdate";
             this.lsModsToUpdate.Size = new System.Drawing.Size(112, 225);
             this.lsModsToUpdate.TabIndex = 2;
+            this.lsModsToUpdate.DoubleClick += new System.EventHandler(this.ListBox_DoubleClick_Handler);
             // 
             // label2
             // 
