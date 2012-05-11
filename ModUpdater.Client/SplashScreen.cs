@@ -94,7 +94,7 @@ namespace ModUpdater.Client
 
         public static void AdvanceProgressBar(int by = 10)
         {
-            if (sf != null && sf.progressBar1.Value + by <= sf.progressBar1.Maximum)
+            if (sf != null && sf.progressBar1.Value + by <= sf.progressBar1.MaxValue)
                 sf.progressBar1.Value += by;
         }
         public static SplashScreenForm GetScreen()

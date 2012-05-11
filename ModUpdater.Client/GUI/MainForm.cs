@@ -212,7 +212,7 @@ namespace ModUpdater.Client.GUI
             }
             catch(Exception ex)
             {
-                ExceptionHandler.HandleException(ex);
+                ExceptionHandler.HandleException(ex, this);
             }
             modImages = new ImageList();
             modImages.ImageSize = new Size(230, 180);

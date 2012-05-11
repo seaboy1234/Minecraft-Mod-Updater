@@ -31,11 +31,13 @@ namespace ModUpdater.Utility
         private static List<Thread> TaskThreads;
         private static object taskLock;
         private static Queue<Task> TaskQueue;
+        private static Queue<Task> ImportantTaskQueue;
 
         static TaskManager()
         {
-            TaskThreads = new List<Thread>(15);
+            TaskThreads = new List<Thread>(16);
             TaskQueue = new Queue<Task>();
+            ImportantTaskQueue = new Queue<Task>();
             taskLock = new object();
             Thread.Sleep(100);
             for (int i = 0; i < 15; i++)
@@ -45,6 +47,10 @@ namespace ModUpdater.Utility
                 t.Name = "Task Thread " + (TaskThreads.Count + 1);
                 t.Start();
             }
+            Thread th = new Thread(ManageImportantTaskThread, 10000);
+            th.IsBackground = true;
+            th.Name = "Task Thread " + (TaskThreads.Count + 1);
+            th.Start();
         }
         /// <summary>
         /// Runs the task on a new thread.
@@ -53,6 +59,14 @@ namespace ModUpdater.Utility
         public static void AddAsyncTask(Task t)
         {
             TaskQueue.Enqueue(t);
+        }
+        /// <summary>
+        /// Runs a task on a new thread.  This method will not run the the task on a background thread.
+        /// </summary>
+        /// <param name="t"></param>
+        public static void AddAsyncImportantTask(Task t)
+        {
+
         }
         /// <summary>
         /// Runs a task on a new thread after a spefifyed amount of time.
@@ -107,6 +121,28 @@ namespace ModUpdater.Utility
                             }
                             PerformTask(t);
                         }
+                }
+                catch { } //Queue is most likly empty, no real need to do anything.
+                Thread.Sleep(250);
+            }
+        }
+        private static void ManageImportantTaskThread()
+        {
+            TaskThreads.Add(Thread.CurrentThread);
+            int tLoopId = TaskThreads.Count;
+            while (TaskThreads[0].IsAlive)
+            {
+                try
+                {
+                    if (ImportantTaskQueue.Peek() != null)
+                    {
+                        Task t;
+                        lock (taskLock)
+                        {
+                            t = ImportantTaskQueue.Dequeue();
+                        }
+                        PerformTask(t);
+                    }
                 }
                 catch { } //Queue is most likly empty, no real need to do anything.
                 Thread.Sleep(250);
