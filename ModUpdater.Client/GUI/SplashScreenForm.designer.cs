@@ -46,23 +46,15 @@ namespace ModUpdater.Client.GUI
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SplashScreenForm));
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.DownloadPicture = new System.Windows.Forms.PictureBox();
             this.Image = new System.Windows.Forms.PictureBox();
+            this.progressBar1 = new ModUpdater.Controls.ProgressBar();
             ((System.ComponentModel.ISupportInitialize)(this.DownloadPicture)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Image)).BeginInit();
             this.SuspendLayout();
-            // 
-            // progressBar1
-            // 
-            this.progressBar1.Location = new System.Drawing.Point(12, 365);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(616, 23);
-            this.progressBar1.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
-            this.progressBar1.TabIndex = 2;
             // 
             // label2
             // 
@@ -110,14 +102,24 @@ namespace ModUpdater.Client.GUI
             this.Image.TabIndex = 6;
             this.Image.TabStop = false;
             // 
+            // progressBar1
+            // 
+            this.progressBar1.BackColor = System.Drawing.Color.Transparent;
+            this.progressBar1.Location = new System.Drawing.Point(12, 365);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(616, 23);
+            this.progressBar1.StartColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(211)))), ((int)(((byte)(40)))));
+            this.progressBar1.Step = 10;
+            this.progressBar1.TabIndex = 7;
+            // 
             // SplashScreenForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
             this.ClientSize = new System.Drawing.Size(640, 400);
-            this.Controls.Add(this.DownloadPicture);
             this.Controls.Add(this.progressBar1);
+            this.Controls.Add(this.DownloadPicture);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.Image);
@@ -139,9 +141,9 @@ namespace ModUpdater.Client.GUI
 
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Timer timer1;
-        internal System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.PictureBox DownloadPicture;
         internal System.Windows.Forms.Label label2;
         internal System.Windows.Forms.PictureBox Image;
+        public Controls.ProgressBar progressBar1;
     }
 }

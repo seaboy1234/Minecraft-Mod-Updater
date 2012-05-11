@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <metadata name="progressBar1.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
   <metadata name="label2.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
@@ -139,7 +136,7 @@
   <data name="Image.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAoAAAAGQCAYAAAA+89ElAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAACxIAAAsSAdLdfvwAAAAGYktHRAAAAAAAAPlDu38AAAAHdElNRQfbDBEDFysyAVg4
+        YQUAAAAJcEhZcwAACw4AAAsOAUC+4UEAAAAGYktHRAAAAAAAAPlDu38AAAAHdElNRQfbDBEDFysyAVg4
         AAAAHWlUWHRDb21tZW50AAAAAABDcmVhdGVkIHdpdGggR0lNUGQuZQcAAP9XSURBVHhe7L113DZF2f9/
         P2Fj0N3d982dV94ddCMg3Y0ISBggkgIiUiIgIQhiokjYBXYX+tj92N0+8/t8ZvbY89jjOmZ2z+u6CL8/
         /5jX7s7OHNMz7/3M7nlO+Y//+I8wZcqUwKM4Xls/e78UVuKLDW3Ls23D6etSPnJ58sqSK2MpP1I3pbhd
@@ -3070,7 +3067,7 @@
   <data name="$this.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAoAAAAGQCAYAAAA+89ElAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAACw0AAAsNAe0HwCwAAAAGYktHRAAAAAAAAPlDu38AAAAHdElNRQfbDBEDFysyAVg4
+        YQUAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAAGYktHRAAAAAAAAPlDu38AAAAHdElNRQfbDBEDFysyAVg4
         AAAAHWlUWHRDb21tZW50AAAAAABDcmVhdGVkIHdpdGggR0lNUGQuZQcAAP9XSURBVHhe7L113DZF2f9/
         P2Fj0N3d982dV94ddCMg3Y0ISBggkgIiUiIgIQhiokjYBXYX+tj92N0+8/t8ZvbY89jjOmZ2z+u6CL8/
         /5jX7s7OHNMz7/3M7nlO+Y//+I8wZcqUwKM4Xls/e78UVuKLDW3Ls23D6etSPnJ58sqSK2MpP1I3pbhd
