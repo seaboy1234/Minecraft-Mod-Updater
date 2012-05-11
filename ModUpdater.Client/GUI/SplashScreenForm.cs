@@ -52,10 +52,6 @@ namespace ModUpdater.Client.GUI
             this.label2.Text = MinecraftModUpdater.LongAppName;
             this.Opacity = 0;
             DownloadPicture.Parent = Image;
-
-            //this.progressBar1.Parent = this.pictureBox1;
-            //this.progressBar1.BackColor = Color.Transparent;
-
             progressBar1.Show();
         }
 
@@ -98,7 +94,7 @@ namespace ModUpdater.Client.GUI
             if (InvokeRequired)
             {
                 // We're not in the UI thread, so we need to call BeginInvoke
-                BeginInvoke(new StringParameterDelegate(UpdateStatusText), new object[] { Text });
+                Invoke(new StringParameterDelegate(UpdateStatusText), new object[] { Text });
                 return;
             }
             // Must be on the UI thread if we've got this far
