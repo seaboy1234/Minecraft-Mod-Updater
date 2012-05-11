@@ -238,12 +238,14 @@ namespace ModUpdater.Net
         public string ModName { get; set; }
         public string File { get; set; }
         public string Hash { get; set; }
+        public long FileSize { get; set; }
         public override void Read(ModUpdaterNetworkStream s)
         {
             Author = s.ReadString();
             ModName = s.ReadString();
             File = s.ReadString();
             Hash = s.ReadString();
+            FileSize = s.ReadLong();
         }
 
         public override void Write(ModUpdaterNetworkStream s)
@@ -252,6 +254,7 @@ namespace ModUpdater.Net
             s.WriteString(ModName);
             s.WriteString(File);
             s.WriteString(Hash);
+            s.WriteLong(FileSize);
         }
     }
     public class ModListPacket : Packet
@@ -302,7 +305,7 @@ namespace ModUpdater.Net
     {
         public string ModName { get; set; }
         public string FileName { get; set; }
-        public int Length { get; set; }
+        public long FileSize { get; set; }
         public int ChunkSize { get; set; }
         public string[] PostDownloadCLI { get; set; }
         
@@ -310,7 +313,7 @@ namespace ModUpdater.Net
         {
             ModName = s.ReadString();
             FileName = s.ReadString();
-            Length = s.ReadInt();
+            FileSize = s.ReadLong();
             ChunkSize = s.ReadInt();
             int i = s.ReadInt();
             PostDownloadCLI = new string[i];
@@ -324,7 +327,7 @@ namespace ModUpdater.Net
         {
             s.WriteString(ModName);
             s.WriteString(FileName);
-            s.WriteInt(Length);
+            s.WriteLong(FileSize);
             s.WriteInt(ChunkSize);
             s.WriteInt(PostDownloadCLI.Length);
             foreach (string l in PostDownloadCLI)
@@ -529,35 +532,17 @@ namespace ModUpdater.Net
 
         }
     }
-    public class AdminFileInfoPacket : Packet
+    public class AdminFileInfoPacket : ModInfoPacket
     {
-        public string ConfigName { get; set; }
-        public string[] ConfigFile { get; set; }
-        public int FileLength { get; set; }
-        public int FileChunkSize { get; set; }
+        
         public override void Read(ModUpdaterNetworkStream s)
         {
-            ConfigName = s.ReadString();
-            int len = s.ReadInt();
-            ConfigFile = new string[len];
-            for (int i = 0; i < len; i++)
-            {
-                ConfigFile[i] = s.ReadString();
-            }
-            FileLength = s.ReadInt();
-            FileChunkSize = s.ReadInt();
+            
         }
 
         public override void Write(ModUpdaterNetworkStream s)
         {
-            s.WriteString(ConfigName);
-            s.WriteInt(ConfigFile.Length);
-            for (int i = 0; i < ConfigFile.Length; i++)
-            {
-                s.WriteString(ConfigFile[i]);
-            }
-            s.WriteInt(FileLength);
-            s.WriteInt(FileChunkSize);
+            
         }
     }
     #endregion
