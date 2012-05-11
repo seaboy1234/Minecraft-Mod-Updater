@@ -117,6 +117,7 @@ namespace ModUpdater.Client.GUI
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "ExceptionHandler";
             this.Text = "Exception Handler";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ExceptionHandler_FormClosing);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ExceptionHandler_FormClosed);
             this.Load += new System.EventHandler(this.ExceptionHandler_Load);
             this.ResumeLayout(false);
