@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace ModUpdater.Utility
 {
@@ -32,14 +33,15 @@ namespace ModUpdater.Utility
         private static object taskLock;
         private static Queue<Task> TaskQueue;
         private static Queue<Task> ImportantTaskQueue;
+        private static Dictionary<Task, int> DelayedTasks;
 
         static TaskManager()
         {
             TaskThreads = new List<Thread>(16);
             TaskQueue = new Queue<Task>();
             ImportantTaskQueue = new Queue<Task>();
+            DelayedTasks = new Dictionary<Task,int>();
             taskLock = new object();
-            Thread.Sleep(100);
             for (int i = 0; i < 15; i++)
             {
                 Thread t = new Thread(ManageTaskThread, 10000);
@@ -48,9 +50,13 @@ namespace ModUpdater.Utility
                 t.Start();
             }
             Thread th = new Thread(ManageImportantTaskThread, 10000);
+            th.Name = "Task Thread " + (TaskThreads.Count + 1);
+            th.Start();
+            th = new Thread(ManageTaskDelayThread, 10000);
             th.IsBackground = true;
             th.Name = "Task Thread " + (TaskThreads.Count + 1);
             th.Start();
+            Application.ApplicationExit += new EventHandler(ApplicationExit);
         }
         /// <summary>
         /// Runs the task on a new thread.
@@ -66,7 +72,7 @@ namespace ModUpdater.Utility
         /// <param name="t"></param>
         public static void AddAsyncImportantTask(Task t)
         {
-
+            ImportantTaskQueue.Enqueue(t);
         }
         /// <summary>
         /// Runs a task on a new thread after a spefifyed amount of time.
@@ -75,11 +81,7 @@ namespace ModUpdater.Utility
         /// <param name="delayInMs">The time to wait before running the task.  In miliseconds</param>
         public static void AddDelayedAsyncTask(Task t, int delayInMs)
         {
-            AddAsyncTask(delegate
-            {
-                Thread.Sleep(delayInMs);
-                PerformTask(t);
-            });
+            DelayedTasks.Add(t, delayInMs);
         }
         private static void PerformTask(Task t)
         {
@@ -108,6 +110,7 @@ namespace ModUpdater.Utility
         {
             TaskThreads.Add(Thread.CurrentThread);
             int tLoopId = TaskThreads.Count;
+            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Task Thread " + tLoopId + "  has started.");
             while (true)
             {
                 try
@@ -122,7 +125,7 @@ namespace ModUpdater.Utility
                             PerformTask(t);
                         }
                 }
-                catch { } //Queue is most likly empty, no real need to do anything.
+                catch { } //Queue is most likely empty, no real need to do anything.
                 Thread.Sleep(250);
             }
         }
@@ -130,6 +133,7 @@ namespace ModUpdater.Utility
         {
             TaskThreads.Add(Thread.CurrentThread);
             int tLoopId = TaskThreads.Count;
+            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Task Thread " + tLoopId + "  has started. \r\nThis thread manages important tasks");
             while (TaskThreads[0].IsAlive)
             {
                 try
@@ -144,8 +148,41 @@ namespace ModUpdater.Utility
                         PerformTask(t);
                     }
                 }
-                catch { } //Queue is most likly empty, no real need to do anything.
+                catch { } //Queue is most likely empty, no real need to do anything.
                 Thread.Sleep(250);
+            }
+        }
+        private static void ManageTaskDelayThread()
+        {
+            TaskThreads.Add(Thread.CurrentThread);
+            int tLoopId = TaskThreads.Count;
+            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Task Thread " + tLoopId + "  has started.\r\nThis thread manages delayed tasks.");
+            while (TaskThreads[0].IsAlive)
+            {
+                try
+                {
+                    foreach (var v in DelayedTasks)
+                    {
+                        //if (v.Key == null) continue;
+                        DelayedTasks[v.Key] -= 10;
+                        if (v.Value < 1)
+                        {
+                            TaskQueue.Enqueue(v.Key);
+                            DelayedTasks.Remove(v.Key);
+                        }
+
+                    }
+                    Thread.Sleep(10);
+                }
+                catch { } //Queue is most likely empty, no real need to do anything.
+            }
+        }
+        //Used to ensure all threads are exited when the app closes.
+        private static void ApplicationExit(object sender, EventArgs e)
+        {
+            foreach (Thread t in TaskThreads)
+            {
+                t.Abort();
             }
         }
     }
