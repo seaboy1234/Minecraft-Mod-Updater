@@ -89,41 +89,34 @@ namespace ModUpdater.Client.GUI
                 }
                 TaskManager.AddAsyncTask(delegate
                 {
-                    SplashScreen.ShowSplashScreen();                    
+                    SplashScreen.ShowSplashScreen();
                 });
             }
             while (SplashScreen.GetScreen() == null) ;
             while (SplashScreen.GetScreen().Opacity != 1) ;
             if (Properties.Settings.Default.FirstRun || !File.Exists(Properties.Settings.Default.MinecraftPath + "/bin/version"))
                 Program.UpdateMinecraft();
-
-            TaskManager.AddDelayedAsyncTask(delegate
+            SplashScreen.UpdateStatusText("Downloading Updates...");
+            SplashScreen.GetScreen().Invoke(new Void(delegate
             {
-                SplashScreen.UpdateStatusText("Downloading Updates...");
-                SplashScreen.GetScreen().Invoke(new Void(delegate
-                {
-                    SplashScreen.GetScreen().label2.Font.Dispose();
-                    SplashScreen.GetScreen().label2.Font = new Font(FontFamily.GenericSansSerif, serverFontSize);
-                    SplashScreen.GetScreen().label2.Text = serverName;
-                }));
-            }, 300);
-            TaskManager.AddDelayedAsyncTask(delegate
+                SplashScreen.GetScreen().label2.Font.Dispose();
+                SplashScreen.GetScreen().label2.Font = new Font(FontFamily.GenericSansSerif, serverFontSize);
+                SplashScreen.GetScreen().label2.Text = serverName;
+            }));
+            foreach (object o in lsModsToDelete.Items)
             {
-                foreach (object o in lsModsToDelete.Items)
+                string m = (string)o;
+                string path = Properties.Settings.Default.MinecraftPath + "\\" + Path.GetDirectoryName(m) + Path.GetFileName(m).TrimEnd('\\').Replace("clientmods", "mods");
+                File.Delete(Properties.Settings.Default.MinecraftPath + @"\mods\" + Path.GetFileName(m));
+            }
+            foreach (Mod m in Mods)
+            {
+                if (lsModsToUpdate.Items.Contains(m))
                 {
-                    string m = (string)o;
-                    string path = Properties.Settings.Default.MinecraftPath + "\\" + Path.GetDirectoryName(m) + Path.GetFileName(m).TrimEnd('\\').Replace("clientmods", "mods");
-                    File.Delete(Properties.Settings.Default.MinecraftPath + @"\mods\" + Path.GetFileName(m));
+                    Packet.Send(new RequestModPacket { Type = RequestModPacket.RequestType.Download, FileName = m.File }, ph.Stream);
+                    Packet.Send(new RequestModPacket { Type = RequestModPacket.RequestType.Config, FileName = m.File }, ph.Stream);
                 }
-                foreach (Mod m in Mods)
-                {
-                    if (lsModsToUpdate.Items.Contains(m))
-                    {
-                        Packet.Send(new RequestModPacket { Type = RequestModPacket.RequestType.Download, FileName = m.File }, ph.Stream);
-                        Packet.Send(new RequestModPacket { Type = RequestModPacket.RequestType.Config, FileName = m.File }, ph.Stream);
-                    }
-                }
-            }, 1000);
+            }
             Hide();
         }
 
@@ -361,7 +354,7 @@ namespace ModUpdater.Client.GUI
                     proc.Start();
                     MinecraftModUpdater.Logger.Log(Logger.Level.Info, "[Post Download] " + proc.StandardOutput.ReadToEnd());
                 }
-                catch (Exception e) { ExceptionHandler.HandleException(e); }
+                catch (Exception e) { ExceptionHandler.HandleException(e, this); }
             }
             if (GetLastModToUpdate().File == p.File)
             {
@@ -559,7 +552,15 @@ namespace ModUpdater.Client.GUI
 
         private void ListBox_DoubleClick_Handler(object sender, EventArgs e)
         {
-            new ModInfoForm((Mod)((ListBox)sender).SelectedItem).ShowDialog();
+            try
+            {
+                new ModInfoForm((Mod)((ListBox)sender).SelectedItem).ShowDialog();
+            }
+            catch (NullReferenceException) { }
+            catch (Exception ex)
+            {
+                MinecraftModUpdater.Logger.Log(ex);
+            }
         }        
     }
 }
