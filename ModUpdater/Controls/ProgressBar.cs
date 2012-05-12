@@ -476,6 +476,7 @@ namespace ModUpdater.Controls
                 if (Value >= MaxValue) return;
                 for (int i = 0; i < mStep; i++)
                 {
+                    if (Value >= MaxValue) return;
                     Value += 1;
                     System.Threading.Thread.Sleep(20);
                 }
