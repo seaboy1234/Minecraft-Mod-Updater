@@ -26,8 +26,22 @@ namespace ModUpdater.Net
     public class PacketHandler
     {
         public ModUpdaterNetworkStream Stream { get; set; }
+        public bool Online
+        {
+            get
+            {
+                return online;
+            }
+            private set
+            {
+                if(value == false)
+                    Disconnect.Invoke(this, EventArgs.Empty);
+                online = value;
+            }
+        }
+        public event EventHandler Disconnect = delegate { };
+        private bool online;
         protected Socket sck;
-        private bool IgnoreNext = false;
         private Thread NetworkThread;
         private Dictionary<PacketId, PacketEvent> EventHandler;
         private List<Packet> PacketBacklog;
@@ -43,10 +57,6 @@ namespace ModUpdater.Net
         /// </summary>
         private void Recv()
         {
-            if (IgnoreNext)
-            {
-                return;
-            }
             PacketId id;
             Packet p;
             try
@@ -80,6 +90,7 @@ namespace ModUpdater.Net
         /// </summary>
         public void Start()
         {
+            online = true;
             Stream = new ModUpdaterNetworkStream(sck);
             NetworkThread.Name = "Network";
             NetworkThread.IsBackground = true;
@@ -90,6 +101,8 @@ namespace ModUpdater.Net
         /// </summary>
         public void Stop()
         {
+            if (!online) return;
+            Online = false;
             Stream.Dispose();
             sck.Disconnect(false);
             NetworkThread.Abort();
