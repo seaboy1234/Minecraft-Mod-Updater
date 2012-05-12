@@ -64,10 +64,10 @@ namespace ModUpdater.Admin.Items
             CurrentStep = ProgressStep.LoggingIn;
             if (!Login(ref reason))
             {
-                TaskManager.AddDelayedAsyncTask(delegate
+                TaskManager.AddAsyncTask(delegate
                 {
                     CurrentStep = ProgressStep.LoginFailed;
-                }, 500);
+                }, ThreadRole.Delayed, 500);
                 throw new LoginFailedException(reason);
             }
             CurrentStep = ProgressStep.Connecting;
