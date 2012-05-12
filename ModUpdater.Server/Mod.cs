@@ -64,6 +64,15 @@ namespace ModUpdater.Server
         private XmlDocument modFile;
         public Mod(string ConfigFile)
         {
+            ModName = "Unnamed";
+            Author = "No Author Given.";
+            ModFile = "";
+            PostDownloadCLI = new string[0];
+            BlacklistedUsers = new List<string>();
+            WhitelistedUsers = new List<string>();
+            FileSize = 0;
+            Description = "No description given.";
+
             modFile = new XmlDocument();
             FileParts = new List<List<byte>>();
             modFile.Load(ConfigFile);
@@ -141,7 +150,8 @@ namespace ModUpdater.Server
             catch { n.AppendChild(modFile.CreateElement("Blacklist")); }
             try
             {
-                Author = n["Description"].InnerText;
+                if(!string.IsNullOrEmpty(n["Description"].InnerText))
+                    Description = n["Description"].InnerText;
             }
             catch { n.AppendChild(modFile.CreateElement("Description")); }
             modFile.Save(ConfigFile);
