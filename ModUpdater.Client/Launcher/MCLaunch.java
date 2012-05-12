@@ -33,7 +33,7 @@ public class MCLaunch
 			File modsFile = new File(new File(args[0], "bin"), "jarmods.jar");
 			if(modsFile.exists()){
 				jarFiles = new String[] {
-					"minecraft.jar", "lwjgl.jar", "lwjgl_util.jar", "jinput.jar", "jarmods.jar"
+					"jarmods.jar", "minecraft.jar", "lwjgl.jar", "lwjgl_util.jar", "jinput.jar"
 				};
 			}
 			else
