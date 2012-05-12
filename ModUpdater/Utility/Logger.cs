@@ -23,8 +23,8 @@ namespace ModUpdater.Utility
 {
     public class Logger
     {
-        List<string> StringLogs = new List<string>();
-        List<Level> LevelLogs = new List<Level>();
+        List<string> StringLogs = new List<string>(20);
+        List<Level> LevelLogs = new List<Level>(20);
         public enum Level
         {
             Info,
