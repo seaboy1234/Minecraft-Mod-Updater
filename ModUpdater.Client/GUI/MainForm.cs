@@ -48,6 +48,9 @@ namespace ModUpdater.Client.GUI
         private float serverFontSize = 36;
         private ImageList modImages;
         private bool warnDisconnect = true;
+        private int index = 0;
+        private int curPart = 0;
+        private int Parts = 0;
         public MainForm()
         {
             if (Instance == null) Instance = this;
@@ -109,13 +112,10 @@ namespace ModUpdater.Client.GUI
                 string path = Properties.Settings.Default.MinecraftPath + "\\" + Path.GetDirectoryName(m) + Path.GetFileName(m).TrimEnd('\\').Replace("clientmods", "mods");
                 File.Delete(Properties.Settings.Default.MinecraftPath + @"\mods\" + Path.GetFileName(m));
             }
-            foreach (Mod m in Mods)
+            Mod mod = (Mod)lsModsToUpdate.Items[index];
+            if (lsModsToUpdate.Items.Contains(mod))
             {
-                if (lsModsToUpdate.Items.Contains(m))
-                {
-                    Packet.Send(new RequestModPacket { Type = RequestModPacket.RequestType.Download, FileName = m.File }, ph.Stream);
-                    Packet.Send(new RequestModPacket { Type = RequestModPacket.RequestType.Config, FileName = m.File }, ph.Stream);
-                }
+                Packet.Send(new RequestModPacket { Type = RequestModPacket.RequestType.Download, FileName = mod.File }, ph.Stream);
             }
             Hide();
         }
@@ -164,7 +164,7 @@ namespace ModUpdater.Client.GUI
             ConnectionForm cf = new ConnectionForm();
             if (cf.ShowDialog() != System.Windows.Forms.DialogResult.OK)
             {
-                Dispose();
+                Close();
                 return;
             }
             TaskManager.AddAsyncTask(delegate
@@ -291,7 +291,7 @@ namespace ModUpdater.Client.GUI
         void ph_FilePart(Packet pa)
         {
             FilePartPacket p = pa as FilePartPacket;
-            
+            curPart++;
             if (ExceptionHandler.ProgramCrashed)
             {
                 ph.Stop();
@@ -315,6 +315,8 @@ namespace ModUpdater.Client.GUI
         {
             NextDownloadPacket p = pa as NextDownloadPacket;
             Thread.Sleep(100);
+            curPart = 0;
+            Parts = p.ChunkSize;
             SplashScreen.GetScreen().progressBar1.Value = 0;
             SplashScreen.GetScreen().progressBar1.MaxValue = p.ChunkSize * 10;
             SplashScreen.GetScreen().progressBar1.PerformStep();
@@ -335,12 +337,22 @@ namespace ModUpdater.Client.GUI
         void ph_AllDone(Packet pa)
         {
             AllDonePacket p = pa as AllDonePacket;
-            TaskManager.AddAsyncTask(delegate
+            int i = 0;
+            while (curPart != Parts)
             {
-                string path = Properties.Settings.Default.MinecraftPath + "\\" + p.File.Replace(p.File.Split('\\').Last(), "").TrimEnd('\\');
-                File.WriteAllBytes(path + "\\" + Path.GetFileName(p.File), CurrentDownload.FileContents);
-                MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Downloaded " + path + "\\" + Path.GetFileName(p.File));
-            });
+                if (i > 10)
+                {
+                    SplashScreen.UpdateStatusText("There was an error while downloading.  Retrying...");
+                    Thread.Sleep(5000);
+                    Packet.Send(new RequestModPacket { Type = RequestModPacket.RequestType.Download, FileName = p.File }, ph.Stream);
+                    return;
+                }
+                i++;
+                Thread.Sleep(1000);
+            }
+            string path = Path.GetDirectoryName(Properties.Settings.Default.MinecraftPath + "\\" + p.File);
+            File.WriteAllBytes(path + "\\" + Path.GetFileName(p.File), CurrentDownload.FileContents);
+            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Downloaded " + path + "\\" + Path.GetFileName(p.File));
             foreach (string s in PostDownload)
             {
                 try
@@ -360,29 +372,43 @@ namespace ModUpdater.Client.GUI
             {
                 SplashScreen.UpdateStatusText("All files downloaded!");
                 Thread.Sleep(1000);
-                if (Properties.Settings.Default.LaunchAfterUpdate)
-                {
-                    Program.StartMinecraft();
-                }
-                else
-                {
-                    SplashScreen.CloseSplashScreen();
-                }
+                warnDisconnect = false;
                 Packet.Send(new LogPacket { LogMessages = MinecraftModUpdater.Logger.GetMessages() }, ph.Stream);
                 Packet.Send(new DisconnectPacket(), ph.Stream);
-                ph.Stop();
                 ph.RemovePacketHandler(PacketId.Metadata);
                 ph.RemovePacketHandler(PacketId.ModInfo);
                 ph.RemovePacketHandler(PacketId.ModList);
                 ph.RemovePacketHandler(PacketId.NextDownload);
                 ph.RemovePacketHandler(PacketId.FilePart);
                 ph.RemovePacketHandler(PacketId.AllDone);
-                if (socket.Connected) socket.Disconnect(false);
-                Invoke(new Void(delegate
+                TaskManager.AddAsyncTask(delegate
                 {
-                    Close();
-                }));
+                    ph.Stop();
+                }, ThreadRole.Delayed, 5000);
+                TaskManager.AddAsyncTask(delegate
+                {
+                    if (Properties.Settings.Default.LaunchAfterUpdate)
+                    {
+                        Invoke(new Void(delegate
+                        {
+                            Program.StartMinecraft();
+                        }));
+                    }
+                    else
+                    {
+                        SplashScreen.CloseSplashScreen();
+                    }
+                    Invoke(new Void(delegate
+                    {
+                        Close();
+                    }));
+                });
+                return;
             }
+            index++;
+            Mod m = (Mod)lsModsToUpdate.Items[index];
+            Packet.Send(new RequestModPacket { Type = RequestModPacket.RequestType.Download, FileName = m.File }, ph.Stream);
+
         }
         Mod GetLastModToUpdate()
         {
@@ -416,7 +442,7 @@ namespace ModUpdater.Client.GUI
             foreach (string s in Directory.GetFiles(Properties.Settings.Default.MinecraftPath + @"\mods"))
             {
                 string str = @"mods\" + Path.GetFileName(s);
-                bool file = ModFiles.Contains(str);
+                bool file = ModFiles.Contains(str) || ModFiles.Contains(str.Replace('\\', '/'));
                 if (!file)
                     Invoke(new Void(delegate
                     {
@@ -437,7 +463,7 @@ namespace ModUpdater.Client.GUI
             ModInfoPacket p = pa as ModInfoPacket;
             Mod m = new Mod { Author = p.Author, File = p.File, ModName = p.ModName, Hash = p.Hash, Size = p.FileSize };
             Mods.Add(m);
-            string path = Properties.Settings.Default.MinecraftPath + "\\" + p.File.Replace(p.File.Split('\\').Last(), "").TrimEnd('\\').Replace("clientmods", "mods");
+            string path = Path.GetDirectoryName(Properties.Settings.Default.MinecraftPath + "\\" + p.File);
             string s = "";
             bool exists = File.Exists(path + "\\" + Path.GetFileName(m.File));
             if (exists)
@@ -548,6 +574,7 @@ namespace ModUpdater.Client.GUI
                 File.WriteAllLines("ModUpdater.log", file);
             }
             catch { }
+            Application.Exit();
         }
 
         private void ListBox_DoubleClick_Handler(object sender, EventArgs e)
