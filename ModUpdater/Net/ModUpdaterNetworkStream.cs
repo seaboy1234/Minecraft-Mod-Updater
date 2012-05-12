@@ -47,12 +47,9 @@ namespace ModUpdater.Net
         protected override void Dispose(bool disposing)
         {
             if (Disposed) return;
-            TaskManager.AddAsyncTask(delegate
-            {
-                StreamDisposed.Invoke(null, EventArgs.Empty);
-            });
-            base.Dispose(disposing);
+            StreamDisposed.Invoke(null, EventArgs.Empty);
             Disposed = true;
+            base.Dispose(disposing);
         }
         protected byte[] GenerateKey()
         {
