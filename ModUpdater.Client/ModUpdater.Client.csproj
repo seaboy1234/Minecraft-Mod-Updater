@@ -262,6 +262,14 @@
     <Content Include="Launcher\readme.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>SET loc=%25cd%25
+cd ../
+cd ../
+cd Launcher
+"C:\Program Files\Java\jdk1.7.0_01\bin\javac.exe" -target 1.7 -d "%25cd%25" -sourcepath "%25cd%25" MCLaunch.java
+cd %25loc%25</PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
