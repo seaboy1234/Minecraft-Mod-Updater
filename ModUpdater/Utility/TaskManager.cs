@@ -92,7 +92,7 @@ namespace ModUpdater.Utility
                 ExceptionRaised.Invoke(e);
             }
         }
-        private static void SpawnTaskThread(ThreadRole role)
+        public static void SpawnTaskThread(ThreadRole role)
         {
             Thread t;
             switch (role) //Set properties.
