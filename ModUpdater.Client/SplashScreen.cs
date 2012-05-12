@@ -44,17 +44,14 @@ namespace ModUpdater.Client
         /// </summary>
         public static void ShowSplashScreen()
         {
-            if (sf == null)
+            sf = new SplashScreenForm();
+            if (BackgroundImage != null)
             {
-                sf = new SplashScreenForm();
-                if (BackgroundImage != null)
-                {
-                    sf.Image.Image = BackgroundImage;
-                    sf.Image.Height = 400;
-                    sf.Image.Width = 640;
-                }
-                sf.ShowSplashScreen();
+                sf.Image.Image = BackgroundImage;
+                sf.Image.Height = 400;
+                sf.Image.Width = 640;
             }
+            sf.ShowSplashScreen();
         }
 
         /// <summary>
@@ -88,8 +85,13 @@ namespace ModUpdater.Client
         public static void UpdateStatusTextWithStatus(string Text, TypeOfMessage tom)
         {
 
-            if (sf != null)
+            if (sf != null){
                 sf.UpdateStatusTextWithStatus(Text, tom);
+            if (tom == TypeOfMessage.Error)
+            {
+                sf.progressBar1.EndColor = Color.FromArgb(211, 0, 0);
+                sf.progressBar1.StartColor = Color.FromArgb(211, 0, 0);
+            }}
         }
 
         public static void AdvanceProgressBar(int by = 10)

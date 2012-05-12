@@ -67,6 +67,7 @@ namespace ModUpdater.Client.GUI
                 return;
             }
             this.Show();
+            if (SplashScreen.GetScreen() != this) throw new InvalidOperationException("There can only be one splash screen open at once.");
             Application.Run(this);
         }
 
@@ -159,6 +160,7 @@ namespace ModUpdater.Client.GUI
                 if (this.Opacity >= 1.0)
                 {
                     Loading = false;
+                    Visible = true;
                 }
             }
         }
