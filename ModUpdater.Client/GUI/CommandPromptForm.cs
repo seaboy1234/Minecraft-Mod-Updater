@@ -44,6 +44,10 @@ namespace ModUpdater.Client.GUI
 
         private void CommandPromptForm_Load(object sender, EventArgs e)
         {
+            foreach(string s in MinecraftModUpdater.Logger.GetMessages())
+            {
+                DebugMessageHandler_CommandLineMessages(s);
+            }
             DebugMessageHandler.CommandLineMessages += new DebugMessageHandler.DebugMessage(DebugMessageHandler_CommandLineMessages);
         }
 
@@ -58,7 +62,7 @@ namespace ModUpdater.Client.GUI
         }
         private void CommandPromptForm_Resize(object sender, EventArgs e)
         {
-            textBox1.Size = this.Size;
+            textBox1.Size = new Size(Size.Width - 15, Size.Height - 36);
         }
 
         private void CommandPromptForm_FormClosing(object sender, FormClosingEventArgs e)

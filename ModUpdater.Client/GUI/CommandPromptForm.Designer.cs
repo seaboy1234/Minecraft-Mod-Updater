@@ -56,14 +56,16 @@ namespace ModUpdater.Client.GUI
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
             this.textBox1.ReadOnly = true;
-            this.textBox1.Size = new System.Drawing.Size(400, 267);
+            this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.textBox1.Size = new System.Drawing.Size(400, 263);
             this.textBox1.TabIndex = 0;
             // 
             // CommandPromptForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(400, 269);
+            this.BackColor = System.Drawing.Color.Black;
+            this.ClientSize = new System.Drawing.Size(399, 262);
             this.Controls.Add(this.textBox1);
             this.Name = "CommandPromptForm";
             this.Text = "CommandPromptForm";
