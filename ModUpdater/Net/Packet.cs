@@ -71,6 +71,7 @@ namespace ModUpdater.Net
                 p = (Packet)Packet.GetConstructor(new Type[] { }).Invoke(null);
                 p.Read(Stream);
             }
+            catch (MalformedPacketException e) { throw new MalformedPacketException(e.Message, e); }
             catch (Exception e) { MinecraftModUpdater.Logger.Log(e); }
             return p;
         }
