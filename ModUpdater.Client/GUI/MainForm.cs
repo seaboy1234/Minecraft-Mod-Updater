@@ -461,7 +461,7 @@ namespace ModUpdater.Client.GUI
         void ph_ModInfo(Packet pa)
         {
             ModInfoPacket p = pa as ModInfoPacket;
-            Mod m = new Mod { Author = p.Author, File = p.File, ModName = p.ModName, Hash = p.Hash, Size = p.FileSize };
+            Mod m = new Mod { Author = p.Author, File = p.File, ModName = p.ModName, Hash = p.Hash, Size = p.FileSize, Description = p.Description };
             Mods.Add(m);
             string path = Path.GetDirectoryName(Properties.Settings.Default.MinecraftPath + "\\" + p.File);
             string s = "";
@@ -494,7 +494,7 @@ namespace ModUpdater.Client.GUI
                     lsMods.Items.Add(m);
                 }));
             }
-            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Info: " + m.ModName);
+            MinecraftModUpdater.Logger.Log(Logger.Level.Debug, "Info: " + m.ModName);
             string str = GetLastModFile();
             if (str == m.File && Properties.Settings.Default.AutoUpdate)
             {
@@ -540,7 +540,7 @@ namespace ModUpdater.Client.GUI
                 serverName = p.SData[1];
                 serverFontSize = p.FData[0];
                 Properties.Settings.Default.MinecraftPath = Environment.CurrentDirectory + "/Minecraft/" + ServerFolder;
-                MinecraftModUpdater.Logger.Log(Logger.Level.Info, Properties.Settings.Default.MinecraftPath);
+                MinecraftModUpdater.Logger.Log(Logger.Level.Info, string.Format("Minecraft path set to: {0}", Properties.Settings.Default.MinecraftPath));
             }
             else if (p.SData[0] == "splash_display")
             {

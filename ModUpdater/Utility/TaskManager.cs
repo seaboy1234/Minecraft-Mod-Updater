@@ -78,11 +78,11 @@ namespace ModUpdater.Utility
             int tid = CurrentTaskId;
             try
             {
-                MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Running Task Id: " + tid.ToString());
+                MinecraftModUpdater.Logger.Log(Logger.Level.Debug, "Running Task Id: " + tid.ToString());
                 if (t != null)
                 {
                     t.Invoke();
-                    MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Task " + tid.ToString() + " Done");
+                    MinecraftModUpdater.Logger.Log(Logger.Level.Debug, "Task " + tid.ToString() + " Done");
                 }
             }
             catch (Exception e) 
@@ -124,7 +124,7 @@ namespace ModUpdater.Utility
         {
             TaskThreads.Add(Thread.CurrentThread);
             int tLoopId = TaskThreads.Count;
-            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Task Thread " + tLoopId + "  has started.");
+            MinecraftModUpdater.Logger.Log(Logger.Level.Debug, "Task Thread " + tLoopId + "  has started.");
             while (true)
             {
                 try
@@ -147,7 +147,7 @@ namespace ModUpdater.Utility
         {
             TaskThreads.Add(Thread.CurrentThread);
             int tLoopId = TaskThreads.Count;
-            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Task Thread " + tLoopId + "  has started. \r\nThis thread manages important tasks");
+            MinecraftModUpdater.Logger.Log(Logger.Level.Debug, "Task Thread " + tLoopId + "  has started. \r\nThis thread manages important tasks");
             while (TaskThreads[0].IsAlive)
             {
                 try
@@ -170,7 +170,7 @@ namespace ModUpdater.Utility
         {
             TaskThreads.Add(Thread.CurrentThread);
             int tLoopId = TaskThreads.Count;
-            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Task Thread " + tLoopId + "  has started.\r\nThis thread manages delayed tasks.");
+            MinecraftModUpdater.Logger.Log(Logger.Level.Debug, "Task Thread " + tLoopId + "  has started.\r\nThis thread manages delayed tasks.");
             while (TaskThreads[0].IsAlive)
             {
                 try

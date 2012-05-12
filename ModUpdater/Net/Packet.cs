@@ -60,7 +60,7 @@ namespace ModUpdater.Net
                     Stream.Flush();
                     return null;
                 }
-                MinecraftModUpdater.Logger.Log(Logger.Level.Info, string.Format("Read packet {0}", id.ToString()));
+                MinecraftModUpdater.Logger.Log(Logger.Level.Debug, string.Format("Read packet {0}", id.ToString()));
                 foreach (var v in Map)
                 {
                     if (v.Value == id)
@@ -90,7 +90,7 @@ namespace ModUpdater.Net
                 Stream.WriteNetworkByte((byte)id);
                 p.Write(Stream);
                 LastSent = p;
-                MinecraftModUpdater.Logger.Log(Logger.Level.Info, string.Format("Sent packet {0}", id.ToString()));
+                MinecraftModUpdater.Logger.Log(Logger.Level.Debug, string.Format("Sent packet {0}", id.ToString()));
             }
             catch (Exception e) { MinecraftModUpdater.Logger.Log(e); Console.WriteLine(e); }
             Busy = false;
