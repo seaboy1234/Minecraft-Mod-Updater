@@ -48,7 +48,15 @@ namespace ModUpdater.Client.GUI
             {
                 DebugMessageHandler_CommandLineMessages(s);
             }
-            DebugMessageHandler.CommandLineMessages += new DebugMessageHandler.DebugMessage(DebugMessageHandler_CommandLineMessages);
+            MinecraftModUpdater.Logger.LogEvent += new Logger.LogEventDelegate(Logger_LogEvent);
+        }
+
+        void Logger_LogEvent(Logger.Level level, string message)
+        {
+            if ((int)level >= 0)
+            {
+                DebugMessageHandler_CommandLineMessages(string.Format("[{0}] {1}", level, message));
+            }
         }
 
         void DebugMessageHandler_CommandLineMessages(string message)
