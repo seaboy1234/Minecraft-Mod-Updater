@@ -108,11 +108,11 @@ namespace ModUpdater.Client
             minecraft.Start();
             while (!minecraft.StandardOutput.EndOfStream)
             {
-                Console.WriteLine(minecraft.StandardOutput.ReadLine());
+                MinecraftModUpdater.Logger.Log(Logger.Level.Info, minecraft.StandardOutput.ReadLine().Replace(ProgramOptions.SessionID, "REDACTED"));
             }
             while (!minecraft.StandardError.EndOfStream)
             {
-                Console.WriteLine(minecraft.StandardError.ReadLine());
+                MinecraftModUpdater.Logger.Log(Logger.Level.Info, minecraft.StandardError.ReadLine());
             }
             Thread.Sleep(1000);
             File.Delete("MCLaunch.class");
