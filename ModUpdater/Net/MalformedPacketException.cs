@@ -21,7 +21,7 @@ using System.Text;
 
 namespace ModUpdater.Net
 {
-    class MalformedPacketException : Exception
+    class MalformedPacketException : PacketException
     {
         public MalformedPacketException(string message) : base(message) { }
         public MalformedPacketException(string message, Exception ex) : base(message, ex) { }

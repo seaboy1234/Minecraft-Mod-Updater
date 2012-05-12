@@ -240,6 +240,7 @@ namespace ModUpdater.Net
         public string File { get; set; }
         public string Hash { get; set; }
         public long FileSize { get; set; }
+        public string Description { get; set; }
         public override void Read(ModUpdaterNetworkStream s)
         {
             Author = s.ReadString();
@@ -247,6 +248,7 @@ namespace ModUpdater.Net
             File = s.ReadString();
             Hash = s.ReadString();
             FileSize = s.ReadLong();
+            Description = s.ReadString();
         }
 
         public override void Write(ModUpdaterNetworkStream s)
@@ -256,6 +258,7 @@ namespace ModUpdater.Net
             s.WriteString(File);
             s.WriteString(Hash);
             s.WriteLong(FileSize);
+            s.WriteString(Description);
         }
     }
     public class ModListPacket : Packet
@@ -552,6 +555,7 @@ namespace ModUpdater.Net
     {
         public PacketException() : base() { }
         public PacketException(string message) : base(message) { }
+        public PacketException(string message, Exception ex) : base(message, ex) { }
     }
     #endregion
 }
