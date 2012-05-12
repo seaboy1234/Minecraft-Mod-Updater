@@ -75,7 +75,7 @@ namespace ModUpdater.Client.GUI
                     new ExceptionHandler(e, sender).ShowDialog();
                 }));
             }
-            catch { TaskManager.AddAsyncImportantTask(delegate { new ExceptionHandler(e, sender).ShowDialog(); }); }
+            catch { TaskManager.AddAsyncTask(delegate { new ExceptionHandler(e, sender).ShowDialog(); }, ThreadRole.Important); }
         }
         public static void Init()
         {

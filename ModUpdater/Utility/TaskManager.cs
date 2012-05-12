@@ -44,44 +44,33 @@ namespace ModUpdater.Utility
             taskLock = new object();
             for (int i = 0; i < 15; i++)
             {
-                Thread t = new Thread(ManageTaskThread, 10000);
-                t.IsBackground = true;
-                t.Name = "Task Thread " + (TaskThreads.Count + 1);
-                t.Start();
+                SpawnTaskThread(ThreadRole.Standard);
             }
-            Thread th = new Thread(ManageImportantTaskThread, 10000);
-            th.Name = "Task Thread " + (TaskThreads.Count + 1);
-            th.Start();
-            th = new Thread(ManageTaskDelayThread, 10000);
-            th.IsBackground = true;
-            th.Name = "Task Thread " + (TaskThreads.Count + 1);
-            th.Start();
+            SpawnTaskThread(ThreadRole.Important);
+            SpawnTaskThread(ThreadRole.Delayed);
             Application.ApplicationExit += new EventHandler(ApplicationExit);
         }
         /// <summary>
         /// Runs the task on a new thread.
         /// </summary>
         /// <param name="t">The Task to run.</param>
-        public static void AddAsyncTask(Task t)
+        /// <param name="r">The ThreadRole to be used.</param>
+        /// <param name="delayLen">The time to wait, in ms, until the task is run.</param>
+        public static void AddAsyncTask(Task t, ThreadRole r = ThreadRole.Standard, int delayLen = 1000)
         {
-            TaskQueue.Enqueue(t);
-        }
-        /// <summary>
-        /// Runs a task on a new thread.  This method will not run the the task on a background thread.
-        /// </summary>
-        /// <param name="t"></param>
-        public static void AddAsyncImportantTask(Task t)
-        {
-            ImportantTaskQueue.Enqueue(t);
-        }
-        /// <summary>
-        /// Runs a task on a new thread after a spefifyed amount of time.
-        /// </summary>
-        /// <param name="t">The Task to run</param>
-        /// <param name="delayInMs">The time to wait before running the task.  In miliseconds</param>
-        public static void AddDelayedAsyncTask(Task t, int delayInMs)
-        {
-            DelayedTasks.Add(t, delayInMs);
+            switch (r)
+            {
+                case ThreadRole.Standard:
+                    TaskQueue.Enqueue(t);
+                    break;
+                case ThreadRole.Important:
+                    ImportantTaskQueue.Enqueue(t);
+                    break;
+                case ThreadRole.Delayed:
+                    DelayedTasks.Add(t, delayLen);
+                    break;
+
+            }
         }
         private static void PerformTask(Task t)
         {
@@ -103,6 +92,31 @@ namespace ModUpdater.Utility
                 ExceptionRaised.Invoke(e);
             }
         }
+        private static void SpawnTaskThread(ThreadRole role)
+        {
+            Thread t;
+            switch (role) //Set properties.
+            {
+                case ThreadRole.Delayed:
+                    t = new Thread(new ThreadStart(ManageTaskDelayThread));
+                    t.IsBackground = true;
+                    t.Name = "Delayed Task Manager";
+                    break;
+                case ThreadRole.Important:
+                    t = new Thread(new ThreadStart(ManageImportantTaskThread));
+                    t.IsBackground = false;
+                    t.Name = "Important Task Manager";
+                    break;
+                case ThreadRole.Standard:
+                default:
+                    t = new Thread(new ThreadStart(ManageTaskThread));
+                    t.IsBackground = true;
+                    t.Name = "Standard Task Manager";
+                    break;
+            }
+            t.Start(); //Start the new thread.
+        }
+        #region Thread Managers
         /// <summary>
         /// Manage the current thread as a task thread.
         /// </summary>
@@ -177,6 +191,7 @@ namespace ModUpdater.Utility
                 catch { } //Queue is most likely empty, no real need to do anything.
             }
         }
+        #endregion
         //Used to ensure all threads are exited when the app closes.
         private static void ApplicationExit(object sender, EventArgs e)
         {
@@ -185,5 +200,11 @@ namespace ModUpdater.Utility
                 t.Abort();
             }
         }
+    }
+    public enum ThreadRole
+    {
+        Standard,
+        Important,
+        Delayed
     }
 }

@@ -106,7 +106,7 @@ namespace ModUpdater.Server
             TcpServer.Start();
             Online = true;
             TaskManager.AddAsyncTask(delegate { SimpleConsoleImputHandler(); });
-            TaskManager.AddDelayedAsyncTask(delegate
+            TaskManager.AddAsyncTask(delegate
             {
                 if (Config.MasterServer != "")
                 {
@@ -119,7 +119,7 @@ namespace ModUpdater.Server
                     Thread.Sleep(1000);
                     Packet.Send(new HandshakePacket { Name = Config.ServerName, Port = Config.Port, Address = Address.ToString(), Type = HandshakePacket.SessionType.Server }, ph.Stream);
                 }
-            }, 1000);
+            }, ThreadRole.Delayed, 1000);
             TaskManager.AddAsyncTask(delegate
             {
                 string ver;
