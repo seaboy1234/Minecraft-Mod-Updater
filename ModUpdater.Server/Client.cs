@@ -52,12 +52,11 @@ namespace ModUpdater.Server
         void ClientLeft(object sender, EventArgs e)
         {
             ClientDisconnected(this, EventArgs.Empty);
-            ph.Stop();
         }
         public void StartListening()
         {
             ph.Start();
-            ph.Stream.StreamDisposed += ClientLeft;
+            ph.Disconnect += ClientLeft;
         }
         void HandleDisconnect(Packet p)
         {
@@ -68,9 +67,8 @@ namespace ModUpdater.Server
                 ph.RemovePacketHandler(PacketId.Log);
                 ph.RemovePacketHandler(PacketId.Disconnect);
             });
-            ph.Stream.StreamDisposed -= ClientLeft;
+            ph.Disconnect-= ClientLeft;
             ClientDisconnected(this, EventArgs.Empty);
-            ph.Stop();
         }
         public void RetreveMod(Packet pa)
         {
@@ -85,7 +83,7 @@ namespace ModUpdater.Server
             switch (p.Type)
             {
                 case RequestModPacket.RequestType.Info:
-                    Packet.Send(new ModInfoPacket { Author = mod.Author, File = mod.ModFile, ModName = mod.ModName, Hash = Extras.GenerateHash(Config.ModsPath + "\\" + mod.ModFile), FileSize = mod.FileSize }, ph.Stream);
+                    Packet.Send(new ModInfoPacket { Author = mod.Author, File = mod.ModFile, ModName = mod.ModName, Hash = Extras.GenerateHash(Config.ModsPath + "\\" + mod.ModFile), FileSize = mod.FileSize, Description = mod.Description }, ph.Stream);
                     break;
                 case RequestModPacket.RequestType.Download:
                     mod.SendFileTo(this);
@@ -99,6 +97,7 @@ namespace ModUpdater.Server
             {
                 Packet.Send(new DisconnectPacket(), ph.Stream);
                 ph.Stop();
+                ClientDisconnected.Invoke(this, EventArgs.Empty);
                 return;
             }
             else if (p.Type == HandshakePacket.SessionType.Admin)
