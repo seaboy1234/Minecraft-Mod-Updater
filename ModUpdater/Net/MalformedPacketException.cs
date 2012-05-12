@@ -24,5 +24,6 @@ namespace ModUpdater.Net
     class MalformedPacketException : Exception
     {
         public MalformedPacketException(string message) : base(message) { }
+        public MalformedPacketException(string message, Exception ex) : base(message, ex) { }
     }
 }
