@@ -44,6 +44,7 @@ namespace ModUpdater.Client.GUI
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ModInfoForm));
             this.lblWinName = new System.Windows.Forms.Label();
             this.lblNa = new System.Windows.Forms.Label();
             this.lblAu = new System.Windows.Forms.Label();
@@ -105,9 +106,11 @@ namespace ModUpdater.Client.GUI
             // 
             // txtDesc
             // 
+            this.txtDesc.BackColor = System.Drawing.Color.White;
             this.txtDesc.Location = new System.Drawing.Point(12, 176);
             this.txtDesc.Multiline = true;
             this.txtDesc.Name = "txtDesc";
+            this.txtDesc.ReadOnly = true;
             this.txtDesc.Size = new System.Drawing.Size(300, 96);
             this.txtDesc.TabIndex = 5;
             // 
@@ -172,7 +175,10 @@ namespace ModUpdater.Client.GUI
             this.Controls.Add(this.lblAu);
             this.Controls.Add(this.lblNa);
             this.Controls.Add(this.lblWinName);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "ModInfoForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "ModInfoForm";
             this.Load += new System.EventHandler(this.ModInfoForm_Load);
             this.ResumeLayout(false);

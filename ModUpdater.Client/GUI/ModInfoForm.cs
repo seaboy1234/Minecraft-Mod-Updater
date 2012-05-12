@@ -41,6 +41,7 @@ namespace ModUpdater.Client.GUI
             lblName.Text = mod.ModName;
             lblAuthor.Text = mod.Author;
             lblFileN.Text = Path.GetFileName(mod.File);
+            txtDesc.Text = mod.Description;
             double size = ConvertToKilobytes(mod.Size);
             string fsize;
             if (size > 1024d)
