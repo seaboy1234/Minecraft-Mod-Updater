@@ -75,18 +75,18 @@ namespace ModUpdater.Server
             }
             catch
             {
-                n.AppendChild(modFile.CreateElement("Name", "Name", "/Mod"));
+                n.AppendChild(modFile.CreateElement("Name"));
             }
             try
             {
                 Author = n["Author"].InnerText;
             }
-            catch { n.AppendChild(modFile.CreateElement("Author", "Author", "/Mod")); }
+            catch { n.AppendChild(modFile.CreateElement("Author")); }
             try
             {
                 ModFile = n["File"].InnerText;
             }
-            catch { n.AppendChild(modFile.CreateElement("File", "File", "/Mod")); }
+            catch { n.AppendChild(modFile.CreateElement("File")); }
             try
             {
                 XmlNode cfg = n["ConfigFiles"];
@@ -110,7 +110,7 @@ namespace ModUpdater.Server
                     i++;
                 }
             }
-            catch { n.AppendChild(modFile.CreateElement("PostDownload", "PostDownload", "/Mod")); }
+            catch { n.AppendChild(modFile.CreateElement("PostDownload")); }
             try
             {
                 WhitelistedUsers = new List<string>();
@@ -124,7 +124,7 @@ namespace ModUpdater.Server
                     i++;
                 }
             }
-            catch { n.AppendChild(modFile.CreateElement("Whitelist", "Whitelist", "/Mod")); }
+            catch { n.AppendChild(modFile.CreateElement("Whitelist")); }
             try
             {
                 BlacklistedUsers = new List<string>();
@@ -138,12 +138,12 @@ namespace ModUpdater.Server
                     i++;
                 }
             }
-            catch { n.AppendChild(modFile.CreateElement("Blacklist", "Blacklist", "/Mod")); }
+            catch { n.AppendChild(modFile.CreateElement("Blacklist")); }
             try
             {
                 Author = n["Description"].InnerText;
             }
-            catch { n.AppendChild(modFile.CreateElement("Description", "Description", "/Mod")); }
+            catch { n.AppendChild(modFile.CreateElement("Description")); }
             modFile.Save(ConfigFile);
             if (ModFile.Contains("minecraft.jar"))
             {
