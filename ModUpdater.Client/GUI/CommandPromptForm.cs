@@ -28,7 +28,7 @@ namespace ModUpdater.Client.GUI
 {
     public partial class CommandPromptForm : Form
     {
-        private delegate void LogMessage(string message);
+        private delegate void LogMessage(Logger.Level level, string message);
         public CommandPromptForm()
         {
             InitializeComponent();
@@ -46,27 +46,22 @@ namespace ModUpdater.Client.GUI
         {
             foreach(string s in MinecraftModUpdater.Logger.GetMessages())
             {
-                DebugMessageHandler_CommandLineMessages(s);
+                textBox1.AppendText(s + Environment.NewLine);
             }
             MinecraftModUpdater.Logger.LogEvent += new Logger.LogEventDelegate(Logger_LogEvent);
         }
 
         void Logger_LogEvent(Logger.Level level, string message)
         {
-            if ((int)level >= 0)
-            {
-                DebugMessageHandler_CommandLineMessages(string.Format("[{0}] {1}", level, message));
-            }
-        }
-
-        void DebugMessageHandler_CommandLineMessages(string message)
-        {
             if (InvokeRequired)
             {
-                Invoke(new LogMessage(DebugMessageHandler_CommandLineMessages), message);
+                Invoke(new LogMessage(Logger_LogEvent), level, message);
                 return;
             }
-            textBox1.AppendText(message + Environment.NewLine);
+            if ((int)level >= 0 || ProgramOptions.Debug)
+            {
+                textBox1.AppendText(string.Format("[{0}] {1}{2}", level, message, Environment.NewLine));
+            }
         }
         private void CommandPromptForm_Resize(object sender, EventArgs e)
         {
@@ -75,7 +70,7 @@ namespace ModUpdater.Client.GUI
 
         private void CommandPromptForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            DebugMessageHandler.CommandLineMessages -= new DebugMessageHandler.DebugMessage(DebugMessageHandler_CommandLineMessages);
+            MinecraftModUpdater.Logger.LogEvent -= new Logger.LogEventDelegate(Logger_LogEvent);
         }
     }
 }
