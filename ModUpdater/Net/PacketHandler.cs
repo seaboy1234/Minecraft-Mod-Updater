@@ -43,12 +43,22 @@ namespace ModUpdater.Net
         private bool online;
         protected Socket sck;
         private Thread NetworkThread;
+        private Thread ConnectedThread;
         private Dictionary<PacketId, PacketEvent> EventHandler;
         private List<Packet> PacketBacklog;
         public PacketHandler(Socket s)
         {
             sck = s;
-            NetworkThread = new Thread(new ThreadStart(delegate { while (sck.Connected) { Recv(); } Stop(); }));
+            NetworkThread = new Thread(new ThreadStart(delegate
+            {
+                while (sck.Connected) { Recv(); }
+                Stop();
+            }));
+            ConnectedThread = new Thread(new ThreadStart(delegate
+            {
+                while (sck.Connected && !Stream.Disposed) Thread.Sleep(3000);
+                Stop();
+            }));
             EventHandler = new Dictionary<PacketId, PacketEvent>();
             PacketBacklog = new List<Packet>();
         }
@@ -95,6 +105,9 @@ namespace ModUpdater.Net
             NetworkThread.Name = "Network";
             NetworkThread.IsBackground = true;
             NetworkThread.Start();
+            ConnectedThread.IsBackground = true;
+            ConnectedThread.Name = "Connection Thread";
+            ConnectedThread.Start();
         }
         /// <summary>
         /// Stops the networking thread and stops handling packets.

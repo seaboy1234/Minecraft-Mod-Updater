@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 using ModUpdater.Client.GUI;
+using System.Threading;
 
 namespace ModUpdater.Client
 {
@@ -72,6 +73,8 @@ namespace ModUpdater.Client
         /// <param name="Text">Message</param>
         public static void UpdateStatusText(string Text)
         {
+            while (sf == null) ; // Wait for this to work...
+            while (sf.Opacity != 1) ; // Wait for it to show.
             if (sf != null)
                 sf.UpdateStatusText(Text);
 
@@ -84,7 +87,8 @@ namespace ModUpdater.Client
         /// <param name="tom">Type of Message</param>
         public static void UpdateStatusTextWithStatus(string Text, TypeOfMessage tom)
         {
-
+            while (sf == null) Thread.Sleep(20); // Wait for this to work...
+            while (sf.Opacity != 1) Thread.Sleep(20); // Wait for it to show.
             if (sf != null){
                 sf.UpdateStatusTextWithStatus(Text, tom);
             if (tom == TypeOfMessage.Error)

@@ -165,13 +165,13 @@ namespace ModUpdater.Server
                     return;
                 }
                 Client c = new Client(s, this);
-                Clients.Add(c);
-                c.StartListening();
-                Thread.Sleep(1000);
                 c.ClientDisconnected += delegate
                 {
                     Clients.Remove(c);
                 };
+                Clients.Add(c);
+                c.StartListening();
+                Thread.Sleep(1000);
             }
             catch (Exception e) { Console.WriteLine(e); }
         }
@@ -202,7 +202,7 @@ namespace ModUpdater.Server
                             Packet.Send(new MetadataPacket { SData = new string[] { "shutdown", "The Server is shutting down." } }, c.PacketHandler.Stream);
                         }
                         if (Clients.Count > 0) Console.WriteLine("Waiting for {0} clients to exit.", Clients.Count);
-                        while (Clients.Count > 0) ;
+                        while (Clients.Count > 0) Thread.Sleep(500);
                         Dispose();
                         break;
                     case "populate":
@@ -243,6 +243,10 @@ namespace ModUpdater.Server
                         break;
                 }
             }
+        }
+        ~Server()
+        {
+            Dispose();
         }
     }
 }

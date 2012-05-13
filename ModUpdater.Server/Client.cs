@@ -51,7 +51,7 @@ namespace ModUpdater.Server
 
         void ClientLeft(object sender, EventArgs e)
         {
-            ClientDisconnected(this, EventArgs.Empty);
+            HandleDisconnect(null);
         }
         public void StartListening()
         {
@@ -83,6 +83,7 @@ namespace ModUpdater.Server
             switch (p.Type)
             {
                 case RequestModPacket.RequestType.Info:
+                    Thread.Sleep(500);
                     Packet.Send(new ModInfoPacket { Author = mod.Author, File = mod.ModFile, ModName = mod.ModName, Hash = Extras.GenerateHash(Config.ModsPath + "\\" + mod.ModFile), FileSize = mod.FileSize, Description = mod.Description }, ph.Stream);
                     break;
                 case RequestModPacket.RequestType.Download:
@@ -96,8 +97,8 @@ namespace ModUpdater.Server
             if (p.Type == HandshakePacket.SessionType.ServerList)
             {
                 Packet.Send(new DisconnectPacket(), ph.Stream);
+                HandleDisconnect(null);
                 ph.Stop();
-                ClientDisconnected.Invoke(this, EventArgs.Empty);
                 return;
             }
             else if (p.Type == HandshakePacket.SessionType.Admin)
@@ -150,6 +151,7 @@ namespace ModUpdater.Server
             {
                 mods[i] = allowedMods[i].ModFile;
             }
+            Packet.Send(new MetadataPacket { SData = new string[] { "splash_display", "Downloading Mod List..." } }, ph.Stream);
             Packet.Send(new ModListPacket { Mods = mods }, ph.Stream);
             Console.WriteLine("{0} Logged in.", this.ClientID);
         }

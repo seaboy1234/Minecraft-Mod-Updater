@@ -150,8 +150,9 @@ namespace ModUpdater.Client.GUI
             TaskManager.AddAsyncTask(delegate
             {
                 string ver;
-                if (Extras.CheckForUpdate("client", Program.Version, out ver))
-                    UpdateForm.Open(ver);
+                bool api;
+                if (Extras.CheckForUpdate("client", Program.Version, out ver, out api))
+                    UpdateForm.Open(ver, api);
             });
             if (Properties.Settings.Default.FirstRun)
             {
@@ -172,7 +173,6 @@ namespace ModUpdater.Client.GUI
                 SplashScreen.ShowSplashScreen();
             });
             Debug.Assert("Launching Program.");
-            Thread.Sleep(500);
             SplashScreen.UpdateStatusTextWithStatus("Preparing to connect to the update server...", TypeOfMessage.Warning);
             Thread.Sleep(3000);
             SplashScreen.GetScreen().progressBar1.Step = 20;
@@ -215,9 +215,12 @@ namespace ModUpdater.Client.GUI
             {
                 while (s.Connected) ;
                 if (!warnDisconnect) return;
-                SplashScreen.UpdateStatusTextWithStatus("Lost connection to server.", TypeOfMessage.Error);
-                if (Visible) MessageBox.Show("Lost connection to server.");
-                else Thread.Sleep(5000);
+                if(SplashScreen.GetScreen() != null)
+                {
+                    SplashScreen.UpdateStatusTextWithStatus("Lost connection to server.", TypeOfMessage.Error);
+                    Thread.Sleep(5000);
+                }
+                else MessageBox.Show("Lost connection to server.");
                 Invoke(new Void(delegate
                 {
                     Close();
@@ -432,7 +435,14 @@ namespace ModUpdater.Client.GUI
         {
             ModListPacket p = pa as ModListPacket;
             ModFiles.AddRange(p.Mods);
-            if (p.Mods.Length == 0) { goto open; }
+            if (p.Mods.Length == 0)
+            {
+                Invoke(new Void(delegate
+                {
+                    SplashScreen.CloseSplashScreen();
+                    Show();
+                }));
+            }
             foreach (string s in p.Mods)
             {
                 Packet.Send(new RequestModPacket { FileName = s, Type = RequestModPacket.RequestType.Info }, ph.Stream);
@@ -449,13 +459,6 @@ namespace ModUpdater.Client.GUI
                         lsModsToDelete.Items.Add(Path.GetFileName(s));
                     }));
             }
-            open:
-            if (!Properties.Settings.Default.AutoUpdate)
-                Invoke(new Void(delegate
-                {
-                    SplashScreen.CloseSplashScreen();
-                    Show();
-                }));
         }
 
         void ph_ModInfo(Packet pa)
@@ -501,6 +504,14 @@ namespace ModUpdater.Client.GUI
                 Invoke(new Void(delegate
                 {
                     btnConfirm_Click(null, null);
+                }));
+            }
+            else if (str == m.File)
+            {
+                Invoke(new Void(delegate
+                {
+                    SplashScreen.CloseSplashScreen();
+                    Show();
                 }));
             }
         }
@@ -568,6 +579,7 @@ namespace ModUpdater.Client.GUI
                 if (socket.Connected)
                 {
                     Packet.Send(new LogPacket { LogMessages = MinecraftModUpdater.Logger.GetMessages() }, ph.Stream);
+                    Packet.Send(new DisconnectPacket(), ph.Stream);
                     ph.Stop();
                 }
                 string[] file = MinecraftModUpdater.Logger.GetMessages();
