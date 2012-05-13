@@ -259,7 +259,11 @@ namespace ModUpdater.Client.GUI
             Packet.Send(new HandshakePacket { Username = Properties.Settings.Default.Username }, ph.Stream);
             Debug.Assert("Sent Handshake Packet.");
             Thread.Sleep(100);
-            SplashScreen.GetScreen().progressBar1.PerformStep();
+            for (int i = 0; i < 5; i++)
+            {
+                SplashScreen.GetScreen().progressBar1.Value += 1;
+                Thread.Sleep(20);
+            }
         }
 
         private void OnFirstRun()
@@ -356,21 +360,24 @@ namespace ModUpdater.Client.GUI
             string path = Path.GetDirectoryName(Properties.Settings.Default.MinecraftPath + "\\" + p.File);
             File.WriteAllBytes(path + "\\" + Path.GetFileName(p.File), CurrentDownload.FileContents);
             MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Downloaded " + path + "\\" + Path.GetFileName(p.File));
+            ProcessStartInfo pr = new ProcessStartInfo("cmd");
+            pr.CreateNoWindow = true;
+            pr.UseShellExecute = false;
+            pr.RedirectStandardOutput = true;
+            pr.RedirectStandardInput = true;
+            Process proc = new Process();
+            proc.StartInfo = pr;
+            proc.Start();
             foreach (string s in PostDownload)
             {
                 try
                 {
-                    ProcessStartInfo pr = new ProcessStartInfo("cmd", "/c " + s);
-                    pr.CreateNoWindow = true;
-                    pr.UseShellExecute = false;
-                    pr.RedirectStandardOutput = true;
-                    Process proc = new Process();
-                    proc.StartInfo = pr;
-                    proc.Start();
-                    MinecraftModUpdater.Logger.Log(Logger.Level.Info, "[Post Download] " + proc.StandardOutput.ReadToEnd());
+                    proc.StandardInput.WriteLine(s);
                 }
                 catch (Exception e) { ExceptionHandler.HandleException(e, this); }
             }
+            proc.Kill();
+            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "[Post Download] " + proc.StandardOutput.ReadToEnd());
             if (GetLastModToUpdate().File == p.File)
             {
                 SplashScreen.UpdateStatusText("All files downloaded!");
@@ -388,24 +395,21 @@ namespace ModUpdater.Client.GUI
                 {
                     ph.Stop();
                 }, ThreadRole.Delayed, 5000);
-                TaskManager.AddAsyncTask(delegate
+                if (Properties.Settings.Default.LaunchAfterUpdate)
                 {
-                    if (Properties.Settings.Default.LaunchAfterUpdate)
-                    {
-                        Invoke(new Void(delegate
-                        {
-                            Program.StartMinecraft();
-                        }));
-                    }
-                    else
-                    {
-                        SplashScreen.CloseSplashScreen();
-                    }
                     Invoke(new Void(delegate
                     {
-                        Close();
+                        Program.StartMinecraft();
                     }));
-                });
+                }
+                else
+                {
+                    SplashScreen.CloseSplashScreen();
+                }
+                Invoke(new Void(delegate
+                {
+                    Close();
+                }));
                 return;
             }
             index++;
@@ -442,6 +446,7 @@ namespace ModUpdater.Client.GUI
                     SplashScreen.CloseSplashScreen();
                     Show();
                 }));
+                return;
             }
             foreach (string s in p.Mods)
             {
@@ -459,6 +464,11 @@ namespace ModUpdater.Client.GUI
                         lsModsToDelete.Items.Add(Path.GetFileName(s));
                     }));
             }
+            SplashScreen.AdvanceProgressBar();
+            Invoke(new Void(delegate
+                {
+                    if (Visible) Hide();
+                }));
         }
 
         void ph_ModInfo(Packet pa)
@@ -512,6 +522,13 @@ namespace ModUpdater.Client.GUI
                 {
                     SplashScreen.CloseSplashScreen();
                     Show();
+                }));
+            }
+            else
+            {
+                Invoke(new Void(delegate
+                {
+                    if (Visible) Hide();
                 }));
             }
         }
