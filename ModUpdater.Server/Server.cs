@@ -123,9 +123,13 @@ namespace ModUpdater.Server
             TaskManager.AddAsyncTask(delegate
             {
                 string ver;
-                if (Extras.CheckForUpdate("server", Program.Version, out ver))
+                bool api;
+                if (Extras.CheckForUpdate("server", Program.Version, out ver, out api))
                 {
-                    Console.WriteLine("Version {0} is now available for Minecraft Mod Updater.", ver);
+                    if (!api)
+                        Console.WriteLine("Version {0} is now available for Minecraft Mod Updater.", ver);
+                    else
+                        Console.WriteLine("Version {0} is now available for Minecraft Mod Updater API.", ver);
                 }
             });
             Receive();

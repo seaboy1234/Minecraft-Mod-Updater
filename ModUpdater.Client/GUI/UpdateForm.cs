@@ -39,10 +39,13 @@ namespace ModUpdater.Client.GUI
             Process.Start("https://github.com/seaboy1234/Minecraft-Mod-Updater/downloads");
             Application.Exit();
         }
-        public static void Open(string ver)
+        public static void Open(string ver, bool api)
         {
             UpdateForm t = new UpdateForm();
-            t.label2.Text = string.Format("Version {0} for MCModUpdater is now available.", ver);
+            if(!api)
+                t.label2.Text = string.Format("Version {0} for MCModUpdater is now available.", ver);
+            else
+                t.label2.Text = string.Format("Version {0} for MCModUpdater API is now available.", ver);
             t.ShowDialog();
         }
     }

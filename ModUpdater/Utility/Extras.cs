@@ -104,8 +104,10 @@ namespace ModUpdater.Utility
             Image i = Image.FromFile(path);
             return BytesFromImage(i);
         }
-        public static bool CheckForUpdate(string key, string value, out string newVer)
+        public static bool CheckForUpdate(string key, string value, out string newVer, out bool api)
         {
+            bool requireUpdate = false;
+            api = false;
             WebClient c = new WebClient();
             string raw = c.DownloadString("https://raw.github.com/seaboy1234/Minecraft-Mod-Updater/" + MinecraftModUpdater.Branch + "/version.txt");
             c.Dispose();
@@ -118,10 +120,18 @@ namespace ModUpdater.Utility
                 pairs.Add(_key, _value);
             }
             newVer = "";
-            if (!pairs.ContainsKey(key)) return false;
             newVer = pairs[key];
-            if (pairs[key] != value || pairs["core"] != MinecraftModUpdater.Version) return true;
-            return false;
+            if (pairs[key] != value)
+            {
+                requireUpdate = true;
+            }
+            else if (pairs["core"] != MinecraftModUpdater.Version)
+            {
+                api = true;
+                requireUpdate = true;
+                newVer = pairs["core"];
+            }
+            return requireUpdate;
         }
         public static IPAddress GetAddressFromHostname(string hostname)
         {
