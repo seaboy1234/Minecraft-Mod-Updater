@@ -62,7 +62,10 @@ namespace ModUpdater.Controls
 				if (!InDesignMode())
 				{
 					mGlowAnimation.Tick += new EventHandler(mGlowAnimation_Tick);
-					mGlowAnimation.Interval = 15;
+                    mGlowAnimation.Interval = 15;
+                    mTickTimer.Tick += new EventHandler(mTickTimer_Tick);
+                    mTickTimer.Interval = 20;
+                    mTickTimer.Start();
 					if (Value < MaxValue) {mGlowAnimation.Start();}
 				}
 			}
@@ -105,8 +108,10 @@ namespace ModUpdater.Controls
 		#region -  Properties  -
 
 			private int mGlowPosition = -325;
+            private int mStepAdvance = 0;
 			private Timer mGlowAnimation = new Timer();
             private Timer mValueProgressTimer = new Timer();
+            private Timer mTickTimer = new Timer();
 
 			#region -  Value  -
 
@@ -123,6 +128,7 @@ namespace ModUpdater.Controls
 					set 
 					{ 
 						if (value > MaxValue || value < MinValue){ return; }
+                        if (value == 0) mStepAdvance = 0;
 						mValue = value;
 						if (value < MaxValue) {mGlowAnimation.Start();}
 						ValueChangedHandler vc = ValueChanged;
@@ -473,13 +479,7 @@ namespace ModUpdater.Controls
 			}
             public void PerformStep()
             {
-                if (Value >= MaxValue) return;
-                for (int i = 0; i < mStep; i++)
-                {
-                    if (Value >= MaxValue) return;
-                    Value += 1;
-                    System.Threading.Thread.Sleep(20);
-                }
+                mStepAdvance += Step;
             }
 
         #endregion
@@ -517,7 +517,29 @@ namespace ModUpdater.Controls
 					mGlowPosition = -320;
 				}
 			}
-
+            void mTickTimer_Tick(object sender, EventArgs e)
+            {
+                if (mStepAdvance > 30)
+                {
+                    mStepAdvance -= 30;
+                    Value += 30;
+                }
+                else if (mStepAdvance > 20)
+                {
+                    mStepAdvance -= 20;
+                    Value += 20;
+                }
+                else if (mStepAdvance > 10)
+                {
+                    mStepAdvance -= 10;
+                    Value += 10;
+                }
+                else if (mStepAdvance > 0)
+                {
+                    mStepAdvance--;
+                    Value++;
+                }
+            }
 		#endregion
 
 		#region -  Events  -
