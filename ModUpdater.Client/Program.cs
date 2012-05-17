@@ -139,14 +139,14 @@ namespace ModUpdater.Client
             {
                 SplashScreen.GetScreen().Invoke(new MainForm.Void(delegate
                 {
-                    SplashScreen.GetScreen().progressBar1.Value = 0;
-                    SplashScreen.GetScreen().progressBar1.MaxValue = 100;
+                    SplashScreen.GetScreen().Progress.Value = 0;
+                    SplashScreen.GetScreen().Progress.MaxValue = 100;
                 }));
                 while (update.Progress != 100)
                 {
                     SplashScreen.GetScreen().Invoke(new MainForm.Void(delegate
                     {
-                        SplashScreen.GetScreen().progressBar1.Value = update.Progress;
+                        SplashScreen.GetScreen().Progress.Value = update.Progress;
                         SplashScreen.UpdateStatusText(update.Status);
                     }));
                     Thread.Sleep(10);

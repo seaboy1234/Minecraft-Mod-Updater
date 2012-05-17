@@ -102,9 +102,9 @@ namespace ModUpdater.Client.GUI
             SplashScreen.UpdateStatusText("Downloading Updates...");
             SplashScreen.GetScreen().Invoke(new Void(delegate
             {
-                SplashScreen.GetScreen().label2.Font.Dispose();
-                SplashScreen.GetScreen().label2.Font = new Font(FontFamily.GenericSansSerif, serverFontSize);
-                SplashScreen.GetScreen().label2.Text = serverName;
+                SplashScreen.GetScreen().lblTitle.Font.Dispose();
+                SplashScreen.GetScreen().lblTitle.Font = new Font(FontFamily.GenericSansSerif, serverFontSize);
+                SplashScreen.GetScreen().lblTitle.Text = serverName;
             }));
             foreach (object o in lsModsToDelete.Items)
             {
@@ -175,9 +175,9 @@ namespace ModUpdater.Client.GUI
             Debug.Assert("Launching Program.");
             SplashScreen.UpdateStatusTextWithStatus("Preparing to connect to the update server...", TypeOfMessage.Warning);
             Thread.Sleep(3000);
-            SplashScreen.GetScreen().progressBar1.Step = 20;
+            SplashScreen.GetScreen().Progress.Step = 20;
             SplashScreen.UpdateStatusText("Connecting...");
-            SplashScreen.GetScreen().progressBar1.PerformStep();
+            SplashScreen.GetScreen().Progress.PerformStep();
             Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             socket = s;
             Debug.Assert("Creating Objects.");
@@ -187,7 +187,7 @@ namespace ModUpdater.Client.GUI
                 int port =  cf.ConnectTo.Port;
                 if (srv == LocalAddress.ToString()) srv = "127.0.0.1";
                 ConnectionHandler.ConnectTo(s, srv, port);
-                SplashScreen.GetScreen().progressBar1.PerformStep();
+                SplashScreen.GetScreen().Progress.PerformStep();
             }
             catch (SocketException ex)
             {
@@ -210,7 +210,7 @@ namespace ModUpdater.Client.GUI
             modImages = new ImageList();
             modImages.ImageSize = new Size(230, 180);
             modImages.ColorDepth = ColorDepth.Depth32Bit;
-            SplashScreen.GetScreen().progressBar1.PerformStep();
+            SplashScreen.GetScreen().Progress.PerformStep();
             TaskManager.AddAsyncTask(delegate
             {
                 while (s.Connected) ;
@@ -228,10 +228,11 @@ namespace ModUpdater.Client.GUI
             });
             MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Logging started.");
             ph = new PacketHandler(s);
-            TaskManager.AddAsyncTask(delegate
+            ph.Start();
+            for (int i = 0; i < 10; i++)
             {
-                ph.Start();
-            });
+                TaskManager.SpawnTaskThread(ThreadRole.Standard);
+            }
             TaskManager.AddAsyncTask(delegate
             {
                 ph.RegisterPacketHandler(PacketId.Metadata, ph_Metadata);
@@ -242,7 +243,7 @@ namespace ModUpdater.Client.GUI
                 ph.RegisterPacketHandler(PacketId.FilePart, ph_FilePart);
                 ph.RegisterPacketHandler(PacketId.Image, ph_Image);
                 Debug.Assert("Packet Handlers registered.");
-                SplashScreen.GetScreen().progressBar1.PerformStep();
+                SplashScreen.GetScreen().Progress.PerformStep();
             });
             if ((new LoginForm()).ShowDialog() != DialogResult.OK)
             {
@@ -261,7 +262,7 @@ namespace ModUpdater.Client.GUI
             Thread.Sleep(100);
             for (int i = 0; i < 5; i++)
             {
-                SplashScreen.GetScreen().progressBar1.Value += 1;
+                SplashScreen.GetScreen().Progress.Value += 1;
                 Thread.Sleep(20);
             }
         }
@@ -312,10 +313,11 @@ namespace ModUpdater.Client.GUI
                 CurrentDownload.FileContents[i] = b;
                 i++;
             }
-            TaskManager.AddAsyncTask(delegate
+            SplashScreen.GetScreen().Invoke(new Void(delegate
             {
-                SplashScreen.GetScreen().progressBar1.PerformStep();
-            });
+                SplashScreen.GetScreen().lblProgress.Text = string.Format("{0:0%}", (double)((double)curPart / Parts));
+                SplashScreen.GetScreen().Progress.PerformStep();
+            }));
         }
 
         void ph_NextDownload(Packet pa)
@@ -324,9 +326,15 @@ namespace ModUpdater.Client.GUI
             Thread.Sleep(100);
             curPart = 0;
             Parts = p.ChunkSize;
-            SplashScreen.GetScreen().progressBar1.Value = 0;
-            SplashScreen.GetScreen().progressBar1.MaxValue = p.ChunkSize * 10;
-            SplashScreen.GetScreen().progressBar1.PerformStep();
+            SplashScreen.GetScreen().Invoke(new Void(delegate
+            {
+                if (!SplashScreen.GetScreen().lblProgress.Visible) SplashScreen.GetScreen().lblProgress.Visible = true;
+                SplashScreen.GetScreen().lblProgress.Text = "0%";
+            }));
+            SplashScreen.GetScreen().Progress.Value = 0;
+            SplashScreen.GetScreen().Progress.MaxValue = p.ChunkSize * 10;
+            SplashScreen.GetScreen().Progress.Step = 10;
+            SplashScreen.GetScreen().Progress.PerformStep();
             CurrentDownload = new ModFile(p.ModName, p.FileName, p.FileSize);
             if(!ServerShutdown)
                 SplashScreen.UpdateStatusText("Downloading " + p.ModName);
@@ -448,6 +456,10 @@ namespace ModUpdater.Client.GUI
                 }));
                 return;
             }
+            Invoke(new Void(delegate
+            {
+                if (Visible) Hide();
+            }));
             foreach (string s in p.Mods)
             {
                 Packet.Send(new RequestModPacket { FileName = s, Type = RequestModPacket.RequestType.Info }, ph.Stream);
@@ -465,10 +477,7 @@ namespace ModUpdater.Client.GUI
                     }));
             }
             SplashScreen.AdvanceProgressBar();
-            Invoke(new Void(delegate
-                {
-                    if (Visible) Hide();
-                }));
+            
         }
 
         void ph_ModInfo(Packet pa)
@@ -524,7 +533,7 @@ namespace ModUpdater.Client.GUI
                     Show();
                 }));
             }
-            else
+            else if(str != m.File && !Properties.Settings.Default.AutoUpdate)
             {
                 Invoke(new Void(delegate
                 {
@@ -556,8 +565,8 @@ namespace ModUpdater.Client.GUI
                 if (SplashScreen.GetScreen() != null)
                 {
                     SplashScreen.UpdateStatusTextWithStatus(p.SData[1], TypeOfMessage.Error);
-                    SplashScreen.GetScreen().progressBar1.StartColor = Color.FromArgb(210, 202, 0);
-                    SplashScreen.GetScreen().progressBar1.EndColor = Color.FromArgb(210, 202, 0);
+                    SplashScreen.GetScreen().Progress.StartColor = Color.FromArgb(210, 202, 0);
+                    SplashScreen.GetScreen().Progress.EndColor = Color.FromArgb(210, 202, 0);
                 }
                 else
                     MessageBox.Show(p.SData[1], "Server Shutdown");

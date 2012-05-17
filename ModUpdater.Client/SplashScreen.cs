@@ -93,15 +93,15 @@ namespace ModUpdater.Client
                 sf.UpdateStatusTextWithStatus(Text, tom);
             if (tom == TypeOfMessage.Error)
             {
-                sf.progressBar1.EndColor = Color.FromArgb(211, 0, 0);
-                sf.progressBar1.StartColor = Color.FromArgb(211, 0, 0);
+                sf.Progress.EndColor = Color.FromArgb(211, 0, 0);
+                sf.Progress.StartColor = Color.FromArgb(211, 0, 0);
             }}
         }
 
         public static void AdvanceProgressBar(int by = 10)
         {
-            if (sf != null && sf.progressBar1.Value + by <= sf.progressBar1.MaxValue)
-                sf.progressBar1.Value += by;
+            if (sf != null && sf.Progress.Value + by <= sf.Progress.MaxValue)
+                sf.Progress.Value += by;
         }
         public static SplashScreenForm GetScreen()
         {
