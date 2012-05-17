@@ -147,6 +147,7 @@ namespace ModUpdater.Server
                 try
                 {
                     Socket s = TcpServer.AcceptSocket();
+                    TaskManager.SpawnTaskThread(ThreadRole.Standard);
                     TaskManager.AddAsyncTask(delegate
                     {
                         AcceptClient(s);
@@ -168,6 +169,7 @@ namespace ModUpdater.Server
                 c.ClientDisconnected += delegate
                 {
                     Clients.Remove(c);
+                    TaskManager.KillTaskThread(TaskManager.GetTaskThread(Thread.CurrentThread));
                 };
                 Clients.Add(c);
                 c.StartListening();
