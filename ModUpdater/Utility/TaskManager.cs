@@ -240,7 +240,14 @@ namespace ModUpdater.Utility
             KillTaskThread(ThreadRole.Delayed);
             foreach (TaskThread t in TaskThreads.ToArray())
             {
-                KillTaskThread(t);
+                try
+                {
+                    KillTaskThread(t);
+                }
+                catch (Exception ex)
+                {
+                    MinecraftModUpdater.Logger.Log(ex);
+                }
             }
         }
     }
