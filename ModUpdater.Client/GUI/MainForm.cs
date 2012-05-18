@@ -51,6 +51,7 @@ namespace ModUpdater.Client.GUI
         private int index = 0;
         private int curPart = 0;
         private int Parts = 0;
+        private double percentage { get { return ((double)curPart / Parts); } }
         public MainForm()
         {
             if (Instance == null) Instance = this;
@@ -117,6 +118,19 @@ namespace ModUpdater.Client.GUI
             {
                 Packet.Send(new RequestModPacket { Type = RequestModPacket.RequestType.Download, FileName = mod.File }, ph.Stream);
             }
+            TaskManager.AddAsyncTask(delegate
+            {
+                while (CurrentDownload == null) ;
+                while (warnDisconnect == true)
+                {
+                    SplashScreen.GetScreen().Invoke(new Void(delegate
+                    {
+                        SplashScreen.GetScreen().lblProgress.Text = string.Format("{0:0%}", percentage);
+                        SplashScreen.GetScreen().Progress.Value = Convert.ToInt32(percentage.ToString("0%").Replace("%", ""));
+                    }));
+                    Thread.Sleep(100);
+                }
+            });
             Hide();
         }
 
@@ -313,11 +327,7 @@ namespace ModUpdater.Client.GUI
                 CurrentDownload.FileContents[i] = b;
                 i++;
             }
-            SplashScreen.GetScreen().Invoke(new Void(delegate
-            {
-                SplashScreen.GetScreen().lblProgress.Text = string.Format("{0:0%}", (double)((double)curPart / Parts));
-                SplashScreen.GetScreen().Progress.PerformStep();
-            }));
+            
         }
 
         void ph_NextDownload(Packet pa)
@@ -332,9 +342,7 @@ namespace ModUpdater.Client.GUI
                 SplashScreen.GetScreen().lblProgress.Text = "0%";
             }));
             SplashScreen.GetScreen().Progress.Value = 0;
-            SplashScreen.GetScreen().Progress.MaxValue = p.ChunkSize * 10;
             SplashScreen.GetScreen().Progress.Step = 10;
-            SplashScreen.GetScreen().Progress.PerformStep();
             CurrentDownload = new ModFile(p.ModName, p.FileName, p.FileSize);
             if(!ServerShutdown)
                 SplashScreen.UpdateStatusText("Downloading " + p.ModName);
@@ -613,6 +621,13 @@ namespace ModUpdater.Client.GUI
             }
             catch { }
             Application.Exit();
+            while (TaskManager.GetTaskThreads().Length > 0)
+            {
+                foreach (TaskThread t in TaskManager.GetTaskThreads())
+                {
+                    TaskManager.KillTaskThread(t);
+                }
+            }
         }
 
         private void ListBox_DoubleClick_Handler(object sender, EventArgs e)
