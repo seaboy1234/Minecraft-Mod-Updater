@@ -46,6 +46,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\ControlDownloadProgress.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\ControlDownloadProgress.Designer.cs">
+      <DependentUpon>ControlDownloadProgress.cs</DependentUpon>
+    </Compile>
     <Compile Include="Items\Changelog.cs" />
     <Compile Include="Items\Connection.cs" />
     <Compile Include="GUI\ConnectionForm.cs">
@@ -83,6 +89,9 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Items\Server.cs" />
+    <EmbeddedResource Include="Controls\ControlDownloadProgress.resx">
+      <DependentUpon>ControlDownloadProgress.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\ConnectionForm.resx">
       <DependentUpon>ConnectionForm.cs</DependentUpon>
     </EmbeddedResource>

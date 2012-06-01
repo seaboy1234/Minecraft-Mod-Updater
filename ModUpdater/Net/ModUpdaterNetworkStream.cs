@@ -115,11 +115,25 @@ namespace ModUpdater.Net
             if (t != DataType.Boolean) throw new MalformedPacketException("Expected Boolean, insted got " + t.ToString() + ".");
             return new BinaryReader(this).ReadBoolean();
         }
-
-        public byte[] ReadBytes(int count)
+        public string[] ReadStrings()
+        {
+            DataType t = ReadDataType();
+            if (t != DataType.StringArray) throw new MalformedPacketException("Expected StringArray, insted got " + t.ToString() + ".");
+            int l = ReadInt();
+            string[] s = new string[l];
+            for (int i = 0; i < l; i++)
+            {
+                s[i] = ReadString();
+            }
+            return s;
+        }
+        public byte[] ReadBytes()
         {
             DataType t = ReadDataType();
             if (t != DataType.ByteArray) throw new MalformedPacketException("Expected ByteArray, insted got " + t.ToString() + ".");
+            int count = ReadInt();
+            if (Encrypted)
+                return DecryptBytes(new BinaryReader(this).ReadBytes(count));
             return new BinaryReader(this).ReadBytes(count);
         }
 
@@ -194,6 +208,15 @@ namespace ModUpdater.Net
             WriteDataType(DataType.Boolean);
             new BinaryWriter(this).Write(b);
         }
+        public void WriteStrings(string[] sa)
+        {
+            WriteDataType(DataType.StringArray);
+            WriteInt(sa.Length);
+            foreach (string s in sa)
+            {
+                WriteString(s);
+            }
+        }
         public void WriteNetworkByte(byte b)
         {
             WriteDataType(DataType.Byte);
@@ -202,10 +225,18 @@ namespace ModUpdater.Net
         public void WriteBytes(byte[] b)
         {
             WriteDataType(DataType.ByteArray);
-            //if (Encrypted)
-            //    new BinaryWriter(this).Write(EncryptBytes(b));
-            //else
+
+            if (Encrypted)
+            {
+                b = EncryptBytes(b);
+                WriteInt(b.Length);
                 new BinaryWriter(this).Write(b);
+            }
+            else
+            {
+                WriteInt(b.Length);
+                new BinaryWriter(this).Write(b);
+            }
         }
         public Object Read(int num)
         {
@@ -255,7 +286,7 @@ namespace ModUpdater.Net
             }
             catch (Exception e) { Console.WriteLine(e); throw e; }
         }
-        public byte[] EncryptBytes(byte[] Input)
+        private byte[] EncryptBytes(byte[] Input)
         {
             try
             {
@@ -307,7 +338,7 @@ namespace ModUpdater.Net
             String Output = Encoding.UTF8.GetString(xBuff);
             return Output;
         }
-        public byte[] DecryptBytes(byte[] Input)
+        private byte[] DecryptBytes(byte[] Input)
         {
             RijndaelManaged aes = new RijndaelManaged();
             aes.KeySize = 256;

@@ -27,18 +27,25 @@ namespace ModUpdater.Admin.Items
 {
     public class Mod
     {
+        public long Size { get; set; }
+        public string Description { get; set; }
         public string Name { get; set; }
         public string Author { get; set; }
         public string File { get; set; }
-        public string[] PostDownloadCLI { get; set; }
+        public string Hash { get; set; }
+        public string Identifier { get; set; }
+        public List<string> PostDownloadCLI { get; set; }
         public List<string> WhitelistedUsers { get; set; }
         public List<string> BlacklistedUsers { get; set; }
+        public bool NeedsUpdate { get; set; }
+        public byte[] Contents { get; set; }
         public Mod()
         {
             Name = "";
             Author = "";
             File = "";
-            PostDownloadCLI = new string[0];
+            Hash = "";
+            PostDownloadCLI = new List<string>();
             WhitelistedUsers = new List<string>();
             BlacklistedUsers = new List<string>();
         }

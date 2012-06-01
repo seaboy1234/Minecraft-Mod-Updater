@@ -27,6 +27,6 @@ namespace ModUpdater.Net
         Int32,
         Int64,
         Boolean,
-
+        StringArray
     }
 }

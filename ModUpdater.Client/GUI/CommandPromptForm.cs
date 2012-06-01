@@ -60,7 +60,12 @@ namespace ModUpdater.Client.GUI
             }
             if ((int)level >= 0 || ProgramOptions.Debug)
             {
-                textBox1.AppendText(string.Format("[{0}] {1}{2}", level, message, Environment.NewLine));
+                try
+                {
+                    textBox1.AppendText(string.Format("[{0}] {1}{2}", level, message, Environment.NewLine));
+                }
+                catch (InvalidOperationException) { }
+                catch (Exception e) { ExceptionHandler.HandleException(e, this); }
             }
         }
         private void CommandPromptForm_Resize(object sender, EventArgs e)

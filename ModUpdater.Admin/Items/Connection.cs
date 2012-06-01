@@ -20,6 +20,8 @@ using System.Net.Sockets;
 using System.Text;
 using ModUpdater.Net;
 using ModUpdater.Utility;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace ModUpdater.Admin.Items
 {
@@ -39,6 +41,8 @@ namespace ModUpdater.Admin.Items
         }
         public string ProgressMessage { get; private set; }
         public string SessionID { get; private set; }
+        public Mod[] Mods { get { return mods.ToArray(); } }
+        public string FailureMessage { get; private set; }
 
         public delegate void ProgressChangeEvent(ProgressStep step);
         public event ProgressChangeEvent ProgressChange = delegate { }; //No need to check if null.
@@ -46,6 +50,7 @@ namespace ModUpdater.Admin.Items
         private ProgressStep _step;
         private string username;
         private string password;
+        private List<Mod> mods;
 
         public Connection(Server s)
         {
@@ -57,21 +62,29 @@ namespace ModUpdater.Admin.Items
         {
             CurrentStep = ProgressStep.ConnectingToMinecraft;
             Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            Socket.Connect(Server.IPAddress, Server.Port);
+            try
+            {
+                Socket.Connect(Server.IPAddress, Server.Port);
+            }
+            catch (SocketException)
+            {
+                FailureMessage = "You are not an admin.";
+                CurrentStep = ProgressStep.LoginFailed;
+            }
             PacketHandler = new PacketHandler(Socket);
             PacketHandler.Start();
             string reason = "";
             CurrentStep = ProgressStep.LoggingIn;
             if (!Login(ref reason))
             {
-                TaskManager.AddAsyncTask(delegate
-                {
-                    CurrentStep = ProgressStep.LoginFailed;
-                }, ThreadRole.Delayed, 500);
-                throw new LoginFailedException(reason);
+                FailureMessage = reason;
+                CurrentStep = ProgressStep.LoginFailed;
+                return;
             }
             CurrentStep = ProgressStep.Connecting;
-            PacketHandler.RegisterPacketHandler(PacketId.Handshake, ModListPacketHandler);
+            PacketHandler.RegisterPacketHandler(PacketId.ModList, ModListPacketHandler);
+            PacketHandler.RegisterPacketHandler(PacketId.AdminFileInfo, AdminFileInfoPacketHandler);
+            PacketHandler.RegisterPacketHandler(PacketId.Metadata, MetadataPacketHandler);
             Packet.Send(new HandshakePacket { Type = HandshakePacket.SessionType.Admin, Username = username }, PacketHandler.Stream);
         }
         public void RegisterUser(string username, string password)
@@ -82,6 +95,50 @@ namespace ModUpdater.Admin.Items
         private void ModListPacketHandler(Packet pa)
         {
             ModListPacket p = pa as ModListPacket;
+            CurrentStep = ProgressStep.DownloadingModInformation;
+            mods = new List<Mod>(p.Mods.Length);
+            Thread.Sleep(250);
+            foreach (string s in p.Mods)
+            {
+                Packet.Send(new RequestModPacket { Type = RequestModPacket.RequestType.Info, FileName = s }, PacketHandler.Stream);
+            }
+        }
+        private void AdminFileInfoPacketHandler(Packet pa)
+        {
+            AdminFileInfoPacket p = pa as AdminFileInfoPacket;
+            mods.Add(new Mod
+            {
+                Author = p.Author,
+                File = p.File,
+                Name = p.ModName,
+                Description = p.Description,
+                BlacklistedUsers = new List<string>(p.BlacklistedUsers),
+                WhitelistedUsers = new List<string>(p.WhitelistedUsers),
+                PostDownloadCLI = new List<string>(p.PostDownload),
+                Size = p.FileSize,
+                Hash = p.Hash,
+                Contents = new byte[p.FileSize], //This part will be filled in later.
+                Identifier = p.Identifier
+            });
+            if (mods.Count == mods.Capacity)
+                CurrentStep = ProgressStep.Connected;
+        }
+        private void MetadataPacketHandler(Packet pa)
+        {
+            MetadataPacket p = pa as MetadataPacket;
+            switch (p.SData[0])
+            {
+                case "admin_login":
+                    if (p.SData[1] != "true")
+                    {
+                        FailureMessage = "You are not an admin.";
+                        CurrentStep = ProgressStep.LoginFailed;
+                    }
+                    break;
+                case "server_name":
+                    Server.Name = p.SData[1];
+                    break;
+            }
         }
         private bool Login(ref string reason)
         {

@@ -175,48 +175,56 @@ namespace ModUpdater.Utility
         /// </summary>
         private static void ManageTaskThread()
         {
+            TaskThread tt = GetTaskThread(Thread.CurrentThread);
             while (true)
             {
                 try
                 {
                     while (TaskQueue.Peek() == null) Thread.Sleep(250);
                     Task t;
+                    tt.Busy = true;
                     lock (taskLock)
                     {
                         t = TaskQueue.Dequeue();
                     }
                     PerformTask(t);
+                    tt.Busy = false;
                 }
-                catch { } //Task invoked by another thread.  No real need to do anything.
+                catch { tt.Busy = false; } //Task invoked by another thread.  No real need to do anything.
                 Thread.Sleep(250);
             }
         }
         private static void ManageImportantTaskThread()
         {
+            TaskThread tt = GetTaskThread(Thread.CurrentThread);
             while (GetTaskThread(ThreadRole.Standard) == null) ;
-            while (GetTaskThread(ThreadRole.Standard).IsAlive)
+            while (GetTaskThread(ThreadRole.Standard) != null)
             {
                 try
                 {
                     while (TaskQueue.Peek() == null) Thread.Sleep(250);
                     Task t;
+                    tt.Busy = true;
                     lock (taskLock)
                     {
                         t = ImportantTaskQueue.Dequeue();
                     }
+                    tt.Busy = false;
                     PerformTask(t);
                 }
-                catch { } //Queue is most likely empty, no real need to do anything.
+                catch { tt.Busy = false; } //Queue is most likely empty, no real need to do anything.
                 Thread.Sleep(250);
             }
         }
         private static void ManageTaskDelayThread()
         {
+            TaskThread tt = GetTaskThread(Thread.CurrentThread);
             while (GetTaskThread(ThreadRole.Standard) == null) ;
             while (GetTaskThread(ThreadRole.Standard).IsAlive)
             {
                 try
                 {
+                    tt.Busy = true;
                     foreach (var v in DelayedTasks)
                     {
                         DelayedTasks[v.Key] -= 10;
@@ -227,9 +235,10 @@ namespace ModUpdater.Utility
                         }
 
                     }
+                    tt.Busy = false;
                     Thread.Sleep(10);
                 }
-                catch { }
+                catch { tt.Busy = false; }
             }
         }
         #endregion

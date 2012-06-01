@@ -29,6 +29,26 @@ namespace ModUpdater.Utility
     public static class Extras
     {
         /// <summary>
+        /// Generates a hash based on a given string
+        /// </summary>
+        /// <param name="filePathAndName">The file to generate a hash for.</param>
+        /// <returns>A hash based off the file given.</returns>
+        public static string GenerateHashFromString(string input)
+        {
+            string hashText = "";
+            string hexValue = "";
+
+            byte[] stringData = Encoding.UTF8.GetBytes(input);
+            byte[] hashData = SHA1.Create().ComputeHash(stringData); // SHA1 or MD5
+
+            foreach (byte b in hashData)
+            {
+                hexValue = b.ToString("X").ToLower(); // Lowercase for compatibility on case-sensitive systems
+                hashText += (hexValue.Length == 1 ? "0" : "") + hexValue;
+            }
+            return hashText;
+        }
+        /// <summary>
         /// Generates a hash based on the file given.
         /// </summary>
         /// <param name="filePathAndName">The file to generate a hash for.</param>

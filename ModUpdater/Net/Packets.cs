@@ -36,10 +36,10 @@ namespace ModUpdater.Net
         Log, // <--
         Metadata, // <-->
         Image, // -->
-        ServerList, // MasterServer --> Client
+        ServerList, // MasterServer -->
         AdminFileInfo, // --> Admin Client
         AdminChangelog, // <-- AC
-
+        UploadFile, // <-- AC
         Disconnect = 255 // <-- Notes: Disconnect Packet
     }
 }

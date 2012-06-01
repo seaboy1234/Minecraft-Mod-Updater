@@ -41,6 +41,14 @@ namespace ModUpdater.Utility
             LogEvent.Invoke(l, s);
             DebugMessageHandler.AssertCl("["+l.ToString().ToUpper()+"] " + s);
         }
+        public void Log(Level l, string s, params object[] oa)
+        {
+            for(int i = 0; i < oa.Length; i++)
+            {
+                s = s.Replace("{" + i + "}", oa[i].ToString());
+            }
+            Log(l, s);
+        }
         public void Log(Exception e)
         {
             Log(Level.Error, e.ToString());

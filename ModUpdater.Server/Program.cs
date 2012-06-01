@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ModUpdater.Utility;
 
 namespace ModUpdater.Server
 {
@@ -39,12 +40,12 @@ namespace ModUpdater.Server
             try
             {
                 server.Start();
-                Console.WriteLine("Server stopped.");
+                MinecraftModUpdater.Logger.Log(Logger.Level.Info,"Server stopped.");
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
-                Console.WriteLine("Press any key to close.");
+                MinecraftModUpdater.Logger.Log(e);
+                MinecraftModUpdater.Logger.Log(Logger.Level.Info,"Press any key to close.");
                 Console.ReadKey();
             }
         }

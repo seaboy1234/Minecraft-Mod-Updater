@@ -177,6 +177,7 @@ namespace ModUpdater.Admin.GUI
             this.updaterProgressBar1.BackColor = System.Drawing.Color.Transparent;
             this.updaterProgressBar1.EndColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(211)))), ((int)(((byte)(0)))));
             this.updaterProgressBar1.Location = new System.Drawing.Point(0, 154);
+            this.updaterProgressBar1.MaxValue = 120;
             this.updaterProgressBar1.Name = "updaterProgressBar1";
             this.updaterProgressBar1.Size = new System.Drawing.Size(383, 32);
             this.updaterProgressBar1.StartColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(211)))), ((int)(((byte)(0)))));
@@ -225,6 +226,6 @@ namespace ModUpdater.Admin.GUI
         private System.Windows.Forms.Label lblPasswd;
         private System.Windows.Forms.Button btnConnect;
         private System.Windows.Forms.Label lblStatus;
-        private Controls.ProgressBar updaterProgressBar1;
+        private ModUpdater.Controls.ProgressBar updaterProgressBar1;
     }
 }

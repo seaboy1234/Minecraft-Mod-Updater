@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using ModUpdater.Admin.GUI;
+using ModUpdater.Utility;
 
 namespace ModUpdater.Admin
 {
@@ -33,7 +34,13 @@ namespace ModUpdater.Admin
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new ConnectionForm());
+            TaskManager.ExceptionRaised += new TaskManager.Error(TaskManager_ExceptionRaised);
+            Application.Run(new MainForm());
+        }
+
+        static void TaskManager_ExceptionRaised(Exception e)
+        {
+            MessageBox.Show(e.ToString());
         }
     }
 }

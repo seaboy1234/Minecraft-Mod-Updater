@@ -23,7 +23,7 @@ namespace ModUpdater.Admin.Items
 {
     class Changelog
     {
-        private List<Item> Items;
+        private List<Item> Items = new List<Item>();
 
         public void Add(Mod m, string n)
         {

@@ -296,7 +296,7 @@ namespace ModUpdater.Client.GUI
         void ph_Image(Packet pa)
         {
             ImagePacket p = pa as ImagePacket;
-            Image i = Extras.ImageFromBytes(ph.Stream.DecryptBytes(p.Image));
+            Image i = Extras.ImageFromBytes(p.Image);
             if (p.Type == ImagePacket.ImageType.Background)
             {
                 SplashScreen.BackgroundImage = i;
@@ -321,8 +321,7 @@ namespace ModUpdater.Client.GUI
             }
             while (SplashScreen.GetScreen().Loading) ;
             int i = p.Index;
-            byte[] d = ph.Stream.DecryptBytes(p.Part);
-            foreach (byte b in d)
+            foreach (byte b in p.Part)
             {
                 CurrentDownload.FileContents[i] = b;
                 i++;
@@ -620,14 +619,15 @@ namespace ModUpdater.Client.GUI
                 File.WriteAllLines("ModUpdater.log", file);
             }
             catch { }
-            Application.Exit();
-            while (TaskManager.GetTaskThreads().Length > 0)
+            foreach (TaskThread t in TaskManager.GetTaskThreads())
             {
-                foreach (TaskThread t in TaskManager.GetTaskThreads())
-                {
-                    TaskManager.KillTaskThread(t);
-                }
+                TaskManager.KillTaskThread(t);
             }
+            try
+            {
+                Application.Exit();
+            }
+            catch { }
         }
 
         private void ListBox_DoubleClick_Handler(object sender, EventArgs e)

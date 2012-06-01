@@ -37,6 +37,8 @@ namespace ModUpdater.Server
         public event EventHandler ClientDisconnected = delegate { };
         private PacketHandler ph;
         private List<Mod> allowedMods;
+        private Mod currentDownload;
+        private byte[] downloaded;
         public Client(Socket s, Server sv)
         {
             ph = new PacketHandler(s);
@@ -79,10 +81,27 @@ namespace ModUpdater.Server
                     return true;
                 return false;
             }));
-            Console.WriteLine("Client {0} requested {1}.", ClientID, mod.ModName);
+            MinecraftModUpdater.Logger.Log(Logger.Level.Info,"Client {0} requested {1}.", ClientID, mod.ModName);
             switch (p.Type)
             {
                 case RequestModPacket.RequestType.Info:
+                    if (Admin)
+                    {
+                        Packet.Send(new AdminFileInfoPacket 
+                        { 
+                            ModName = mod.ModName,
+                            Author = mod.Author, 
+                            BlacklistedUsers = mod.BlacklistedUsers.ToArray(), 
+                            Description = mod.Description, 
+                            File = mod.ModFile, 
+                            FileSize = mod.FileSize, 
+                            Hash = mod.Hash,
+                            PostDownload = mod.PostDownloadCLI, 
+                            WhitelistedUsers = mod.WhitelistedUsers.ToArray() ,
+                            Identifier = mod.Identifier
+                        }, ph.Stream);
+                        return;
+                    }
                     Packet.Send(new ModInfoPacket { Author = mod.Author, File = mod.ModFile, ModName = mod.ModName, Hash = Extras.GenerateHash(Config.ModsPath + "\\" + mod.ModFile), FileSize = mod.FileSize, Description = mod.Description }, ph.Stream);
                     break;
                 case RequestModPacket.RequestType.Download:
@@ -104,12 +123,12 @@ namespace ModUpdater.Server
             {
                 if (!Server.Administrators.Contains(p.Username))
                 {
-                    Packet.Send(new MetadataPacket { SData = new string[] { "admin_login" }, BData = new bool[] { false } }, ph.Stream);
+                    Packet.Send(new MetadataPacket { SData = new string[] { "admin_login", "false" } }, ph.Stream);
                     Packet.Send(new DisconnectPacket(), ph.Stream);
                     ph.Stop();
                     return;
                 }
-                Packet.Send(new MetadataPacket { SData = new string[] { "admin_login" }, BData = new bool[] { true } }, ph.Stream);
+                Packet.Send(new MetadataPacket { SData = new string[] { "admin_login", "true" } }, ph.Stream);
                 Admin = true;
             }
             ClientID = p.Username;
@@ -120,7 +139,7 @@ namespace ModUpdater.Server
                 ph.Stop();
                 return;
             }
-            Console.WriteLine("Client {0} connected. ({1})", ClientID, IPAddress.Address);
+            MinecraftModUpdater.Logger.Log(Logger.Level.Info,"Client {0} connected. ({1})", ClientID, IPAddress.Address);
             Packet.Send(new EncryptionStatusPacket { Encrypt = true, EncryptionIV = ph.Stream.IV, EncryptionKey = ph.Stream.Key }, ph.Stream);
             ph.Stream.Encrypted = true;
             Packet.Send(new MetadataPacket { SData = new string[] { "server_name", Config.ServerName }, FData = new float[] { 24.0f } }, ph.Stream);
@@ -130,21 +149,24 @@ namespace ModUpdater.Server
                 {
                     if (Server.Mods[i].WhitelistedUsers.Contains(ClientID) || !Server.Mods[i].BlacklistedUsers.Contains(ClientID))
                         allowedMods.Add(Server.Mods[i]);
-                    else Console.WriteLine("NOT SENDING: " + Server.Mods[i].ModName);
+                    else MinecraftModUpdater.Logger.Log(Logger.Level.Info,"NOT SENDING: " + Server.Mods[i].ModName);
                 }
                 Packet.Send(new MetadataPacket { SData = new string[] { "splash_display", "Downloading Assets..." } }, ph.Stream);
                 if (Server.BackgroundImage != null)
                 {
-                    byte[] b = ph.Stream.EncryptBytes(Extras.BytesFromImage(Server.BackgroundImage));
+                    byte[] b = Extras.BytesFromImage(Server.BackgroundImage);
                     Packet.Send(new ImagePacket { Type = ImagePacket.ImageType.Background, ShowOn = "", Image = b }, ph.Stream);
                 }
                 foreach (var v in Server.ModImages)
                 {
-                    byte[] b = ph.Stream.EncryptBytes(Extras.BytesFromImage(v.Value));
+                    byte[] b = Extras.BytesFromImage(v.Value);
                     Packet.Send(new ImagePacket { Type = ImagePacket.ImageType.Mod, ShowOn = v.Key.ModFile, Image = b }, ph.Stream);
                 }
             }
-            else { allowedMods = Server.Mods; }
+            else
+            {
+                allowedMods.AddRange(Server.Mods.ToArray());
+            }
             string[] mods = new string[allowedMods.Count];
             for (int i = 0; i < allowedMods.Count; i++)
             {
@@ -152,7 +174,14 @@ namespace ModUpdater.Server
             }
             Packet.Send(new MetadataPacket { SData = new string[] { "splash_display", "Downloading Mod List..." } }, ph.Stream);
             Packet.Send(new ModListPacket { Mods = mods }, ph.Stream);
-            Console.WriteLine("{0} Logged in.", this.ClientID);
+            MinecraftModUpdater.Logger.Log(Logger.Level.Info,"{0} Logged in.", this.ClientID);
+            if (Admin)
+            {
+                PacketHandler.RegisterPacketHandler(PacketId.AdminFileInfo, UpdateModInfo);
+                PacketHandler.RegisterPacketHandler(PacketId.UploadFile, HandleFileUpload);
+                PacketHandler.RegisterPacketHandler(PacketId.FilePart, HandleFilePart);
+                PacketHandler.RegisterPacketHandler(PacketId.AllDone, HandleCompleteDownload);
+            }
         }
 
         internal void HandleLog(Packet pa)
@@ -167,7 +196,88 @@ namespace ModUpdater.Server
             {
                 File.WriteAllLines(fullpath, p.LogMessages);
             }
-            catch (Exception e) { Console.WriteLine(e); }
+            catch (Exception e) { MinecraftModUpdater.Logger.Log(e); }
+        }
+        internal void UpdateModInfo(Packet pa)
+        {
+            AdminFileInfoPacket p = pa as AdminFileInfoPacket;
+            Mod m = Server.Mods.Find(new Predicate<Mod>(delegate(Mod mod)
+                {
+                    if (mod.Identifier == p.Identifier)
+                        return true;
+                    return false;
+                }));
+            if (m == null)
+            {
+                m = new Mod();
+                Server.Mods.Add(m);
+            }
+            else if (m.ModFile != p.File)
+
+            {
+                File.Delete(Config.ModsPath + "/xml/" + Path.GetFileName(m.ModFile) + ".xml");
+                File.Delete(Config.ModsPath + "/" + m.ModFile);
+            }
+            m.Author = p.Author;
+            m.BlacklistedUsers.Clear();
+            m.BlacklistedUsers.AddRange(p.BlacklistedUsers);
+            m.Description = p.Description;
+            m.FileSize = p.FileSize;
+            m.ModFile = p.File;
+            m.ModName = p.ModName;
+            m.PostDownloadCLI = p.PostDownload;
+            m.WhitelistedUsers.Clear();
+            m.WhitelistedUsers.AddRange(p.WhitelistedUsers);
+            m.ConfigFile = Config.ModsPath + "/xml/" + Path.GetFileName(p.File) + ".xml";
+            m.Identifier = p.Identifier;
+            m.Save();
+            MinecraftModUpdater.Logger.Log(Logger.Level.Warning, "{0}({1}) has been updated by {2}", m.ModName, m.Identifier, ClientID);
+        }
+        internal void HandleFilePart(Packet pa)
+        {
+            try
+            {
+                FilePartPacket p = pa as FilePartPacket;
+                int i = p.Index;
+                foreach (byte b in p.Part)
+                {
+                    downloaded[i] = b;
+                    i++;
+                }
+            }
+            catch(Exception e)
+            {
+                MinecraftModUpdater.Logger.Log(e);
+                Console.ReadLine();
+            }
+        }
+        internal void HandleFileUpload(Packet pa)
+        {
+            UploadFilePacket p = pa as UploadFilePacket;
+            Mod m = Server.Mods.Find(new Predicate<Mod>(delegate(Mod mod)
+            {
+                if (mod.Identifier == p.Identifier)
+                    return true;
+                return false;
+            }));
+            if (m == null)
+            {
+                m = new Mod();
+            }
+            if (File.Exists(Config.ModsPath + "/" + m.ModFile))
+                File.Delete(Config.ModsPath + "/" + m.ModFile);
+            currentDownload = m;
+            downloaded = new byte[p.Size];
+        }
+        internal void HandleCompleteDownload(Packet pa)
+        {
+            AllDonePacket p = pa as AllDonePacket;
+            currentDownload.ReadFile(downloaded);
+            currentDownload.Save();
+            if (!Directory.Exists(Config.ModsPath + "/" + Path.GetFileName(currentDownload.ModFile))) 
+                Directory.CreateDirectory(Config.ModsPath + "/" + Path.GetFileName(currentDownload.ModFile));
+            File.WriteAllBytes(Config.ModsPath + "/" + currentDownload.ModFile, downloaded);
+            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Data transfer complete!");
         }
         public override string ToString()
         {

@@ -1,4 +1,4 @@
-﻿//    File:        Debug.cs
+﻿//    File:        ControlDownloadProgress.cs
 //    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
 //    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
 //    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
@@ -16,38 +16,20 @@
 //    limitations under the License.
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace ModUpdater.Client
+namespace ModUpdater.Admin.Controls
 {
-    public static class Debug
+    public partial class ControlDownloadProgress : UserControl
     {
-        static Debug()
+        public ControlDownloadProgress()
         {
-            DebugMessageHandler.CommandLineMessages += new DebugMessageHandler.DebugMessage(DebugMessageHandler_CommandLineMessages);
-            DebugMessageHandler.DebugMessages +=new DebugMessageHandler.DebugMessage(Assert);
-        }
-
-        static void DebugMessageHandler_CommandLineMessages(string message)
-        {
-            Console.WriteLine(message);
-        }
-        public static void Assert(string message)
-        {
-            if (ProgramOptions.Debug)
-            {
-                MessageBox.Show(message, "DEBUG MESSAGE");
-            }
-            if (ProgramOptions.Debug && ProgramOptions.CommandLine)
-            {
-                MinecraftModUpdater.Logger.Log(ModUpdater.Utility.Logger.Level.Debug, message);
-            }
-        }
-        public static void Assert(Exception e)
-        {
-            Assert(e.ToString());
+            InitializeComponent();
         }
     }
 }

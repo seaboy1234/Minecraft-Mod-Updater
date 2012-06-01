@@ -52,16 +52,31 @@ namespace ModUpdater.Server
          *     </Description>
          * </Mod>
          */
-        public string ModName { get; private set; }
-        public string Author { get; private set; }
-        public string ModFile { get; private set; }
-        public string[] PostDownloadCLI { get; private set; }
-        public List<string> WhitelistedUsers { get; private set; }
-        public List<string> BlacklistedUsers { get; private set; }
-        public long FileSize { get; private set; }
-        public string Description { get; private set; }
+        public string ModName { get; internal set; }
+        public string Author { get; internal set; }
+        public string ModFile { get; internal set; }
+        public string Identifier { get; internal set; }
+        public string[] PostDownloadCLI { get; internal set; }
+        public List<string> WhitelistedUsers { get; internal set; }
+        public List<string> BlacklistedUsers { get; internal set; }
+        public long FileSize { get; internal set; }
+        public string Description { get; internal set; }
+        public string Hash { get; set; }
+        public string ConfigFile { get; internal set; }
         private List<List<byte>> FileParts;
         private XmlDocument modFile;
+        public Mod()
+        {
+            ModName = "Unnamed";
+            Author = "No Author Given.";
+            ModFile = "";
+            PostDownloadCLI = new string[0];
+            BlacklistedUsers = new List<string>();
+            WhitelistedUsers = new List<string>();
+            FileSize = 0;
+            Description = "No description given.";
+            FileParts = new List<List<byte>>();
+        }
         public Mod(string ConfigFile)
         {
             ModName = "Unnamed";
@@ -76,6 +91,7 @@ namespace ModUpdater.Server
             modFile = new XmlDocument();
             FileParts = new List<List<byte>>();
             modFile.Load(ConfigFile);
+            this.ConfigFile = ConfigFile;
             XmlNodeList nodes = modFile.SelectNodes("/Mod");
             XmlNode n = nodes[0];
             try
@@ -154,6 +170,15 @@ namespace ModUpdater.Server
                     Description = n["Description"].InnerText;
             }
             catch { n.AppendChild(modFile.CreateElement("Description")); }
+            try
+            {
+                Identifier = n["Identifier"].InnerText;
+            }
+            catch
+            {
+                n.AppendChild(modFile.CreateElement("Identifier"));
+                n["Identifier"].InnerText = Extras.GenerateHashFromString(ModName);
+            }
             modFile.Save(ConfigFile);
             if (ModFile.Contains("minecraft.jar"))
             {
@@ -164,23 +189,10 @@ namespace ModUpdater.Server
                         Console.Beep();
                         Thread.Sleep(50);
                     }
-                    Console.WriteLine("WARNING: Sending minecraft.jar is not allowed under the Minecraft Terms of Use.  Please send jar mods in bin/jarmods.jar.");
+                    MinecraftModUpdater.Logger.Log(Logger.Level.Info,"WARNING: Sending minecraft.jar is not allowed under the Minecraft Terms of Use.  Please send jar mods in bin/jarmods.jar.");
                 });
             }
-
-            byte[] file = File.ReadAllBytes(Config.ModsPath + "\\" + ModFile);
-            int k = 0;
-            FileSize = file.Length;
-            for (int i = 0; i < file.Length; i += 2048)
-            {
-                FileParts.Add(new List<byte>());
-                for (int j = i; j < i + 2048; j++)
-                {
-                    if (file.Length > j)
-                        FileParts[k].Add(file[j]);
-                }
-                k++;
-            }
+            
         }
         internal void SendFileTo(Client c)
         {
@@ -190,12 +202,72 @@ namespace ModUpdater.Server
             for (int h = 0; h < FileParts.Count; h++)
             {
                 byte[] b = FileParts[h].ToArray();
-                b = c.PacketHandler.Stream.EncryptBytes(b);
                 Packet.Send(new FilePartPacket { Part = b, Index = l }, ph.Stream);
                 l += FileParts[h].Count;
             }
             Packet.Send(new AllDonePacket { File = ModFile }, ph.Stream);
 
+        }
+        internal void ReadFile()
+        {
+            ReadFile(File.ReadAllBytes(Config.ModsPath + "\\" + ModFile));
+        }
+        internal void ReadFile(byte[] b)
+        {
+            try
+            {
+                byte[] file = b;
+                int k = 0;
+                FileSize = file.Length;
+                for (int i = 0; i < file.Length; i += 2048)
+                {
+                    FileParts.Add(new List<byte>());
+                    for (int j = i; j < i + 2048; j++)
+                    {
+                        if (file.Length > j)
+                            FileParts[k].Add(file[j]);
+                    }
+                    k++;
+                }
+                Hash = Extras.GenerateHash(b);
+            }
+            catch (FileNotFoundException e)
+            {
+                MinecraftModUpdater.Logger.Log(Logger.Level.Info, "{0} not found.  Please check that the name is correct and that the file exists.", ModFile);
+                MinecraftModUpdater.Logger.Log(e);
+            }
+        }
+        public void Save()
+        {
+            using (StreamWriter sw = new StreamWriter(ConfigFile))
+            {
+                sw.WriteLine("<Mod>");
+                sw.WriteLine("<Name>{0}</Name>", ModName);
+                sw.WriteLine("<Author>{0}</Author>", Author);
+                sw.WriteLine("<File>{0}</File>", ModFile);
+                sw.WriteLine("<PostDownload>");
+                foreach (string s in PostDownloadCLI)
+                {
+                    sw.WriteLine("<Action>{0}</Action>", s);
+                }
+                sw.WriteLine("</PostDownload>");
+                sw.WriteLine("<Blacklist>");
+                foreach (string s in BlacklistedUsers)
+                {
+                    sw.WriteLine("<Username>{0}</Username>", s);
+                }
+                sw.WriteLine("</Blacklist>");
+                sw.WriteLine("<Whitelist>");
+                foreach (string s in WhitelistedUsers)
+                {
+                    sw.WriteLine("<Username>{0}</Username>", s);
+                }
+                sw.WriteLine("</Whitelist>");
+                sw.WriteLine("<Description>{0}</Description>", Description);
+                sw.WriteLine("<Identifier>{0}</Identifier>", Identifier);
+                sw.WriteLine("</Mod>");
+                sw.Close();
+            }
         }
         public override string ToString()
         {
@@ -210,5 +282,6 @@ namespace ModUpdater.Server
             }
             return sb.ToString();
         }
+
     }
 }
