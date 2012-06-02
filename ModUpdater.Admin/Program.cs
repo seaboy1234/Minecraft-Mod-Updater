@@ -34,7 +34,7 @@ namespace ModUpdater.Admin
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            TaskManager.ExceptionRaised += new TaskManager.Error(TaskManager_ExceptionRaised);
+            TaskManager.ExceptionRaised += new TaskManagerError(TaskManager_ExceptionRaised);
             Application.Run(new MainForm());
         }
 

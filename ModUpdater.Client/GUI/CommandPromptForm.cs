@@ -48,7 +48,7 @@ namespace ModUpdater.Client.GUI
             {
                 textBox1.AppendText(s + Environment.NewLine);
             }
-            MinecraftModUpdater.Logger.LogEvent += new Logger.LogEventDelegate(Logger_LogEvent);
+            MinecraftModUpdater.Logger.LogEvent += new LogEventDelegate(Logger_LogEvent);
         }
 
         void Logger_LogEvent(Logger.Level level, string message)
@@ -75,7 +75,7 @@ namespace ModUpdater.Client.GUI
 
         private void CommandPromptForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            MinecraftModUpdater.Logger.LogEvent -= new Logger.LogEventDelegate(Logger_LogEvent);
+            MinecraftModUpdater.Logger.LogEvent -= new LogEventDelegate(Logger_LogEvent);
         }
     }
 }
