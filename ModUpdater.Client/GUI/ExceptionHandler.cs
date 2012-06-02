@@ -79,7 +79,7 @@ namespace ModUpdater.Client.GUI
         }
         public static void Init()
         {
-            TaskManager.ExceptionRaised += new TaskManager.Error(TaskManager_ExceptionRaised);
+            TaskManager.ExceptionRaised += new TaskManagerError(TaskManager_ExceptionRaised);
             Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
         }

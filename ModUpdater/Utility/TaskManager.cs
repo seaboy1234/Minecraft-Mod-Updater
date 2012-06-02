@@ -24,7 +24,7 @@ namespace ModUpdater.Utility
     public static class TaskManager
     {
         private static int CurrentTaskId = 0;
-        public static event Error ExceptionRaised = delegate { };
+        public static event TaskManagerError ExceptionRaised = delegate { };
         private static List<TaskThread> TaskThreads;
         private static object taskLock;
         private static Queue<Task> TaskQueue;
@@ -97,7 +97,7 @@ namespace ModUpdater.Utility
                 Thread.EndCriticalRegion(); // Thread can now be stopped.
             }
         }
-        #region Misic Functions
+        #region Functions
         /// <summary>
         /// Spawns a new task thread and adds it to the list of threads.
         /// </summary>
