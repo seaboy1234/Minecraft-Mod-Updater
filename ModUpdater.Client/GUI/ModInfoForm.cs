@@ -44,20 +44,28 @@ namespace ModUpdater.Client.GUI
             txtDesc.Text = mod.Description;
             double size = ConvertToKilobytes(mod.Size);
             string fsize;
-            if (size > 1024d)
+            try
             {
-                string a, b;
-                size = ConvertToMegabytes(mod.Size);
-                a = size.ToString().Split('.')[0].Trim();
-                b = size.ToString().Split('.')[1].Trim().Remove(2);
-                fsize = string.Format("{0}.{1} MB", a, b);
+                if (size > 1024d)
+                {
+                    string a, b;
+                    size = ConvertToMegabytes(mod.Size);
+                    a = size.ToString().Split('.')[0].Trim();
+                    b = size.ToString().Split('.')[1].Trim().Remove(2);
+                    fsize = string.Format("{0}.{1} MB", a, b);
+                }
+                else
+                {
+                    string a, b;
+                    a = size.ToString().Split('.')[0].Trim();
+                    b = size.ToString().Split('.')[1].Trim().Remove(2);
+                    fsize = string.Format("{0}.{1} KB", a, b);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                string a, b;
-                a = size.ToString().Split('.')[0].Trim();
-                b = size.ToString().Split('.')[1].Trim().Remove(2);
-                fsize = string.Format("{0}.{1} KB", a, b);
+                MinecraftModUpdater.Logger.Log(ex);
+                fsize = "Error";
             }
             lblFileS.Text = fsize;
         }
