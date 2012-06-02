@@ -23,9 +23,7 @@ namespace ModUpdater.Utility
 {
     public static class TaskManager
     {
-        public delegate void Task();
         private static int CurrentTaskId = 0;
-        public delegate void Error(Exception e);
         public static event Error ExceptionRaised = delegate { };
         private static List<TaskThread> TaskThreads;
         private static object taskLock;

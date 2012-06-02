@@ -25,7 +25,6 @@ namespace ModUpdater.Utility
     {
         List<string> StringLogs = new List<string>(20);
         List<Level> LevelLogs = new List<Level>(20);
-        public delegate void LogEventDelegate(Level level, string message);
         public event LogEventDelegate LogEvent = delegate { };
         public enum Level
         {

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ModUpdater.Utility;
 
 namespace ModUpdater
 {
@@ -26,7 +27,6 @@ namespace ModUpdater
     /// </summary>
     public static class DebugMessageHandler
     {
-        public delegate void DebugMessage(string message);
         public static event DebugMessage DebugMessages;
         public static event DebugMessage CommandLineMessages;
         /// <summary>

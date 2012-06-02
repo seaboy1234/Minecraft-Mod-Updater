@@ -57,10 +57,10 @@
     <Compile Include="ModUpdater.cs" />
     <Compile Include="Net\ModUpdaterNetworkStream.cs" />
     <Compile Include="Net\Packet.cs" />
-    <Compile Include="Net\PacketDelagate.cs" />
     <Compile Include="Net\PacketHandler.cs" />
     <Compile Include="Net\Packets.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utility\Delegates.cs" />
     <Compile Include="Utility\TaskManager.cs" />
     <Compile Include="Utility\TaskThread.cs" />
   </ItemGroup>

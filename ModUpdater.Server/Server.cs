@@ -41,7 +41,7 @@ namespace ModUpdater.Server
         bool Online { get; set; }
         public Server()
         {
-            MinecraftModUpdater.Logger.LogEvent += new Logger.LogEventDelegate(Logger_LogEvent);
+            MinecraftModUpdater.Logger.LogEvent += new LogEventDelegate(Logger_LogEvent);
             Config.Load();
             Mods = new List<Mod>();
             Clients = new List<Client>();
