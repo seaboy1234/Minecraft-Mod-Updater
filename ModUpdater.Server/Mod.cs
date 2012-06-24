@@ -192,7 +192,7 @@ namespace ModUpdater.Server
                     MinecraftModUpdater.Logger.Log(Logger.Level.Info,"WARNING: Sending minecraft.jar is not allowed under the Minecraft Terms of Use.  Please send jar mods in bin/jarmods.jar.");
                 });
             }
-            
+            ReadFile();
         }
         internal void SendFileTo(Client c)
         {
@@ -210,7 +210,15 @@ namespace ModUpdater.Server
         }
         internal void ReadFile()
         {
-            ReadFile(File.ReadAllBytes(Config.ModsPath + "\\" + ModFile));
+            try
+            {
+                ReadFile(File.ReadAllBytes(Config.ModsPath + "\\" + ModFile));
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine("Unable to read file: {0}", e);
+                throw e;
+            }
         }
         internal void ReadFile(byte[] b)
         {

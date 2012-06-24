@@ -52,7 +52,11 @@ namespace ModUpdater.Server
             SelfUpdate();
             foreach (string s in Directory.GetFiles(Config.ModsPath + "/xml"))
             {
-                Mods.Add(new Mod(s));
+                try
+                {
+                    Mods.Add(new Mod(s));
+                }
+                catch { } //This error is handled at a lower level.
             }
             foreach (Mod m in Mods)
             {
