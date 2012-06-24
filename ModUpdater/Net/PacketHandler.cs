@@ -47,6 +47,7 @@ namespace ModUpdater.Net
         private Thread ConnectedThread;
         private Dictionary<PacketId, PacketEvent> EventHandler;
         private List<Packet> PacketBacklog;
+        private object eventLock = new object();
         public PacketHandler(Socket s)
         {
             sck = s;
@@ -83,17 +84,20 @@ namespace ModUpdater.Net
                     Stream.Encrypted = pa.Encrypt;
                     return;
                 }
-                foreach (var ph in EventHandler)
+                lock (eventLock)
                 {
-                    if (ph.Key == id)
+                    foreach (var ph in EventHandler.ToArray())
                     {
-                        ph.Value.Invoke(p);
+                        if (ph.Key == id)
+                        {
+                            ph.Value.Invoke(p);
+                        }
                     }
                 }
             }
             catch (Exception e)
             {
-                MinecraftModUpdater.Logger.Log(e);
+                throw e;
             }
         }
         /// <summary>
@@ -128,11 +132,14 @@ namespace ModUpdater.Net
         /// <param name="handler">The handler for the packet.</param>
         public void RegisterPacketHandler(PacketId id, PacketEvent handler)
         {
-            try
+            lock (eventLock)
             {
-                EventHandler.Add(id, handler);
+                try
+                {
+                    EventHandler.Add(id, handler);
+                }
+                catch (Exception e) { throw e; }
             }
-            catch (Exception e) { throw e; }
         }
         /// <summary>
         /// Un-registers the packet handler for a packet.
@@ -140,11 +147,14 @@ namespace ModUpdater.Net
         /// <param name="id">The packet id to un-register.</param>
         public void RemovePacketHandler(PacketId id)
         {
-            try
+            lock (eventLock)
             {
-                EventHandler.Remove(id);
+                try
+                {
+                    EventHandler.Remove(id);
+                }
+                catch (Exception e) { throw e; }
             }
-            catch (Exception e) { throw e; }
         }
         /// <summary>
         /// Gets a backlog of all recived packets.
