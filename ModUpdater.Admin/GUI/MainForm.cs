@@ -156,8 +156,8 @@ namespace ModUpdater.Admin.GUI
                 listBox1.Enabled = false;
                 panel1.Controls.Add(new ControlDownloadProgress());
                 MessageBox.Show(string.Format("{0} mods need to be synced.", count), Text + " - Alert");
-                Connection.PacketHandler.RegisterPacketHandler(PacketId.FilePart, HandleFilePart);
                 Connection.PacketHandler.RegisterPacketHandler(PacketId.NextDownload, HandleDownloadInfo);
+                Connection.PacketHandler.RegisterPacketHandler(PacketId.FilePart, HandleFilePart);
                 Connection.PacketHandler.RegisterPacketHandler(PacketId.AllDone, HandleAllDone);
                 foreach (Mod m in mods)
                 {
@@ -199,14 +199,15 @@ namespace ModUpdater.Admin.GUI
         }
         private void HandleFilePart(Packet pa)
         {
+            return;
             FilePartPacket p = pa as FilePartPacket;
             int i = p.Index;
             foreach (byte b in p.Part)
             {
-                downloaded++;
                 mods[currentDownload].Contents[i] = b;
                 i++;
             }
+            downloaded += p.Part.Length;
         }
         private void listBox1_DoubleClick(object sender, EventArgs e)
         {
@@ -280,7 +281,7 @@ namespace ModUpdater.Admin.GUI
                             byte[] b = bytes[i].ToArray();
                             Packet.Send(new FilePartPacket { Part = b, Index = k }, Connection.PacketHandler.Stream);
                             k += bytes[i].Count;
-                            downloaded = k;
+                            downloaded += bytes[i].Count;
                             Thread.Sleep(25);
                         }
                         Packet.Send(new AllDonePacket { File = m.File }, Connection.PacketHandler.Stream);
