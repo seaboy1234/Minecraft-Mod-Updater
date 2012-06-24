@@ -85,6 +85,7 @@ namespace ModUpdater.Client.GUI
                 catch { }
                 return;
             }
+            Program.AppStatus = AppStatus.Updating;
             if (!Properties.Settings.Default.AutoUpdate)
             {
                 if (MessageBox.Show("Are you sure you want to update " + lsModsToUpdate.Items.Count + " mods and delete " + lsModsToDelete.Items.Count + " more?", "Confirm Update Action", MessageBoxButtons.YesNo) != System.Windows.Forms.DialogResult.Yes)
@@ -190,6 +191,7 @@ namespace ModUpdater.Client.GUI
             SplashScreen.UpdateStatusTextWithStatus("Preparing to connect to the update server...", TypeOfMessage.Warning);
             Thread.Sleep(3000);
             SplashScreen.GetScreen().Progress.Step = 20;
+            Program.AppStatus = AppStatus.Connecting;
             SplashScreen.UpdateStatusText("Connecting...");
             SplashScreen.GetScreen().Progress.PerformStep();
             Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);

@@ -121,6 +121,7 @@
     <Compile Include="GUI\OptionsForm.Designer.cs">
       <DependentUpon>OptionsForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Utility\AppStatus.cs" />
     <Compile Include="Utility\Debug.cs" />
     <Compile Include="GUI\ExceptionHandler.cs">
       <SubType>Form</SubType>

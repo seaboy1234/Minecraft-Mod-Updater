@@ -50,6 +50,7 @@ namespace ModUpdater.Client.GUI
             sb.AppendLine("Minecraft Mod Updater has crashed.");
             sb.AppendLine("Please make an error report about this including everything below the line.");
             sb.AppendLine("If you make an error report about this, I will make sure it gets fixed.");
+            sb.AppendLine("The application will try to recover from this error, if you wish.");
             sb.AppendLine();
             sb.AppendLine("----------------------------------------------------------------");
             sb.AppendLine("Application: " + MinecraftModUpdater.LongAppName);
@@ -134,8 +135,19 @@ namespace ModUpdater.Client.GUI
 
         private void ExceptionHandler_FormClosed(object sender, FormClosedEventArgs e)
         {
-            if(!Locked)
+            if (!Locked)
+            {
+                DialogResult r = MessageBox.Show("Would you like to try and recover from this error?  Some progress might be lost.", "Exception Handler", MessageBoxButtons.YesNo);
+                if (r == System.Windows.Forms.DialogResult.Yes)
+                {
+                    using (StreamWriter sw = new StreamWriter("recoveryinformation.dat"))
+                    {
+                        sw.WriteLine("status=" + Program.AppStatus);
+                        
+                    }
+                }
                 Application.Exit();
+            }
         }
 
         private void ExceptionHandler_FormClosing(object sender, FormClosingEventArgs e)
