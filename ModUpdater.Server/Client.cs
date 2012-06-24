@@ -274,7 +274,7 @@ namespace ModUpdater.Server
             AllDonePacket p = pa as AllDonePacket;
             currentDownload.ReadFile(downloaded);
             currentDownload.Save();
-            if (!Directory.Exists(Config.ModsPath + "/" + Path.GetFileName(currentDownload.ModFile))) 
+            if (!Directory.Exists(Config.ModsPath + "/" + Path.GetDirectoryName(currentDownload.ModFile))) 
                 Directory.CreateDirectory(Config.ModsPath + "/" + Path.GetFileName(currentDownload.ModFile));
             File.WriteAllBytes(Config.ModsPath + "/" + currentDownload.ModFile, downloaded);
             MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Data transfer complete!");
