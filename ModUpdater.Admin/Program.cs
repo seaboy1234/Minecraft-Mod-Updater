@@ -20,6 +20,7 @@ using System.Linq;
 using System.Windows.Forms;
 using ModUpdater.Admin.GUI;
 using ModUpdater.Utility;
+using System.Threading;
 
 namespace ModUpdater.Admin
 {
@@ -34,11 +35,27 @@ namespace ModUpdater.Admin
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            TaskManager.ExceptionRaised += new TaskManagerError(TaskManager_ExceptionRaised);
+            TaskManager.ExceptionRaised += new TaskManagerError(HandleException);
+            Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
+
+#if DEBUG
+            TaskManager.AddAsyncTask(delegate { new LoggerForm().ShowDialog(); });
+#endif
             Application.Run(new MainForm());
         }
 
-        static void TaskManager_ExceptionRaised(Exception e)
+        static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            HandleException((Exception)e.ExceptionObject);
+        }
+
+        static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
+        {
+            HandleException(e.Exception);
+        }
+
+        public static void HandleException(Exception e)
         {
             MessageBox.Show(e.ToString());
         }
