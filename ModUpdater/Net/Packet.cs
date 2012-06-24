@@ -57,6 +57,7 @@ namespace ModUpdater.Net
         {
             Type Packet = null;
             Packet p = null;
+            if (Stream.Disposed) return null;
             try
             {
                 PacketId id = (PacketId)Stream.ReadNetworkByte();
@@ -89,6 +90,7 @@ namespace ModUpdater.Net
         /// <param name="Stream">The stream to send it on.</param>
         public static void Send(Packet p, ModUpdaterNetworkStream Stream)
         {
+            if (Stream.Disposed) return;
             while (busy) ;
             busy = true;
             try
