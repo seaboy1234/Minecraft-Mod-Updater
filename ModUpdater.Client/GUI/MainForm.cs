@@ -37,6 +37,7 @@ namespace ModUpdater.Client.GUI
         public ModFile CurrentDownload;
         public IPAddress LocalAddress;
         public string ServerFolder { get { return serverName.Replace(' ', '_').Replace('.', '-').ToLower(); } }
+        public Server Server { get; set; }
         public delegate void Void();
         private PacketHandler ph;
         private Socket socket;
@@ -194,13 +195,17 @@ namespace ModUpdater.Client.GUI
             Program.AppStatus = AppStatus.Connecting;
             SplashScreen.UpdateStatusText("Connecting...");
             SplashScreen.GetScreen().Progress.PerformStep();
+            
+        }
+        private void Connect()
+        {
             Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             socket = s;
             Debug.Assert("Creating Objects.");
             try
             {
-                string srv = cf.ConnectTo.Address;
-                int port =  cf.ConnectTo.Port;
+                string srv = Server.Address;
+                int port = Server.Port;
                 if (srv == LocalAddress.ToString()) srv = "127.0.0.1";
                 ConnectionHandler.ConnectTo(s, srv, port);
                 SplashScreen.GetScreen().Progress.PerformStep();
@@ -219,7 +224,7 @@ namespace ModUpdater.Client.GUI
                 Close();
                 return;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 ExceptionHandler.HandleException(ex, this);
             }
@@ -231,7 +236,7 @@ namespace ModUpdater.Client.GUI
             {
                 while (s.Connected) ;
                 if (!warnDisconnect) return;
-                if(SplashScreen.GetScreen() != null)
+                if (SplashScreen.GetScreen() != null)
                 {
                     SplashScreen.UpdateStatusTextWithStatus("Lost connection to server.", TypeOfMessage.Error);
                     Thread.Sleep(5000);
@@ -282,7 +287,6 @@ namespace ModUpdater.Client.GUI
                 Thread.Sleep(20);
             }
         }
-
         private void OnFirstRun()
         {
             Properties.Settings.Default.MinecraftPath = Environment.CurrentDirectory + "/Minecraft";
@@ -587,6 +591,7 @@ namespace ModUpdater.Client.GUI
                 serverFontSize = p.FData[0];
                 Properties.Settings.Default.MinecraftPath = Environment.CurrentDirectory + "/Minecraft/" + ServerFolder;
                 MinecraftModUpdater.Logger.Log(Logger.Level.Info, string.Format("Minecraft path set to: {0}", Properties.Settings.Default.MinecraftPath));
+                Server.Name = serverName;
             }
             else if (p.SData[0] == "splash_display")
             {
