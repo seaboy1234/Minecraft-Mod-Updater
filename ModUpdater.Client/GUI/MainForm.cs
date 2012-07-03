@@ -195,7 +195,7 @@ namespace ModUpdater.Client.GUI
             Program.AppStatus = AppStatus.Connecting;
             SplashScreen.UpdateStatusText("Connecting...");
             SplashScreen.GetScreen().Progress.PerformStep();
-            
+            Connect();
         }
         private void Connect()
         {
