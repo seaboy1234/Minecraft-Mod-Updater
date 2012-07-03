@@ -143,8 +143,18 @@ namespace ModUpdater.Client.GUI
                     using (StreamWriter sw = new StreamWriter("recoveryinformation.dat"))
                     {
                         sw.WriteLine("status=" + Program.AppStatus);
-                        
+                        if(Program.AppStatus == Utility.AppStatus.Updating || Program.AppStatus == Utility.AppStatus.Connecting)
+                        {
+                            sw.WriteLine("server.ip=" + MainForm.Instance.Server.Address);
+                            sw.WriteLine("server.port=" + MainForm.Instance.Server.Port);
+                            sw.WriteLine("server.name=" + MainForm.Instance.Server.Name);
+                        }
+                        sw.Flush();
+                        sw.Close();
+                        sw.Dispose();
                     }
+                    Application.Restart();
+                    return;
                 }
                 Application.Exit();
             }
