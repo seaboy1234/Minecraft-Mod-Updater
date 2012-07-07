@@ -84,6 +84,7 @@
     </Compile>
     <Compile Include="Server.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="Upgrade.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ModUpdater\ModUpdater.csproj">
