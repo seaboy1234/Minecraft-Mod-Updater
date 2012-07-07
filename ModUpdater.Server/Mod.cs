@@ -63,6 +63,7 @@ namespace ModUpdater.Server
         public string Description { get; internal set; }
         public string Hash { get; set; }
         public string ConfigFile { get; internal set; }
+        public List<Mod> RequiredMods { get; internal set; }
         private List<List<byte>> FileParts;
         private XmlDocument modFile;
         public Mod()
@@ -194,6 +195,32 @@ namespace ModUpdater.Server
             }
             ReadFile();
         }
+        internal void LoadRequiredMods(List<Mod> mods)
+        {
+            RequiredMods = new List<Mod>();
+            string[] modids = new string[256];
+            XmlNodeList nodes = modFile.SelectNodes("/Mod");
+            XmlNode n = nodes[0];
+            try
+            {
+                XmlNode node = n["Requires"];
+                modids = new string[node.ChildNodes.Count];
+                int i = 0;
+                foreach (XmlNode mid in node)
+                {
+                    if (mid.Name != "Mod")
+                        continue;
+                    modids[i] = mid.InnerText;
+                    i++;
+                }
+            }
+            catch { n.AppendChild(modFile.CreateElement("Requires")); }
+            foreach (Mod m in mods)
+            {
+                if (modids.Contains(m.Identifier))
+                    RequiredMods.Add(m);
+            }
+        }
         internal void SendFileTo(Client c)
         {
             PacketHandler ph = c.PacketHandler;
@@ -273,22 +300,19 @@ namespace ModUpdater.Server
                 sw.WriteLine("</Whitelist>");
                 sw.WriteLine("<Description>{0}</Description>", Description);
                 sw.WriteLine("<Identifier>{0}</Identifier>", Identifier);
+                sw.WriteLine("<Requires>");
+                foreach (Mod m in RequiredMods)
+                {
+                    sw.WriteLine("<Mod>" + m.Identifier + "</Mod");
+                }
+                sw.WriteLine("</Requires>");
                 sw.WriteLine("</Mod>");
                 sw.Close();
             }
         }
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine("Name: " + ModName);
-            sb.AppendLine("Author: " + Author);
-            sb.AppendLine("File Path: " + ModFile);
-            sb.AppendLine("Post Download Actions: ");
-            foreach (string s in PostDownloadCLI)
-            {
-                sb.AppendLine("    " + s);
-            }
-            return sb.ToString();
+            return Identifier + "." + ModName;
         }
 
     }
