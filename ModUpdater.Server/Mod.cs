@@ -56,14 +56,15 @@ namespace ModUpdater.Server
         public string Author { get; internal set; }
         public string ModFile { get; internal set; }
         public string Identifier { get; internal set; }
-        public string[] PostDownloadCLI { get; internal set; }
-        public List<string> WhitelistedUsers { get; internal set; }
-        public List<string> BlacklistedUsers { get; internal set; }
-        public long FileSize { get; internal set; }
         public string Description { get; internal set; }
         public string Hash { get; set; }
         public string ConfigFile { get; internal set; }
+        public string[] PostDownloadCLI { get; internal set; }
+        public long FileSize { get; internal set; }
+        public List<string> WhitelistedUsers { get; internal set; }
+        public List<string> BlacklistedUsers { get; internal set; }
         public List<Mod> RequiredMods { get; internal set; }
+
         private List<List<byte>> FileParts;
         private XmlDocument modFile;
         public Mod()
@@ -178,7 +179,13 @@ namespace ModUpdater.Server
             catch
             {
                 n.AppendChild(modFile.CreateElement("Identifier"));
-                n["Identifier"].InnerText = Extras.GenerateHashFromString(ModName);
+                string unix = Extras.GenerateHashFromString(new UnixTime().ToString());
+                string id = "";
+                for (int i = 0; i < 8; i++)
+                {
+                    id += unix[i];
+                }
+                n["Identifier"].InnerText = "";
             }
             modFile.Save(ConfigFile);
             if (ModFile.Contains("minecraft.jar"))
