@@ -53,10 +53,33 @@ namespace ModUpdater.Client.GUI
         private int curPart = 0;
         private int Parts = 0;
         private double percentage { get { return ((double)curPart / Parts); } }
-        public MainForm()
+        private bool recover;
+        public MainForm(bool recover = false)
         {
             if (Instance == null) Instance = this;
+            this.recover = recover;
             InitializeComponent();
+        }
+
+        private void Recover()
+        {
+            switch (Program.AppStatus)
+            {
+                case AppStatus.Init:
+                    PrepareConnection();
+                    break;
+                case AppStatus.Connecting:
+                    PrepareConnection();
+                    Connect();
+                    break;
+                case AppStatus.Updating:
+                    PrepareConnection();
+                    Connect();
+                    Properties.Settings.Default.AutoUpdate = true;
+                    btnConfirm_Click(null, null);
+                    Properties.Settings.Default.AutoUpdate = false;
+                    break;
+            }
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
@@ -178,6 +201,16 @@ namespace ModUpdater.Client.GUI
                 });
                 OnFirstRun();
             }
+            if (recover)
+            {
+                Recover();
+                return;
+            }
+            PrepareConnection();
+            Connect();
+        }
+        private void PrepareConnection()
+        {
             ConnectionForm cf = new ConnectionForm();
             if (cf.ShowDialog() != System.Windows.Forms.DialogResult.OK)
             {
@@ -195,7 +228,6 @@ namespace ModUpdater.Client.GUI
             Program.AppStatus = AppStatus.Connecting;
             SplashScreen.UpdateStatusText("Connecting...");
             SplashScreen.GetScreen().Progress.PerformStep();
-            Connect();
         }
         private void Connect()
         {
