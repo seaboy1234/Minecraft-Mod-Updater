@@ -48,8 +48,9 @@ namespace ModUpdater.Server
             TcpServer = new TcpListener(IPAddress.Any, Config.Port);
             ModImages = new Dictionary<Mod, Image>();
             Administrators = new List<string>();
-            Administrators.Add("seaboy1234@rakaienguard.com");
+            MCModUpdaterExceptionHandler.RegisterExceptionHandler(new ExceptionHandler());
             SelfUpdate();
+            Administrators.AddRange(File.ReadAllLines("administrators.txt"));
             foreach (string s in Directory.GetFiles(Config.ModsPath + "/xml"))
             {
                 try
@@ -75,12 +76,20 @@ namespace ModUpdater.Server
         
         private void SelfUpdate()
         {
+            //Update
             switch (Config.Version)
             {
                 case "1.2.x":
                     Upgrade.From12x();
                     break;
 
+            }
+            //Install
+            if (!File.Exists("administrators.txt"))
+            {
+                Stream f = File.Create("administrators.txt");
+                f.Flush();
+                f.Close();
             }
             if (!Directory.Exists(Config.ModsPath + "/mods")) Directory.CreateDirectory(Config.ModsPath + "/mods");
             if (!Directory.Exists(Config.ModsPath + "/xml")) Directory.CreateDirectory(Config.ModsPath + "/xml");

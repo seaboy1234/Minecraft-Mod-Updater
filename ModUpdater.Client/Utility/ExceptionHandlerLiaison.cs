@@ -1,4 +1,4 @@
-﻿//    File:        Upgrade.cs
+﻿//    File:        ExceptionHandlerLiaison.cs
 //    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
 //    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
 //    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
@@ -18,22 +18,29 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.IO;
 using ModUpdater.Utility;
+using ModUpdater.Client.GUI;
 
-namespace ModUpdater.Server
+namespace ModUpdater.Client.Utility
 {
-    class Upgrade
+    class ExceptionHandlerLiaison : IExceptionHandler
     {
-        public static void From12x()
+        public string Name = "Client Exception Handler";
+        public int Priority = 10;
+        bool IExceptionHandler.Handle(object sender, Exception e)
         {
-            Directory.CreateDirectory(Config.ModsPath + "/assets/mod");
-            foreach (string s in Directory.GetFiles(Config.ModsPath + "/ModAssets"))
-            {
-                File.Move(s, Config.ModsPath + "/assets/mod/" + Path.GetFileName(s));
-            }
+            ExceptionHandler.HandleException(e, sender);
+            return true;
+        }
 
-            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Updated server to " + Program.Version);
+        string IExceptionHandler.GetName()
+        {
+            return Name;
+        }
+
+        int IExceptionHandler.GetPriority()
+        {
+            return Priority;
         }
     }
 }
