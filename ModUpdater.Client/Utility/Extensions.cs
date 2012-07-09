@@ -1,4 +1,4 @@
-﻿//    File:        ModFile.cs
+﻿//    File:        Extensions.cs
 //    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
 //    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
 //    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
@@ -19,45 +19,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ModUpdater.Client
+namespace ModUpdater.Client.Utility
 {
-    public class ModFile : IDisposable
+    public static class ListExtensions
     {
-        public string Name { get; set; }
-        public string FileName { get; set; }
-        public byte[] FileContents { get; set; }
-
-        protected bool disposed = false;
-
-        public ModFile(string n, string f, long i)
+        public static Mod Find(this List<Mod> mods, string identifier)
         {
-            Name = n;
-            FileName = f;
-            FileContents = new byte[i];
-        }
-        #region Dispose Code
-        ~ModFile()
-        {
-            Dispose(false);
-        }
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposed)
+            foreach (Mod m in mods)
             {
-                if (disposing)
-                {
-                    Name = null;
-                    FileName = null;
-                }
-                FileContents = null;
-                disposed = true;
+                if (m.Idenfifier == identifier)
+                    return m;
             }
+            return null;
         }
-        #endregion
     }
 }

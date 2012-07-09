@@ -163,7 +163,7 @@ namespace ModUpdater.Admin.GUI
                 {
                     if (m.NeedsUpdate)
                     {
-                        Packet.Send(new RequestModPacket { FileName = m.File, Type = RequestModPacket.RequestType.Download }, Connection.PacketHandler.Stream);
+                        Packet.Send(new RequestModPacket { Identifier = m.File, Type = RequestModPacket.RequestType.Download }, Connection.PacketHandler.Stream);
                     }
                     else
                     {
@@ -194,12 +194,11 @@ namespace ModUpdater.Admin.GUI
             NextDownloadPacket p = pa as NextDownloadPacket;
             currentDownload = mods.IndexOf(mods.Find(new Predicate<Mod>(delegate(Mod m)
             {
-                return m.File == p.FileName;
+                return m.Identifier == p.Identifier;
             }))); //I know, get the mod so we can get the index so we can get the mod.
         }
         private void HandleFilePart(Packet pa)
         {
-            return;
             FilePartPacket p = pa as FilePartPacket;
             int i = p.Index;
             foreach (byte b in p.Part)

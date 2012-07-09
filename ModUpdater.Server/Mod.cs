@@ -231,7 +231,7 @@ namespace ModUpdater.Server
         internal void SendFileTo(Client c)
         {
             PacketHandler ph = c.PacketHandler;
-            Packet.Send(new NextDownloadPacket { ModName = ModName, FileName = ModFile, FileSize = FileSize, PostDownloadCLI = PostDownloadCLI, ChunkSize = FileParts.Count }, ph.Stream);
+            Packet.Send(new NextDownloadPacket { Identifier = Identifier, PostDownloadCLI = PostDownloadCLI, ChunkSize = FileParts.Count }, ph.Stream);
             int l = 0;
             for (int h = 0; h < FileParts.Count; h++)
             {

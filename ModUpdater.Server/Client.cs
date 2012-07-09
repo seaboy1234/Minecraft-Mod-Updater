@@ -77,7 +77,7 @@ namespace ModUpdater.Server
             RequestModPacket p = pa as RequestModPacket;
             Mod mod = Server.Mods.Find(new Predicate<Mod>(delegate(Mod m)
             {
-                if (m.ModFile == p.FileName)
+                if (m.ModFile == p.Identifier)
                     return true;
                 return false;
             }));
@@ -102,7 +102,7 @@ namespace ModUpdater.Server
                         }, ph.Stream);
                         return;
                     }
-                    Packet.Send(new ModInfoPacket { Author = mod.Author, File = mod.ModFile, ModName = mod.ModName, Hash = Extras.GenerateHash(Config.ModsPath + "\\" + mod.ModFile), FileSize = mod.FileSize, Description = mod.Description }, ph.Stream);
+                    Packet.Send(new ModInfoPacket { Author = mod.Author, File = mod.ModFile, ModName = mod.ModName, Hash = Extras.GenerateHash(Config.ModsPath + "\\" + mod.ModFile), FileSize = mod.FileSize, Description = mod.Description, Identifier = mod.Identifier }, ph.Stream);
                     break;
                 case RequestModPacket.RequestType.Download:
                     mod.SendFileTo(this);
