@@ -58,7 +58,11 @@ namespace ModUpdater.Client.GUI
                 Invoke(new LogMessage(Logger_LogEvent), level, message);
                 return;
             }
-            if ((int)level >= 0 || ProgramOptions.Debug)
+            bool show = (int)level >= 0 || ProgramOptions.Debug;
+#if DEBUG
+            show = true;
+#endif
+            if (show)
             {
                 try
                 {
