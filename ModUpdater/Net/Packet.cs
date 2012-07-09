@@ -79,8 +79,8 @@ namespace ModUpdater.Net
                 p.Read(Stream);
                 lastRecived = p;
             }
-            catch (MalformedPacketException e) { throw e; }
-            catch (Exception e) { MinecraftModUpdater.Logger.Log(e); }
+            catch (MalformedPacketException e) { throw new MalformedPacketException(e.Message, e); }
+            catch (Exception e) { MCModUpdaterExceptionHandler.HandleException(p, e); }
             return p;
         }
         /// <summary>
@@ -234,14 +234,12 @@ namespace ModUpdater.Net
         public override void Read(ModUpdaterNetworkStream s)
         {
             Index = s.ReadInt();
-            Part = new byte[s.ReadInt()];
             Part = s.ReadBytes();
         }
 
         public override void Write(ModUpdaterNetworkStream s)
         {
             s.WriteInt(Index);
-            s.WriteInt(Part.Length);
             s.WriteBytes(Part);
         }
     }
@@ -321,7 +319,6 @@ namespace ModUpdater.Net
         {
             Identifier = s.ReadString();
             ChunkSize = s.ReadInt();
-            int i = s.ReadInt();
             PostDownloadCLI = s.ReadStrings();
         }
 

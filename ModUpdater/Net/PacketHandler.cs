@@ -95,9 +95,9 @@ namespace ModUpdater.Net
                     }
                 }
             }
-            catch (Exception e)
+            catch (MalformedPacketException e)
             {
-                throw e;
+                MCModUpdaterExceptionHandler.HandleException(this, e);
             }
         }
         /// <summary>
