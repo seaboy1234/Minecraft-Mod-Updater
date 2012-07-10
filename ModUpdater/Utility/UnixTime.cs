@@ -1,4 +1,4 @@
-﻿//    File:        Delegates.cs
+﻿//    File:        UnixTime.cs
 //    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
 //    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
 //    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
@@ -18,16 +18,23 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ModUpdater.Net;
 
 namespace ModUpdater.Utility
 {
-    public delegate void ModUpdaterDelegate<T>(T args);
-    public delegate void ModUpdaterDelegate();
-    public delegate void LogEventDelegate(Logger.Level level, string message);
-    public delegate void Task();
-    public delegate void TaskManagerError(Exception e);
-    public delegate void PacketEvent(Packet p);
-    public delegate void DebugMessage(string message);
+    public class UnixTime
+    {
+        private static readonly DateTime startOfUnixTime = new DateTime(1970, 1, 1, 0, 0, 0);
+        private long unixTime;
 
+        public UnixTime() : this(DateTime.Now) { }
+        public UnixTime(DateTime t)
+        {
+            unixTime = (t - startOfUnixTime).Milliseconds;
+        }
+
+        public override string ToString()
+        {
+            return unixTime.ToString();
+        }
+    }
 }

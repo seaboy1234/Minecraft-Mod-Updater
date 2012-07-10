@@ -26,6 +26,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using ModUpdater.Utility;
+using ModUpdater.Client.Utility;
 
 namespace ModUpdater.Client.GUI
 {
@@ -50,6 +51,7 @@ namespace ModUpdater.Client.GUI
             sb.AppendLine("Minecraft Mod Updater has crashed.");
             sb.AppendLine("Please make an error report about this including everything below the line.");
             sb.AppendLine("If you make an error report about this, I will make sure it gets fixed.");
+            sb.AppendLine("The application will try to recover from this error, if you wish.");
             sb.AppendLine();
             sb.AppendLine("----------------------------------------------------------------");
             sb.AppendLine("Application: " + MinecraftModUpdater.LongAppName);
@@ -82,6 +84,10 @@ namespace ModUpdater.Client.GUI
             TaskManager.ExceptionRaised += new TaskManagerError(TaskManager_ExceptionRaised);
             Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
+            if (!MCModUpdaterExceptionHandler.RegisterExceptionHandler(new ExceptionHandlerLiaison()))
+            {
+                MessageBox.Show("Error");
+            }
         }
 
         static void TaskManager_ExceptionRaised(Exception e)
@@ -134,8 +140,29 @@ namespace ModUpdater.Client.GUI
 
         private void ExceptionHandler_FormClosed(object sender, FormClosedEventArgs e)
         {
-            if(!Locked)
+            if (!Locked)
+            {
+                DialogResult r = MessageBox.Show("Would you like to try and recover from this error?  Some progress might be lost.", "Exception Handler", MessageBoxButtons.YesNo);
+                if (r == System.Windows.Forms.DialogResult.Yes)
+                {
+                    using (StreamWriter sw = new StreamWriter("recoveryinformation.dat"))
+                    {
+                        sw.WriteLine("status=" + Program.AppStatus);
+                        if(Program.AppStatus == Utility.AppStatus.Updating || Program.AppStatus == Utility.AppStatus.Connecting)
+                        {
+                            sw.WriteLine("server.ip=" + MainForm.Instance.Server.Address);
+                            sw.WriteLine("server.port=" + MainForm.Instance.Server.Port);
+                            sw.WriteLine("server.name=" + MainForm.Instance.Server.Name);
+                        }
+                        sw.Flush();
+                        sw.Close();
+                        sw.Dispose();
+                    }
+                    Application.Restart();
+                    return;
+                }
                 Application.Exit();
+            }
         }
 
         private void ExceptionHandler_FormClosing(object sender, FormClosingEventArgs e)

@@ -50,7 +50,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>
@@ -121,6 +121,7 @@
     <Compile Include="GUI\OptionsForm.Designer.cs">
       <DependentUpon>OptionsForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Utility\AppStatus.cs" />
     <Compile Include="Utility\Debug.cs" />
     <Compile Include="GUI\ExceptionHandler.cs">
       <SubType>Form</SubType>
@@ -134,6 +135,8 @@
     <Compile Include="GUI\SelectServerDialog.Designer.cs">
       <DependentUpon>SelectServerDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Utility\ExceptionHandlerLiaison.cs" />
+    <Compile Include="Utility\Extensions.cs" />
     <Compile Include="Utility\Mod.cs" />
     <Compile Include="Utility\Server.cs" />
     <Compile Include="GUI\UpdateForm.cs">
@@ -159,7 +162,6 @@
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Utility\ModFile.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProgramOptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

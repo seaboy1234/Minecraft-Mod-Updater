@@ -52,6 +52,12 @@
     <Compile Include="Controls\ControlDownloadProgress.Designer.cs">
       <DependentUpon>ControlDownloadProgress.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\LoggerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\LoggerForm.Designer.cs">
+      <DependentUpon>LoggerForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Items\Changelog.cs" />
     <Compile Include="Items\Connection.cs" />
     <Compile Include="GUI\ConnectionForm.cs">
@@ -97,6 +103,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\ControlEditMod.resx">
       <DependentUpon>ControlEditMod.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\LoggerForm.resx">
+      <DependentUpon>LoggerForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>

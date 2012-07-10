@@ -38,7 +38,7 @@ namespace ModUpdater.Client.GUI
 
         private void ModInfoForm_Load(object sender, EventArgs e)
         {
-            lblName.Text = mod.ModName;
+            lblName.Text = mod.Name;
             lblAuthor.Text = mod.Author;
             lblFileN.Text = Path.GetFileName(mod.File);
             txtDesc.Text = mod.Description;

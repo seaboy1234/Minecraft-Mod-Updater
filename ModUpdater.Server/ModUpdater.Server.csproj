@@ -74,6 +74,7 @@
   <ItemGroup>
     <Compile Include="Client.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="ExceptionHandler.cs" />
     <Compile Include="Mod.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -84,6 +85,7 @@
     </Compile>
     <Compile Include="Server.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="Upgrade.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ModUpdater\ModUpdater.csproj">

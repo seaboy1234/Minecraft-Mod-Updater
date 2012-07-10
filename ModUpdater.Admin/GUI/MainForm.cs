@@ -156,14 +156,14 @@ namespace ModUpdater.Admin.GUI
                 listBox1.Enabled = false;
                 panel1.Controls.Add(new ControlDownloadProgress());
                 MessageBox.Show(string.Format("{0} mods need to be synced.", count), Text + " - Alert");
-                Connection.PacketHandler.RegisterPacketHandler(PacketId.FilePart, HandleFilePart);
                 Connection.PacketHandler.RegisterPacketHandler(PacketId.NextDownload, HandleDownloadInfo);
+                Connection.PacketHandler.RegisterPacketHandler(PacketId.FilePart, HandleFilePart);
                 Connection.PacketHandler.RegisterPacketHandler(PacketId.AllDone, HandleAllDone);
                 foreach (Mod m in mods)
                 {
                     if (m.NeedsUpdate)
                     {
-                        Packet.Send(new RequestModPacket { FileName = m.File, Type = RequestModPacket.RequestType.Download }, Connection.PacketHandler.Stream);
+                        Packet.Send(new RequestModPacket { Identifier = m.File, Type = RequestModPacket.RequestType.Download }, Connection.PacketHandler.Stream);
                     }
                     else
                     {
@@ -194,7 +194,7 @@ namespace ModUpdater.Admin.GUI
             NextDownloadPacket p = pa as NextDownloadPacket;
             currentDownload = mods.IndexOf(mods.Find(new Predicate<Mod>(delegate(Mod m)
             {
-                return m.File == p.FileName;
+                return m.Identifier == p.Identifier;
             }))); //I know, get the mod so we can get the index so we can get the mod.
         }
         private void HandleFilePart(Packet pa)
@@ -203,10 +203,10 @@ namespace ModUpdater.Admin.GUI
             int i = p.Index;
             foreach (byte b in p.Part)
             {
-                downloaded++;
                 mods[currentDownload].Contents[i] = b;
                 i++;
             }
+            downloaded += p.Part.Length;
         }
         private void listBox1_DoubleClick(object sender, EventArgs e)
         {
@@ -280,7 +280,7 @@ namespace ModUpdater.Admin.GUI
                             byte[] b = bytes[i].ToArray();
                             Packet.Send(new FilePartPacket { Part = b, Index = k }, Connection.PacketHandler.Stream);
                             k += bytes[i].Count;
-                            downloaded = k;
+                            downloaded += bytes[i].Count;
                             Thread.Sleep(25);
                         }
                         Packet.Send(new AllDonePacket { File = m.File }, Connection.PacketHandler.Stream);

@@ -56,13 +56,15 @@ namespace ModUpdater.Server
         public string Author { get; internal set; }
         public string ModFile { get; internal set; }
         public string Identifier { get; internal set; }
-        public string[] PostDownloadCLI { get; internal set; }
-        public List<string> WhitelistedUsers { get; internal set; }
-        public List<string> BlacklistedUsers { get; internal set; }
-        public long FileSize { get; internal set; }
         public string Description { get; internal set; }
         public string Hash { get; set; }
         public string ConfigFile { get; internal set; }
+        public string[] PostDownloadCLI { get; internal set; }
+        public long FileSize { get; internal set; }
+        public List<string> WhitelistedUsers { get; internal set; }
+        public List<string> BlacklistedUsers { get; internal set; }
+        public List<Mod> RequiredMods { get; internal set; }
+
         private List<List<byte>> FileParts;
         private XmlDocument modFile;
         public Mod()
@@ -177,7 +179,13 @@ namespace ModUpdater.Server
             catch
             {
                 n.AppendChild(modFile.CreateElement("Identifier"));
-                n["Identifier"].InnerText = Extras.GenerateHashFromString(ModName);
+                string unix = Extras.GenerateHashFromString(new UnixTime().ToString());
+                string id = "";
+                for (int i = 0; i < 8; i++)
+                {
+                    id += unix[i];
+                }
+                n["Identifier"].InnerText = "";
             }
             modFile.Save(ConfigFile);
             if (ModFile.Contains("minecraft.jar"))
@@ -194,10 +202,36 @@ namespace ModUpdater.Server
             }
             ReadFile();
         }
+        internal void LoadRequiredMods(List<Mod> mods)
+        {
+            RequiredMods = new List<Mod>();
+            string[] modids = new string[256];
+            XmlNodeList nodes = modFile.SelectNodes("/Mod");
+            XmlNode n = nodes[0];
+            try
+            {
+                XmlNode node = n["Requires"];
+                modids = new string[node.ChildNodes.Count];
+                int i = 0;
+                foreach (XmlNode mid in node)
+                {
+                    if (mid.Name != "Mod")
+                        continue;
+                    modids[i] = mid.InnerText;
+                    i++;
+                }
+            }
+            catch { n.AppendChild(modFile.CreateElement("Requires")); }
+            foreach (Mod m in mods)
+            {
+                if (modids.Contains(m.Identifier))
+                    RequiredMods.Add(m);
+            }
+        }
         internal void SendFileTo(Client c)
         {
             PacketHandler ph = c.PacketHandler;
-            Packet.Send(new NextDownloadPacket { ModName = ModName, FileName = ModFile, FileSize = FileSize, PostDownloadCLI = PostDownloadCLI, ChunkSize = FileParts.Count }, ph.Stream);
+            Packet.Send(new NextDownloadPacket { Identifier = Identifier, PostDownloadCLI = PostDownloadCLI, ChunkSize = FileParts.Count }, ph.Stream);
             int l = 0;
             for (int h = 0; h < FileParts.Count; h++)
             {
@@ -210,11 +244,18 @@ namespace ModUpdater.Server
         }
         internal void ReadFile()
         {
-            ReadFile(File.ReadAllBytes(Config.ModsPath + "\\" + ModFile));
+            try
+            {
+                ReadFile(File.ReadAllBytes(Config.ModsPath + "\\" + ModFile));
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine("Unable to read file: {0}", e);
+                throw e;
+            }
         }
         internal void ReadFile(byte[] b)
         {
-            Hash = Extras.GenerateHash(b);
             try
             {
                 byte[] file = b;
@@ -230,6 +271,7 @@ namespace ModUpdater.Server
                     }
                     k++;
                 }
+                Hash = Extras.GenerateHash(b);
             }
             catch (FileNotFoundException e)
             {
@@ -265,22 +307,19 @@ namespace ModUpdater.Server
                 sw.WriteLine("</Whitelist>");
                 sw.WriteLine("<Description>{0}</Description>", Description);
                 sw.WriteLine("<Identifier>{0}</Identifier>", Identifier);
+                sw.WriteLine("<Requires>");
+                foreach (Mod m in RequiredMods)
+                {
+                    sw.WriteLine("<Mod>" + m.Identifier + "</Mod");
+                }
+                sw.WriteLine("</Requires>");
                 sw.WriteLine("</Mod>");
                 sw.Close();
             }
         }
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine("Name: " + ModName);
-            sb.AppendLine("Author: " + Author);
-            sb.AppendLine("File Path: " + ModFile);
-            sb.AppendLine("Post Download Actions: ");
-            foreach (string s in PostDownloadCLI)
-            {
-                sb.AppendLine("    " + s);
-            }
-            return sb.ToString();
+            return Identifier + "." + ModName;
         }
 
     }

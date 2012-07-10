@@ -52,6 +52,7 @@
     <Compile Include="Net\ConnectionHandler.cs" />
     <Compile Include="Net\DataType.cs" />
     <Compile Include="Net\MalformedPacketException.cs" />
+    <Compile Include="Utility\MCModUpdaterExceptionHandler.cs" />
     <Compile Include="Utility\Extras.cs" />
     <Compile Include="Utility\Logger.cs" />
     <Compile Include="ModUpdater.cs" />
@@ -63,6 +64,7 @@
     <Compile Include="Utility\Delegates.cs" />
     <Compile Include="Utility\TaskManager.cs" />
     <Compile Include="Utility\TaskThread.cs" />
+    <Compile Include="Utility\UnixTime.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

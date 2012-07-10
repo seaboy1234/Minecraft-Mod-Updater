@@ -1,4 +1,4 @@
-﻿//    File:        ModFile.cs
+﻿//    File:        Upgrade.cs
 //    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
 //    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
 //    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
@@ -18,46 +18,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
+using ModUpdater.Utility;
 
-namespace ModUpdater.Client
+namespace ModUpdater.Server
 {
-    public class ModFile : IDisposable
+    class Upgrade
     {
-        public string Name { get; set; }
-        public string FileName { get; set; }
-        public byte[] FileContents { get; set; }
-
-        protected bool disposed = false;
-
-        public ModFile(string n, string f, long i)
+        public static void From12x()
         {
-            Name = n;
-            FileName = f;
-            FileContents = new byte[i];
-        }
-        #region Dispose Code
-        ~ModFile()
-        {
-            Dispose(false);
-        }
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposed)
+            Directory.CreateDirectory(Config.ModsPath + "/assets/mod");
+            foreach (string s in Directory.GetFiles(Config.ModsPath + "/ModAssets"))
             {
-                if (disposing)
-                {
-                    Name = null;
-                    FileName = null;
-                }
-                FileContents = null;
-                disposed = true;
+                File.Move(s, Config.ModsPath + "/assets/mod/" + Path.GetFileName(s));
             }
+
+            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Updated server to " + Program.Version);
         }
-        #endregion
     }
 }

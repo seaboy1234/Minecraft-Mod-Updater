@@ -48,11 +48,16 @@ namespace ModUpdater.Server
             TcpServer = new TcpListener(IPAddress.Any, Config.Port);
             ModImages = new Dictionary<Mod, Image>();
             Administrators = new List<string>();
-            Administrators.Add("seaboy1234@rakaienguard.com");
+            MCModUpdaterExceptionHandler.RegisterExceptionHandler(new ExceptionHandler());
             SelfUpdate();
+            Administrators.AddRange(File.ReadAllLines("administrators.txt"));
             foreach (string s in Directory.GetFiles(Config.ModsPath + "/xml"))
             {
-                Mods.Add(new Mod(s));
+                try
+                {
+                    Mods.Add(new Mod(s));
+                }
+                catch { } //This error is handled at a lower level.
             }
             foreach (Mod m in Mods)
             {
@@ -71,16 +76,20 @@ namespace ModUpdater.Server
         
         private void SelfUpdate()
         {
-            if (Config.ModsPath != ".")
+            //Update
+            switch (Config.Version)
             {
-                try
-                {
-                    if (!Directory.Exists(Config.ModsPath)) Directory.CreateDirectory(Config.ModsPath);
-                    if (Directory.Exists("mods")) Directory.Move("mods", Config.ModsPath + "/mods");
-                    if (Directory.Exists("xml")) Directory.Move("xml", Config.ModsPath + "/xml");
-                    if (Directory.Exists("ModAssets")) Directory.Move("ModAssets", Config.ModsPath + "/ModAssets");
-                }
-                catch { }
+                case "1.2.x":
+                    Upgrade.From12x();
+                    break;
+
+            }
+            //Install
+            if (!File.Exists("administrators.txt"))
+            {
+                Stream f = File.Create("administrators.txt");
+                f.Flush();
+                f.Close();
             }
             if (!Directory.Exists(Config.ModsPath + "/mods")) Directory.CreateDirectory(Config.ModsPath + "/mods");
             if (!Directory.Exists(Config.ModsPath + "/xml")) Directory.CreateDirectory(Config.ModsPath + "/xml");

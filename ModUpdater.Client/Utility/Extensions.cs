@@ -1,4 +1,4 @@
-﻿//    File:        Delegates.cs
+﻿//    File:        Extensions.cs
 //    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
 //    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
 //    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
@@ -18,16 +18,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ModUpdater.Net;
 
-namespace ModUpdater.Utility
+namespace ModUpdater.Client.Utility
 {
-    public delegate void ModUpdaterDelegate<T>(T args);
-    public delegate void ModUpdaterDelegate();
-    public delegate void LogEventDelegate(Logger.Level level, string message);
-    public delegate void Task();
-    public delegate void TaskManagerError(Exception e);
-    public delegate void PacketEvent(Packet p);
-    public delegate void DebugMessage(string message);
-
+    public static class ListExtensions
+    {
+        public static Mod Find(this List<Mod> mods, string identifier)
+        {
+            foreach (Mod m in mods)
+            {
+                if (m.Idenfifier == identifier)
+                    return m;
+            }
+            return null;
+        }
+    }
 }

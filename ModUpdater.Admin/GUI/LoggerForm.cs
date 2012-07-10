@@ -1,4 +1,4 @@
-﻿//    File:        CommandPromptForm.cs
+﻿//    File:        LoggerForm.cs
 //    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
 //    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
 //    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
@@ -24,62 +24,43 @@ using System.Text;
 using System.Windows.Forms;
 using ModUpdater.Utility;
 
-namespace ModUpdater.Client.GUI
+namespace ModUpdater.Admin.GUI
 {
-    public partial class CommandPromptForm : Form
+    public partial class LoggerForm : Form
     {
-        private delegate void LogMessage(Logger.Level level, string message);
-        public CommandPromptForm()
+        public LoggerForm()
         {
             InitializeComponent();
         }
 
-        internal static void Open()
+        private void LoggerForm_Resize(object sender, EventArgs e)
         {
-            TaskManager.AddAsyncTask(delegate
-            {
-                new CommandPromptForm().ShowDialog();
-            });
+            textBox1.Size = this.ClientSize;
         }
 
-        private void CommandPromptForm_Load(object sender, EventArgs e)
+        private void LoggerForm_Load(object sender, EventArgs e)
         {
-            foreach(string s in MinecraftModUpdater.Logger.GetMessages())
-            {
-                textBox1.AppendText(s + Environment.NewLine);
-            }
+            textBox1.Size = this.ClientSize;
             MinecraftModUpdater.Logger.LogEvent += new LogEventDelegate(Logger_LogEvent);
         }
 
         void Logger_LogEvent(Logger.Level level, string message)
         {
+            if (IsDisposed) return;
             if (InvokeRequired)
             {
-                Invoke(new LogMessage(Logger_LogEvent), level, message);
+                Invoke(new LogEventDelegate(Logger_LogEvent), level, message);
                 return;
             }
-            bool show = (int)level >= 0 || ProgramOptions.Debug;
-#if DEBUG
-            show = true;
-#endif
-            if (show)
+            if ((int)level >= 0)
             {
                 try
                 {
                     textBox1.AppendText(string.Format("[{0}] {1}{2}", level, message, Environment.NewLine));
                 }
                 catch (InvalidOperationException) { }
-                catch (Exception e) { ExceptionHandler.HandleException(e, this); }
+                catch (Exception e) { Program.HandleException(e); }
             }
-        }
-        private void CommandPromptForm_Resize(object sender, EventArgs e)
-        {
-            textBox1.Size = new Size(Size.Width - 15, Size.Height - 36);
-        }
-
-        private void CommandPromptForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            MinecraftModUpdater.Logger.LogEvent -= new LogEventDelegate(Logger_LogEvent);
         }
     }
 }

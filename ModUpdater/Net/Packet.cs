@@ -57,6 +57,7 @@ namespace ModUpdater.Net
         {
             Type Packet = null;
             Packet p = null;
+            if (Stream.Disposed) return null;
             try
             {
                 PacketId id = (PacketId)Stream.ReadNetworkByte();
@@ -78,8 +79,8 @@ namespace ModUpdater.Net
                 p.Read(Stream);
                 lastRecived = p;
             }
-            catch (MalformedPacketException e) { throw e; }
-            catch (Exception e) { MinecraftModUpdater.Logger.Log(e); }
+            catch (MalformedPacketException e) { throw new MalformedPacketException(e.Message, e); }
+            catch (Exception e) { MCModUpdaterExceptionHandler.HandleException(p, e); }
             return p;
         }
         /// <summary>
@@ -89,6 +90,7 @@ namespace ModUpdater.Net
         /// <param name="Stream">The stream to send it on.</param>
         public static void Send(Packet p, ModUpdaterNetworkStream Stream)
         {
+            if (Stream.Disposed) return;
             while (busy) ;
             busy = true;
             try
@@ -203,18 +205,19 @@ namespace ModUpdater.Net
     }
     public class RequestModPacket : Packet
     {
-        public string FileName { get; set; }
+        public string Identifier { get; set; }
         public RequestType Type { get; set; }
+
         public override void Read(ModUpdaterNetworkStream s)
         {
             Type = (RequestType)s.ReadNetworkByte();
-            FileName = s.ReadString();
+            Identifier = s.ReadString();
         }
 
         public override void Write(ModUpdaterNetworkStream s)
         {
             s.WriteNetworkByte((byte)Type);
-            s.WriteString(FileName);
+            s.WriteString(Identifier);
         }
         public enum RequestType : byte
         {
@@ -227,17 +230,16 @@ namespace ModUpdater.Net
     {
         public int Index { get; set; }
         public byte[] Part { get; set; }
+
         public override void Read(ModUpdaterNetworkStream s)
         {
             Index = s.ReadInt();
-            Part = new byte[s.ReadInt()];
             Part = s.ReadBytes();
         }
 
         public override void Write(ModUpdaterNetworkStream s)
         {
             s.WriteInt(Index);
-            s.WriteInt(Part.Length);
             s.WriteBytes(Part);
         }
     }
@@ -249,6 +251,8 @@ namespace ModUpdater.Net
         public string Hash { get; set; }
         public long FileSize { get; set; }
         public string Description { get; set; }
+        public string Identifier { get; set; }
+
         public override void Read(ModUpdaterNetworkStream s)
         {
             Author = s.ReadString();
@@ -257,6 +261,7 @@ namespace ModUpdater.Net
             Hash = s.ReadString();
             FileSize = s.ReadLong();
             Description = s.ReadString();
+            Identifier = s.ReadString();
         }
 
         public override void Write(ModUpdaterNetworkStream s)
@@ -267,6 +272,7 @@ namespace ModUpdater.Net
             s.WriteString(Hash);
             s.WriteLong(FileSize);
             s.WriteString(Description);
+            s.WriteString(Identifier);
         }
     }
     public class ModListPacket : Packet
@@ -288,6 +294,7 @@ namespace ModUpdater.Net
         public bool Encrypt { get; set; }
         public byte[] EncryptionKey { get; set; }
         public byte[] EncryptionIV { get; set; }
+
         public override void Read(ModUpdaterNetworkStream s)
         {
             Encrypt = s.ReadBoolean();
@@ -304,27 +311,20 @@ namespace ModUpdater.Net
     }
     public class NextDownloadPacket : Packet
     {
-        public string ModName { get; set; }
-        public string FileName { get; set; }
-        public long FileSize { get; set; }
+        public string Identifier { get; set; }
         public int ChunkSize { get; set; }
         public string[] PostDownloadCLI { get; set; }
         
         public override void Read(ModUpdaterNetworkStream s)
         {
-            ModName = s.ReadString();
-            FileName = s.ReadString();
-            FileSize = s.ReadLong();
+            Identifier = s.ReadString();
             ChunkSize = s.ReadInt();
-            int i = s.ReadInt();
             PostDownloadCLI = s.ReadStrings();
         }
 
         public override void Write(ModUpdaterNetworkStream s)
         {
-            s.WriteString(ModName);
-            s.WriteString(FileName);
-            s.WriteLong(FileSize);
+            s.WriteString(Identifier);
             s.WriteInt(ChunkSize);
             s.WriteStrings(PostDownloadCLI);
         }
@@ -348,6 +348,7 @@ namespace ModUpdater.Net
         public int[] IData { get; set; }
         public float[] FData { get; set; }
         public bool[] BData { get; set; }
+
         public override void Read(ModUpdaterNetworkStream s)
         {
             int i = s.ReadInt();
@@ -431,6 +432,7 @@ namespace ModUpdater.Net
     public class LogPacket : Packet
     {
         public string[] LogMessages { get; set; }
+
         public override void Read(ModUpdaterNetworkStream s)
         {
             int l = s.ReadInt();
@@ -471,6 +473,7 @@ namespace ModUpdater.Net
         public ImageType Type { get; set; }
         public string ShowOn { get; set; }
         public byte[] Image { get; set; }
+
         public override void Read(ModUpdaterNetworkStream s)
         {
             Type = (ImageType)((byte)s.ReadNetworkByte()); //Stupid ReadNetworkByte().  It's in NetworkStream and thus pretty much out of my control.
@@ -495,6 +498,7 @@ namespace ModUpdater.Net
         public string[] Servers { get; set; }
         public string[] Locations { get; set; }
         public int[] Ports { get; set; }
+
         public override void Read(ModUpdaterNetworkStream s)
         {
             int i = s.ReadInt();
@@ -527,8 +531,6 @@ namespace ModUpdater.Net
         public string[] BlacklistedUsers { get; set; }
         public string[] WhitelistedUsers { get; set; }
         public string[] PostDownload { get; set; }
-        public string Identifier { get; set; }
-
 
         public override void Read(ModUpdaterNetworkStream s)
         {
@@ -536,7 +538,6 @@ namespace ModUpdater.Net
             BlacklistedUsers = s.ReadStrings();
             WhitelistedUsers = s.ReadStrings();
             PostDownload = s.ReadStrings();
-            Identifier = s.ReadString();
         }
 
         public override void Write(ModUpdaterNetworkStream s)
@@ -545,7 +546,6 @@ namespace ModUpdater.Net
             s.WriteStrings(BlacklistedUsers);
             s.WriteStrings(WhitelistedUsers);
             s.WriteStrings(PostDownload);
-            s.WriteString(Identifier);
         }
 
     }
@@ -554,6 +554,7 @@ namespace ModUpdater.Net
         public string Identifier { get; set; }
         public long Size { get; set; }
         public int Parts { get; set; }
+
         public override void Read(ModUpdaterNetworkStream s)
         {
             Identifier = s.ReadString();

@@ -53,6 +53,7 @@ namespace ModUpdater.Client.GUI
                 Properties.Settings.Default.Server = ConnectTo.Address;
             }
             Properties.Settings.Default.Save();
+            MainForm.Instance.Server = ConnectTo;
             DialogResult = System.Windows.Forms.DialogResult.OK;
             Close();
         }
@@ -78,7 +79,7 @@ namespace ModUpdater.Client.GUI
             if (!(p is ServerListPacket)) //But just in case...
             {
                 Packet.Send(new DisconnectPacket(), str);
-                ConnectTo = new Server { Address = txtServer.Text, Port = int.Parse(tempPortTxt.Text) };
+                ConnectTo = new Server { Address = txtServer.Text, Port = int.Parse(tempPortTxt.Text), Name = "Not Yet Defined." };
                 str.Close();
                 s.Disconnect(false);
                 return true;

@@ -21,17 +21,50 @@ using System.Text;
 
 namespace ModUpdater.Client.Utility
 {
-    public struct Mod
+    public class Mod
     {
-        public string ModName;
-        public string Author;
-        public string File;
-        public string Hash;
-        public long Size;
-        public string Description;
+        public string Name { get; set; }
+        public string Author { get; set; }
+        public string File { get; set; }
+        public string Hash { get; set; }
+        public long Size { get; set; }
+        public string Description { get; set; }
+        public byte[] Contents { get; set; }
+        public string Idenfifier { get; set; }
+
+        protected bool disposed = false;
+
         public override string ToString()
         {
-            return ModName;
+            return Name;
         }
+        #region Dispose Code
+        ~Mod()
+        {
+            Dispose(false);
+        }
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    Name = null;
+                    Author = null;
+                    Hash = null;
+                    Description = null;
+                    File = null;
+                }
+                Contents = null;
+                disposed = true;
+            }
+        }
+        #endregion
+        
     }
 }

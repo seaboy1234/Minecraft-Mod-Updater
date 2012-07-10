@@ -28,12 +28,14 @@ using System.Threading;
 using ModUpdater.Client.GUI;
 using ModUpdater.Client.Game;
 using Ionic.Zip;
+using ModUpdater.Client.Utility;
 
 namespace ModUpdater.Client
 {
     static class Program
     {
         public const string Version = "1.3.0_dev";
+        public static AppStatus AppStatus;
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -61,6 +63,7 @@ namespace ModUpdater.Client
                 }
             }
             ExceptionHandler.Init();
+            AppStatus = Utility.AppStatus.Init;
             WindowsPrincipal pricipal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
             ProgramOptions.Administrator = pricipal.IsInRole(WindowsBuiltInRole.Administrator);
             Application.EnableVisualStyles();

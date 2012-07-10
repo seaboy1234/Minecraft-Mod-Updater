@@ -90,7 +90,7 @@ namespace ModUpdater.Utility
             {
                 MinecraftModUpdater.Logger.Log(Logger.Level.Error, "Error on task " + tid.ToString());
                 MinecraftModUpdater.Logger.Log(e);
-                ExceptionRaised.Invoke(e);
+                MCModUpdaterExceptionHandler.HandleException(t, e);
             }
             finally
             {

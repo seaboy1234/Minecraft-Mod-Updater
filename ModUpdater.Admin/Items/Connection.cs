@@ -100,7 +100,7 @@ namespace ModUpdater.Admin.Items
             Thread.Sleep(250);
             foreach (string s in p.Mods)
             {
-                Packet.Send(new RequestModPacket { Type = RequestModPacket.RequestType.Info, FileName = s }, PacketHandler.Stream);
+                Packet.Send(new RequestModPacket { Type = RequestModPacket.RequestType.Info, Identifier = s }, PacketHandler.Stream);
             }
         }
         private void AdminFileInfoPacketHandler(Packet pa)
