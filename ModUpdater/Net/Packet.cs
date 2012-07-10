@@ -65,7 +65,7 @@ namespace ModUpdater.Net
                 {
                      id = (PacketId)Stream.ReadNetworkByte();
                 }
-                catch (MalformedPacketException e) { return null; }
+                catch (MalformedPacketException) { return null; }
                 if (!Map.ContainsValue(id))
                 {
                     Stream.Flush();
@@ -257,6 +257,8 @@ namespace ModUpdater.Net
         public long FileSize { get; set; }
         public string Description { get; set; }
         public string Identifier { get; set; }
+        public bool Optional { get; set; }
+        public string[] Requires { get; set; }
 
         public override void Read(ModUpdaterNetworkStream s)
         {
@@ -267,6 +269,8 @@ namespace ModUpdater.Net
             FileSize = s.ReadLong();
             Description = s.ReadString();
             Identifier = s.ReadString();
+            Optional = s.ReadBoolean();
+            Requires = s.ReadStrings();
         }
 
         public override void Write(ModUpdaterNetworkStream s)
@@ -278,6 +282,8 @@ namespace ModUpdater.Net
             s.WriteLong(FileSize);
             s.WriteString(Description);
             s.WriteString(Identifier);
+            s.WriteBoolean(Optional);
+            s.WriteStrings(Requires);
         }
     }
     public class ModListPacket : Packet
