@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace ModUpdater.Utility
 {
@@ -27,6 +28,11 @@ namespace ModUpdater.Utility
     {
         private static Dictionary<IExceptionHandler, Type[]> _handlers = new Dictionary<IExceptionHandler, Type[]>();
         private static int maxPriority = 0;
+
+        static MCModUpdaterExceptionHandler()
+        {
+            RegisterExceptionHandler(new BasicExceptionHandler());
+        }
         /// <summary>
         /// Registers an exception handler to handle exceptions.
         /// </summary>
@@ -66,6 +72,7 @@ namespace ModUpdater.Utility
         public static void HandleException(object sender, Exception e)
         {
             bool handled = false;
+            ExceptionObject o = new ExceptionObject(sender, handled, e);
             List<IExceptionHandler> handledBy = new List<IExceptionHandler>();
             for (int i = 0; i > maxPriority; i++)
             {
@@ -75,7 +82,8 @@ namespace ModUpdater.Utility
                     {
                         if (exch.Key.GetPriority() == i)
                         {
-                            bool h = exch.Key.Handle(sender, e);
+                            bool h = exch.Key.Handle(o);
+                            o.Handled = h;
                             if(!handled)handled = h;
                             if(h)
                             {
@@ -117,7 +125,45 @@ namespace ModUpdater.Utility
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        bool Handle(object sender, Exception e);
+        bool Handle(ExceptionObject e);
     }
+    /// <summary>
+    /// An object that holds data from an exception.
+    /// </summary>
+    public class ExceptionObject
+    {
+        public object Sender { get; private set; }
+        public bool Handled { get; internal set; }
+        public Exception Exception { get; private set; }
 
+        public ExceptionObject(object sender, bool handled, Exception e)
+        {
+            Sender = sender;
+            Handled = handled;
+            Exception = e;
+        }
+    }
+    
+    class BasicExceptionHandler : IExceptionHandler
+    {
+
+        string IExceptionHandler.GetName()
+        {
+            return "Basic Exception Handler";
+        }
+
+        int IExceptionHandler.GetPriority()
+        {
+            return 100; //This is the last chance to save the program.
+        }
+
+        bool IExceptionHandler.Handle(ExceptionObject e)
+        {
+            if (!e.Handled)
+            {
+                MessageBox.Show(e.Exception.ToString(), "Unhandled Exception");
+            }
+            return false; // We did NOT handle the exception.  Thus, we won't pretend we did.
+        }
+    }
 }
