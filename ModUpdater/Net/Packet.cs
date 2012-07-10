@@ -60,7 +60,12 @@ namespace ModUpdater.Net
             if (Stream.Disposed) return null;
             try
             {
-                PacketId id = (PacketId)Stream.ReadNetworkByte();
+                PacketId id = PacketId.Disconnect;
+                try
+                {
+                     id = (PacketId)Stream.ReadNetworkByte();
+                }
+                catch (MalformedPacketException e) { return null; }
                 if (!Map.ContainsValue(id))
                 {
                     Stream.Flush();
