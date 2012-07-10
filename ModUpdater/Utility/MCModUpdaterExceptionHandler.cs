@@ -67,7 +67,7 @@ namespace ModUpdater.Utility
         {
             bool handled = false;
             List<IExceptionHandler> handledBy = new List<IExceptionHandler>();
-            for (int i = maxPriority; i > -1; i--)
+            for (int i = 0; i > maxPriority; i++)
             {
                 foreach (var exch in _handlers.ToArray())
                 {
@@ -119,4 +119,5 @@ namespace ModUpdater.Utility
         /// <returns></returns>
         bool Handle(object sender, Exception e);
     }
+
 }
