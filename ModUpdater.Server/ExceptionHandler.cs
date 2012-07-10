@@ -34,9 +34,9 @@ namespace ModUpdater.Server
             return 0;
         }
 
-        bool IExceptionHandler.Handle(object sender, Exception e)
+        bool IExceptionHandler.Handle(ExceptionObject e)
         {
-            MinecraftModUpdater.Logger.Log(e);
+            MinecraftModUpdater.Logger.Log(e.Exception);
             return true;
         }
     }

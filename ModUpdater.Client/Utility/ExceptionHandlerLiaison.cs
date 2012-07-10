@@ -27,9 +27,9 @@ namespace ModUpdater.Client.Utility
     {
         public string Name = "Client Exception Handler";
         public int Priority = 10;
-        bool IExceptionHandler.Handle(object sender, Exception e)
+        bool IExceptionHandler.Handle(ExceptionObject e)
         {
-            ExceptionHandler.HandleException(e, sender);
+            ExceptionHandler.HandleException(e.Exception, e.Sender);
             return true;
         }
 
