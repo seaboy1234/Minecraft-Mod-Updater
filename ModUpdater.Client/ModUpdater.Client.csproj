@@ -121,6 +121,12 @@
     <Compile Include="GUI\OptionsForm.Designer.cs">
       <DependentUpon>OptionsForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\SelectModsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\SelectModsForm.Designer.cs">
+      <DependentUpon>SelectModsForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Utility\AppStatus.cs" />
     <Compile Include="Utility\Debug.cs" />
     <Compile Include="GUI\ExceptionHandler.cs">
@@ -186,6 +192,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\OptionsForm.resx">
       <DependentUpon>OptionsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\SelectModsForm.resx">
+      <DependentUpon>SelectModsForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\SelectServerDialog.resx">
       <DependentUpon>SelectServerDialog.cs</DependentUpon>
