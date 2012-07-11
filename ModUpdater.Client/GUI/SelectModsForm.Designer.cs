@@ -1,4 +1,4 @@
-﻿namespace ModUpdater.GUI
+﻿namespace ModUpdater.Client.GUI
 {
     partial class SelectModsForm
     {

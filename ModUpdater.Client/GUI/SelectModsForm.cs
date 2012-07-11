@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace ModUpdater.GUI
+namespace ModUpdater.Client.GUI
 {
     public partial class SelectModsForm : Form
     {
