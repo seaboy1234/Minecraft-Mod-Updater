@@ -544,16 +544,10 @@ namespace ModUpdater.Client.GUI
             }
             if (!exists || s != m.Hash)
             {
-                if (m.File.Contains("bin") && s == m.Hash)
-                    Invoke(new Void(delegate
-                    {
-                        lsMods.Items.Add(m);
-                    }));
-                else
-                    Invoke(new Void(delegate
-                    {
-                        lsModsToUpdate.Items.Add(m);
-                    }));
+                Invoke(new Void(delegate
+                {
+                    lsModsToUpdate.Items.Add(m);
+                }));
             }
             else
             {
@@ -573,6 +567,10 @@ namespace ModUpdater.Client.GUI
             }
             else if (str == m.File)
             {
+                foreach (Mod mod in Mods)
+                {
+                    mod.BuildRequiredByList(Mods);
+                }
                 Invoke(new Void(delegate
                 {
                     SplashScreen.CloseSplashScreen();

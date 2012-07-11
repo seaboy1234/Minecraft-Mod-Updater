@@ -33,8 +33,19 @@ namespace ModUpdater.Client.Utility
         public string Identifier { get; set; }
         public bool Optional { get; set; }
         public List<string> Requires { get; set; }
+        public List<Mod> RequiredBy { get; set; }
         protected bool disposed = false;
 
+        public void BuildRequiredByList(List<Mod> lsm)
+        {
+            foreach (Mod m in lsm.ToArray())
+            {
+                if (m.Requires.Contains(Identifier))
+                {
+                    m.RequiredBy.Add(m);
+                }
+            }
+        }
         public override string ToString()
         {
             return Name;
