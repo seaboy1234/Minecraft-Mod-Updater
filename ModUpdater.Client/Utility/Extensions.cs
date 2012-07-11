@@ -27,7 +27,7 @@ namespace ModUpdater.Client.Utility
         {
             foreach (Mod m in mods)
             {
-                if (m.Idenfifier == identifier)
+                if (m.Identifier == identifier)
                     return m;
             }
             return null;

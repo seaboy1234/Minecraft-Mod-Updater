@@ -30,8 +30,9 @@ namespace ModUpdater.Client.Utility
         public long Size { get; set; }
         public string Description { get; set; }
         public byte[] Contents { get; set; }
-        public string Idenfifier { get; set; }
-
+        public string Identifier { get; set; }
+        public bool Optional { get; set; }
+        public List<string> Requires { get; set; }
         protected bool disposed = false;
 
         public override string ToString()

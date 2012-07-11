@@ -529,7 +529,7 @@ namespace ModUpdater.Client.GUI
         void ph_ModInfo(Packet pa)
         {
             ModInfoPacket p = pa as ModInfoPacket;
-            Mod m = new Mod { Author = p.Author, File = p.File, Name = p.ModName, Hash = p.Hash, Size = p.FileSize, Description = p.Description, Idenfifier = p.Identifier };
+            Mod m = new Mod { Author = p.Author, File = p.File, Name = p.ModName, Hash = p.Hash, Size = p.FileSize, Description = p.Description, Identifier = p.Identifier };
             Mods.Add(m);
             string path = Path.GetDirectoryName(Properties.Settings.Default.MinecraftPath + "\\" + p.File);
             string s = "";
