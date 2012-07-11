@@ -65,6 +65,7 @@ namespace ModUpdater.Server
                 {
                     ModImages.Add(m, Image.FromFile(Config.ModsPath + "/ModAssets/" + Path.GetFileName(m.ModFile) + ".png"));
                 }
+                m.LoadRequiredMods(Mods);
             }
             if (File.Exists(Config.ModsPath + "/assets/server_background.png"))
             {
