@@ -1,1 +1,1 @@
-core=1.2.2_2\client=1.2.2_5\server=1.2.2_2\master=1.2.2_1
+core=1.2.2_2\client=1.2.2_6\server=1.2.2_2\master=1.2.2_1
