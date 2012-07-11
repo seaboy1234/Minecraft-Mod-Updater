@@ -258,13 +258,8 @@ namespace ModUpdater.Client.GUI
         private void OnFirstRun()
         {
             Properties.Settings.Default.MinecraftPath = Environment.CurrentDirectory + "/Minecraft";
-            while (SplashScreen.GetScreen() == null) ;
-            while (SplashScreen.GetScreen().Opacity != 1.0) ;
-            SplashScreen.UpdateStatusText("Welcome to " + MinecraftModUpdater.ShortAppName + " Version " + MinecraftModUpdater.Version + ".");
             OptionsForm of = new OptionsForm();
-            Thread.Sleep(2000);
             of.ShowDialog();
-            SplashScreen.CloseSplashScreen();
         }
 
         void ph_Image(Packet pa)
@@ -341,7 +336,7 @@ namespace ModUpdater.Client.GUI
             TaskManager.AddAsyncTask(delegate
             {
                 string path = Properties.Settings.Default.MinecraftPath + "\\" + p.File.Replace(p.File.Split('\\').Last(), "").TrimEnd('\\');
-                File.WriteAllBytes(path + "\\" + p.File, CurrentDownload.FileContents);
+                File.WriteAllBytes(path + "\\" + Path.GetFileName(p.File), CurrentDownload.FileContents);
                 MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Downloaded " + path + "\\" + p.File);
             });
             foreach (string s in PostDownload)
