@@ -43,6 +43,7 @@ namespace ModUpdater.Client.GUI
         private Socket socket;
         private List<string> ModFiles = new List<string>();
         private List<Mod> Mods = new List<Mod>();
+        private List<Mod> OptionalMods = new List<Mod>();
         private string[] PostDownload;
         private bool ServerShutdown = false;
         private string serverName = "";
@@ -542,14 +543,14 @@ namespace ModUpdater.Client.GUI
                 }
                 catch (Exception e) { MinecraftModUpdater.Logger.Log(e); }
             }
-            if (!exists || s != m.Hash)
+            if ((!exists && !m.Optional) || s != m.Hash)
             {
                 Invoke(new Void(delegate
                 {
                     lsModsToUpdate.Items.Add(m);
                 }));
             }
-            else
+            else if (!m.Optional)
             {
                 Invoke(new Void(delegate
                 {

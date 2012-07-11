@@ -17,6 +17,8 @@ namespace ModUpdater.Client.GUI
         public SelectModsForm()
         {
             InitializeComponent();
+            selected = new List<Mod>();
+            unselected = new List<Mod>();
         }
 
         private void btnSelect_Click(object sender, EventArgs e)
