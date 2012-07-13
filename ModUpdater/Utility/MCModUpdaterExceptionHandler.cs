@@ -74,7 +74,7 @@ namespace ModUpdater.Utility
             bool handled = false;
             ExceptionObject o = new ExceptionObject(sender, handled, e);
             List<IExceptionHandler> handledBy = new List<IExceptionHandler>();
-            for (int i = 0; i > maxPriority; i++)
+            for (int i = 0; i < maxPriority; i++)
             {
                 foreach (var exch in _handlers.ToArray())
                 {
@@ -83,11 +83,11 @@ namespace ModUpdater.Utility
                         if (exch.Key.GetPriority() == i)
                         {
                             bool h = exch.Key.Handle(o);
-                            o.Handled = h;
                             if(!handled)handled = h;
                             if(h)
                             {
                                 handledBy.Add(exch.Key);
+                                o.Handled = h;
                             }
                         }
                     }
