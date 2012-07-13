@@ -85,6 +85,11 @@ namespace ModUpdater.Server
             switch (p.Type)
             {
                 case RequestModPacket.RequestType.Info:
+                    string[] requiredMods = new string[mod.RequiredMods.Count];
+                    for(int i = 0; i < requiredMods.Length; i++)
+                    {
+                        requiredMods[i] = mod.RequiredMods[i].Identifier;
+                    }
                     if (Admin)
                     {
                         Packet.Send(new AdminFileInfoPacket 
@@ -102,7 +107,7 @@ namespace ModUpdater.Server
                         }, ph.Stream);
                         return;
                     }
-                    Packet.Send(new ModInfoPacket { Author = mod.Author, File = mod.ModFile, ModName = mod.ModName, Hash = Extras.GenerateHash(Config.ModsPath + "\\" + mod.ModFile), FileSize = mod.FileSize, Description = mod.Description, Identifier = mod.Identifier }, ph.Stream);
+                    Packet.Send(new ModInfoPacket { Author = mod.Author, File = mod.ModFile, ModName = mod.ModName, Hash = Extras.GenerateHash(Config.ModsPath + "\\" + mod.ModFile), FileSize = mod.FileSize, Description = mod.Description, Identifier = mod.Identifier, Optional = mod.Optional, Requires = requiredMods }, ph.Stream);
                     break;
                 case RequestModPacket.RequestType.Download:
                     mod.SendFileTo(this);

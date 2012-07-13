@@ -60,6 +60,7 @@ namespace ModUpdater.Server
         public string Hash { get; set; }
         public string ConfigFile { get; internal set; }
         public string[] PostDownloadCLI { get; internal set; }
+        public bool Optional { get; internal set; }
         public long FileSize { get; internal set; }
         public List<string> WhitelistedUsers { get; internal set; }
         public List<string> BlacklistedUsers { get; internal set; }
@@ -116,13 +117,9 @@ namespace ModUpdater.Server
             catch { n.AppendChild(modFile.CreateElement("File")); }
             try
             {
-                XmlNode cfg = n["ConfigFiles"];
-                if (n["ConfigFiles"] != null)
-                {
-                    n.RemoveChild(cfg);
-                }
+                Optional = bool.Parse(n["Optional"].InnerText);
             }
-            catch { }
+            catch { Optional = false; }
             try
             {
                 PostDownloadCLI = new string[0];
@@ -187,7 +184,6 @@ namespace ModUpdater.Server
                 }
                 n["Identifier"].InnerText = "";
             }
-            modFile.Save(ConfigFile);
             if (ModFile.Contains("minecraft.jar"))
             {
                 TaskManager.AddAsyncTask(delegate
@@ -284,35 +280,39 @@ namespace ModUpdater.Server
             using (StreamWriter sw = new StreamWriter(ConfigFile))
             {
                 sw.WriteLine("<Mod>");
-                sw.WriteLine("<Name>{0}</Name>", ModName);
-                sw.WriteLine("<Author>{0}</Author>", Author);
-                sw.WriteLine("<File>{0}</File>", ModFile);
-                sw.WriteLine("<PostDownload>");
+                sw.WriteLine(" <Name>{0}</Name>", ModName);
+                sw.WriteLine(" <Author>{0}</Author>", Author);
+                sw.WriteLine(" <File>{0}</File>", ModFile);
+                sw.WriteLine(" <Optional>{0}</Optional>", Optional);
+                sw.WriteLine(" <PostDownload>");
                 foreach (string s in PostDownloadCLI)
                 {
-                    sw.WriteLine("<Action>{0}</Action>", s);
+                    sw.WriteLine("  <Action>{0}</Action>", s);
                 }
-                sw.WriteLine("</PostDownload>");
-                sw.WriteLine("<Blacklist>");
+                sw.WriteLine(" </PostDownload>");
+                sw.WriteLine(" <Blacklist>");
                 foreach (string s in BlacklistedUsers)
                 {
-                    sw.WriteLine("<Username>{0}</Username>", s);
+                    sw.WriteLine("  <Username>{0}</Username>", s);
                 }
-                sw.WriteLine("</Blacklist>");
-                sw.WriteLine("<Whitelist>");
+                sw.WriteLine(" </Blacklist>");
+                sw.WriteLine(" <Whitelist>");
                 foreach (string s in WhitelistedUsers)
                 {
-                    sw.WriteLine("<Username>{0}</Username>", s);
+                    sw.WriteLine("  <Username>{0}</Username>", s);
                 }
-                sw.WriteLine("</Whitelist>");
-                sw.WriteLine("<Description>{0}</Description>", Description);
-                sw.WriteLine("<Identifier>{0}</Identifier>", Identifier);
-                sw.WriteLine("<Requires>");
-                foreach (Mod m in RequiredMods)
+                sw.WriteLine(" </Whitelist>");
+                sw.WriteLine(" <Description>{0}</Description>", Description);
+                sw.WriteLine(" <Identifier>{0}</Identifier>", Identifier);
+                sw.WriteLine(" <Requires>");
+                if (RequiredMods != null)
                 {
-                    sw.WriteLine("<Mod>" + m.Identifier + "</Mod");
+                    foreach (Mod m in RequiredMods)
+                    {
+                        sw.WriteLine("  <Mod>" + m.Identifier + "</Mod");
+                    }
                 }
-                sw.WriteLine("</Requires>");
+                sw.WriteLine(" </Requires>");
                 sw.WriteLine("</Mod>");
                 sw.Close();
             }
