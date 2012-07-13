@@ -117,6 +117,15 @@ namespace ModUpdater.Client.GUI
                 {
                     return;
                 }
+            }
+            if (OptionalMods.Count > 0)
+            {
+                SelectModsForm smf = new SelectModsForm(OptionalMods.ToArray());
+                smf.ShowDialog();
+                Mods.AddRange(smf.SelectedMods);
+            }
+            if (!Properties.Settings.Default.AutoUpdate)
+            {
                 TaskManager.AddAsyncTask(delegate
                 {
                     SplashScreen.ShowSplashScreen();
@@ -530,8 +539,15 @@ namespace ModUpdater.Client.GUI
         void ph_ModInfo(Packet pa)
         {
             ModInfoPacket p = pa as ModInfoPacket;
-            Mod m = new Mod { Author = p.Author, File = p.File, Name = p.ModName, Hash = p.Hash, Size = p.FileSize, Description = p.Description, Identifier = p.Identifier };
-            Mods.Add(m);
+            Mod m = new Mod { Author = p.Author, File = p.File, Name = p.ModName, Hash = p.Hash, Size = p.FileSize, Description = p.Description, Identifier = p.Identifier, Optional = p.Optional, Requires = p.Requires.ToList() };
+            if (m.Optional)
+            {
+                OptionalMods.Add(m);
+            }
+            else
+            {
+                Mods.Add(m);
+            }
             string path = Path.GetDirectoryName(Properties.Settings.Default.MinecraftPath + "\\" + p.File);
             string s = "";
             bool exists = File.Exists(path + "\\" + Path.GetFileName(m.File));
@@ -568,9 +584,16 @@ namespace ModUpdater.Client.GUI
             }
             else if (str == m.File)
             {
+                List<Mod> allMods = new List<Mod>();
+                allMods.AddRange(Mods);
+                allMods.AddRange(OptionalMods);
                 foreach (Mod mod in Mods)
                 {
-                    mod.BuildRequiredByList(Mods);
+                    mod.BuildRequiredByList(allMods.ToArray().ToList()); //Just so that we don't modify the mod list.
+                }
+                foreach (Mod mod in OptionalMods)
+                {
+                    mod.BuildRequiredByList(allMods.ToArray().ToList()); //Just so that we don't modify the mod list.
                 }
                 Invoke(new Void(delegate
                 {
