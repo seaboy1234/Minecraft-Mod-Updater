@@ -21,7 +21,7 @@ using System.Text;
 
 namespace ModUpdater.Client.Utility
 {
-    public class Mod
+    public class Mod : IDisposable
     {
         public string Name { get; set; }
         public string Author { get; set; }
@@ -38,6 +38,7 @@ namespace ModUpdater.Client.Utility
 
         public void BuildRequiredByList(List<Mod> lsm)
         {
+            RequiredBy = new List<Mod>();
             foreach (Mod m in lsm.ToArray())
             {
                 if (m.Requires.Contains(Identifier))
