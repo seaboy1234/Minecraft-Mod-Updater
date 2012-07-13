@@ -37,6 +37,7 @@ namespace ModUpdater.Server.Master
             clients = new List<Client>();
             Online = false;
             listen = new TcpListener(IPAddress.Any, Properties.Settings.Default.Port);
+            MCModUpdaterExceptionHandler.RegisterExceptionHandler(new ExceptionHandler());
         }
         public void Start() 
         {
