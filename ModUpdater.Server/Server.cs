@@ -42,6 +42,7 @@ namespace ModUpdater.Server
         public Server()
         {
             MinecraftModUpdater.Logger.LogEvent += new LogEventDelegate(Logger_LogEvent);
+            System.Diagnostics.Process.GetCurrentProcess().Exited += new EventHandler(Server_Exited);
             Config.Load();
             Mods = new List<Mod>();
             Clients = new List<Client>();
@@ -74,6 +75,10 @@ namespace ModUpdater.Server
             MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Registered {0} mods", Mods.Count);
         }
 
+        void Server_Exited(object sender, EventArgs e)
+        {
+            Dispose();
+        }
         
         private void SelfUpdate()
         {
@@ -158,6 +163,7 @@ namespace ModUpdater.Server
                 m.Save();
             }
             Config.Save();
+            Thread.Sleep(300);
         }
         public void Receive()
         {
@@ -192,7 +198,6 @@ namespace ModUpdater.Server
                 };
                 Clients.Add(c);
                 c.StartListening();
-                Thread.Sleep(1000);
             }
             catch (Exception e) { MinecraftModUpdater.Logger.Log(e); }
         }
@@ -245,7 +250,8 @@ namespace ModUpdater.Server
                                 WhitelistedUsers = new List<string>(),
                                 PostDownloadCLI = new string[0],
                                 Identifier = Extras.GenerateHashFromString(Path.GetFileName(s)),
-                                ConfigFile = Config.ModsPath + "/xml/" + Path.GetFileName(s) + ".xml"
+                                ConfigFile = Config.ModsPath + "/xml/" + Path.GetFileName(s) + ".xml",
+                                RequiredMods = new List<Mod>()
                             };
                             m.Save();
                         }
@@ -261,6 +267,7 @@ namespace ModUpdater.Server
                             {
                                 ModImages.Add(m, Image.FromFile(Config.ModsPath + "/ModAssets/" + Path.GetFileName(m.ModFile) + ".png"));
                             }
+                            m.LoadRequiredMods(Mods);
                         }
                         MinecraftModUpdater.Logger.Log(Logger.Level.Info,"Registered {0} mods", Mods.Count);
                         break;
