@@ -121,6 +121,7 @@
             this.btnDone.TabIndex = 8;
             this.btnDone.Text = "Confirm";
             this.btnDone.UseVisualStyleBackColor = true;
+            this.btnDone.Click += new System.EventHandler(this.btnDone_Click);
             // 
             // SelectModsForm
             // 
@@ -138,6 +139,7 @@
             this.Controls.Add(this.lsUnselected);
             this.Name = "SelectModsForm";
             this.Text = "SelectModsForm";
+            this.Load += new System.EventHandler(this.SelectModsForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

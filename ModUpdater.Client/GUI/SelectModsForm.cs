@@ -12,17 +12,19 @@ namespace ModUpdater.Client.GUI
 {
     public partial class SelectModsForm : Form
     {
+        public Mod[] SelectedMods { get { return selected.ToArray(); } }
         private List<Mod> selected, unselected;
 
-        public SelectModsForm()
+        public SelectModsForm(Mod[] optional)
         {
             InitializeComponent();
             selected = new List<Mod>();
-            unselected = new List<Mod>();
+            unselected = new List<Mod>(optional);
         }
 
         private void btnSelect_Click(object sender, EventArgs e)
         {
+            if (lsUnselected.SelectedItem == null) return;
             Mod m = unselected.Find(((Mod)lsUnselected.SelectedItem).Identifier);
             if (m == null)
             {
@@ -33,11 +35,18 @@ namespace ModUpdater.Client.GUI
 
         private void btnSelectAll_Click(object sender, EventArgs e)
         {
-
+            foreach (Mod m in unselected.ToArray())
+            {
+                if (unselected.Contains(m))
+                {
+                    SelectMod(m);
+                }
+            }
         }
 
         private void btnUnselect_Click(object sender, EventArgs e)
         {
+            if (lsSelected.SelectedItem == null) return;
             Mod m = selected.Find(((Mod)lsSelected.SelectedItem).Identifier);
             if (m == null)
             {
@@ -48,7 +57,17 @@ namespace ModUpdater.Client.GUI
 
         private void btnUnselectAll_Click(object sender, EventArgs e)
         {
-
+            foreach (Mod m in selected.ToArray())
+            {
+                if (m.RequiredBy.Count > 0)
+                {
+                    foreach (Mod mod in m.RequiredBy)
+                    {
+                        UnselectMod(mod);
+                    }
+                }
+                UnselectMod(m);
+            }
         }
 
         private void SelectMod(Mod m)
@@ -82,6 +101,21 @@ namespace ModUpdater.Client.GUI
             lsSelected.Items.Remove(m);
             lsUnselected.Items.Add(m);
             unselected.Add(m);
+        }
+
+        private void SelectModsForm_Load(object sender, EventArgs e)
+        {
+            foreach (Mod m in unselected)
+            {
+                lsUnselected.Items.Add(m);
+            }
+        }
+
+        private void btnDone_Click(object sender, EventArgs e)
+        {
+            DialogResult r = MessageBox.Show(string.Format("Are you sure you want to add {0} more mods to the download list?", selected.Count), "Confirm Action", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+            if (r == System.Windows.Forms.DialogResult.No) return;
+            Close();
         }
     }
 }
