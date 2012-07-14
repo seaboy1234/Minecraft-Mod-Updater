@@ -24,7 +24,7 @@ namespace ModUpdater.Server
 {
     class Program
     {
-        public const string Version = "1.3.0_dev";
+        public const string Version = "1.3.0_rc";
         public static string ConfigPath = "Config.xml";
         static void Main(string[] args)
         {
