@@ -22,6 +22,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using ModUpdater.Utility;
 
 namespace ModUpdater.Client.GUI
 {
@@ -138,7 +139,7 @@ namespace ModUpdater.Client.GUI
         {
             if (InvokeRequired)
             {
-                Invoke(new MainForm.Void(delegate{ setDownloadPicture(i); }));
+                Invoke(new ModUpdaterDelegate(delegate{ setDownloadPicture(i); }));
             }
             DownloadPicture.Image = i;
         }

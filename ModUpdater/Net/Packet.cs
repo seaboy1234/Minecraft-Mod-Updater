@@ -342,15 +342,15 @@ namespace ModUpdater.Net
     }
     public class AllDonePacket : Packet
     {
-        public string File { get; set; }
+        public string Identifier { get; set; }
         public override void Read(ModUpdaterNetworkStream s)
         {
-            File = s.ReadString();
+            Identifier = s.ReadString();
         }
 
         public override void Write(ModUpdaterNetworkStream s)
         {
-            s.WriteString(File);
+            s.WriteString(Identifier);
         }
     }
     public class MetadataPacket : Packet

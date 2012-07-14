@@ -84,6 +84,10 @@ namespace ModUpdater.Net
                     Stream.Encrypted = pa.Encrypt;
                     return;
                 }
+                else if (id == PacketId.Disconnect)
+                {
+                    Stop();
+                }
                 lock (eventLock)
                 {
                     foreach (var ph in EventHandler.ToArray())

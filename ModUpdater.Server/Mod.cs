@@ -235,7 +235,7 @@ namespace ModUpdater.Server
                 Packet.Send(new FilePartPacket { Part = b, Index = l }, ph.Stream);
                 l += FileParts[h].Count;
             }
-            Packet.Send(new AllDonePacket { File = ModFile }, ph.Stream);
+            Packet.Send(new AllDonePacket { Identifier = Identifier }, ph.Stream);
 
         }
         internal void ReadFile()
