@@ -32,6 +32,15 @@ namespace ModUpdater.Client.Utility
             }
             return null;
         }
+        public static Mod FindFromFile(this List<Mod> mods, string file)
+        {
+            foreach (Mod m in mods)
+            {
+                if (m.File == file)
+                    return m;
+            }
+            return null;
+        }
         public static bool Contains(this List<Mod> mods, string identifier)
         {
             foreach (Mod m in mods)

@@ -77,7 +77,7 @@ namespace ModUpdater.Server
             RequestModPacket p = pa as RequestModPacket;
             Mod mod = Server.Mods.Find(new Predicate<Mod>(delegate(Mod m)
             {
-                if (m.ModFile == p.Identifier)
+                if (m.Identifier == p.Identifier)
                     return true;
                 return false;
             }));
@@ -175,7 +175,7 @@ namespace ModUpdater.Server
             string[] mods = new string[allowedMods.Count];
             for (int i = 0; i < allowedMods.Count; i++)
             {
-                mods[i] = allowedMods[i].ModFile;
+                mods[i] = allowedMods[i].Identifier;
             }
             Packet.Send(new MetadataPacket { SData = new string[] { "splash_display", "Downloading Mod List..." } }, ph.Stream);
             Packet.Send(new ModListPacket { Mods = mods }, ph.Stream);
