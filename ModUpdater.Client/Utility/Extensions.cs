@@ -36,7 +36,7 @@ namespace ModUpdater.Client.Utility
         {
             foreach (Mod m in mods)
             {
-                if (m.File == file)
+                if (m.File.Replace('/', '\\') == file)
                     return m;
             }
             return null;

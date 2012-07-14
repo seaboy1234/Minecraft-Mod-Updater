@@ -16,18 +16,18 @@
 //    limitations under the License.
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using System.Diagnostics;
-using System.Drawing;
-using ModUpdater.Utility;
-using ModUpdater.Net;
-using System.Text;
 using ModUpdater.Client.Utility;
+using ModUpdater.Net;
+using ModUpdater.Utility;
 
 namespace ModUpdater.Client.GUI
 {
@@ -38,7 +38,7 @@ namespace ModUpdater.Client.GUI
         public IPAddress LocalAddress;
         public string ServerFolder { get { return Server.Name.Replace(' ', '_').Replace('.', '-').ToLower(); } }
         public Server Server { get; set; }
-        public delegate void Void();
+
         private PacketHandler ph;
         private Socket socket;
         private List<string> identifiers = new List<string>();
@@ -102,10 +102,10 @@ namespace ModUpdater.Client.GUI
                 }
                 try
                 {
-                    Invoke(new Void(delegate
+                    Program.RunOnUIThread(delegate
                     {
                         Close();
-                    }));
+                    });
                 }
                 catch { }
                 return;
@@ -141,7 +141,7 @@ namespace ModUpdater.Client.GUI
             if (Properties.Settings.Default.FirstRun || !File.Exists(Properties.Settings.Default.MinecraftPath + "/bin/version"))
                 Program.UpdateMinecraft();
             SplashScreen.UpdateStatusText("Downloading Updates...");
-            SplashScreen.GetScreen().Invoke(new Void(delegate
+            SplashScreen.GetScreen().Invoke(new ModUpdaterDelegate(delegate
             {
                 SplashScreen.GetScreen().lblTitle.Font.Dispose();
                 SplashScreen.GetScreen().lblTitle.Font = new Font(FontFamily.GenericSansSerif, Server.FontSize);
@@ -165,7 +165,7 @@ namespace ModUpdater.Client.GUI
                 while (CurrentDownload == null) ;
                 while (warnDisconnect == true)
                 {
-                    SplashScreen.GetScreen().Invoke(new Void(delegate
+                    SplashScreen.GetScreen().Invoke(new ModUpdaterDelegate(delegate
                     {
                         SplashScreen.GetScreen().lblProgress.Text = string.Format("{0:0%}", percentage);
                         SplashScreen.GetScreen().Progress.Value = Convert.ToInt32(percentage.ToString("0%").Replace("%", ""));
@@ -294,10 +294,10 @@ namespace ModUpdater.Client.GUI
                     Thread.Sleep(5000);
                 }
                 else MessageBox.Show("Lost connection to server.");
-                Invoke(new Void(delegate
+                Program.RunOnUIThread(delegate
                 {
                     Close();
-                }));
+                });
             });
             MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Logging started.");
             ph = new PacketHandler(s);
@@ -465,19 +465,19 @@ namespace ModUpdater.Client.GUI
                 }, ThreadRole.Delayed, 5000);
                 if (Properties.Settings.Default.LaunchAfterUpdate)
                 {
-                    Invoke(new Void(delegate
+                    Program.RunOnUIThread(delegate
                     {
                         Program.StartMinecraft();
-                    }));
+                    });
                 }
                 else
                 {
                     SplashScreen.CloseSplashScreen();
                 }
-                Invoke(new Void(delegate
+                Program.RunOnUIThread(delegate
                 {
                     Close();
-                }));
+                });
                 return;
             }
             progress[0]++;
@@ -491,7 +491,7 @@ namespace ModUpdater.Client.GUI
         }
         string GetLastModId()
         {
-            return Mods.Last().Identifier;
+            return ((Mod)lsModsToUpdate.Items[lsModsToUpdate.Items.Count - 1]).Identifier;
         }
         void ph_ModList(Packet pa)
         {
@@ -499,17 +499,17 @@ namespace ModUpdater.Client.GUI
             identifiers.AddRange(p.Mods);
             if (p.Mods.Length == 0)
             {
-                Invoke(new Void(delegate
+                Program.RunOnUIThread(delegate
                 {
                     SplashScreen.CloseSplashScreen();
                     Show();
-                }));
+                });
                 return;
             }
-            Invoke(new Void(delegate
+            Program.RunOnUIThread(delegate
             {
                 if (Visible) Hide();
-            }));
+            });
             foreach (string s in p.Mods)
             {
                 Packet.Send(new RequestModPacket { Identifier = s, Type = RequestModPacket.RequestType.Info }, ph.Stream);
@@ -546,17 +546,17 @@ namespace ModUpdater.Client.GUI
             }
             if ((!exists && !m.Optional) || s != m.Hash)
             {
-                Invoke(new Void(delegate
+                Program.RunOnUIThread(delegate
                 {
                     lsModsToUpdate.Items.Add(m);
-                }));
+                });
             }
             else if (!m.Optional)
             {
-                Invoke(new Void(delegate
+                Program.RunOnUIThread(delegate
                 {
                     lsMods.Items.Add(m);
-                }));
+                });
             }
             MinecraftModUpdater.Logger.Log(Logger.Level.Debug, "Info: " + m.Name);
             string str = GetLastModId();
@@ -565,20 +565,21 @@ namespace ModUpdater.Client.GUI
                 foreach (string str1 in Directory.GetFiles(Properties.Settings.Default.MinecraftPath + @"\mods"))
                 {
                     string str2 = @"mods\" + Path.GetFileName(str1);
-                    bool file = Mods.FindFromFile(str2) != null;
+                    Mod mod =  Mods.FindFromFile(str2);
+                    bool file = mod != null;
                     if (!file)
-                        Invoke(new Void(delegate
+                        Program.RunOnUIThread(delegate
                         {
                             lsModsToDelete.Items.Add(Path.GetFileName(str1));
-                        }));
+                        });
                 }
             }
             if (str == m.Identifier && Properties.Settings.Default.AutoUpdate)
             {
-                Invoke(new Void(delegate
+                Program.RunOnUIThread(delegate
                 {
                     btnConfirm_Click(null, null);
-                }));
+                });
             }
             else if (str == m.Identifier)
             {
@@ -593,18 +594,18 @@ namespace ModUpdater.Client.GUI
                 {
                     mod.BuildRequiredByList(allMods.ToArray().ToList()); //Just so that we don't modify the mod list.
                 }
-                Invoke(new Void(delegate
+                Program.RunOnUIThread(delegate
                 {
                     SplashScreen.CloseSplashScreen();
                     Show();
-                }));
+                });
             }
             else if(str != m.Identifier && !Properties.Settings.Default.AutoUpdate)
             {
-                Invoke(new Void(delegate
+                Program.RunOnUIThread(delegate
                 {
                     if (Visible) Hide();
-                }));
+                });
             }
         }
 
@@ -656,10 +657,10 @@ namespace ModUpdater.Client.GUI
                 Thread.Sleep(3000);
                 SplashScreen.CloseSplashScreen();
                 Thread.Sleep(1000);
-                Invoke(new Void(delegate
+                Program.RunOnUIThread(delegate
                 {
                     Close();
-                }));
+                });
             }
         }
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -682,7 +683,7 @@ namespace ModUpdater.Client.GUI
             {
                 TaskManager.KillTaskThread(t);
             }
-            Application.Exit();
+            Process.GetCurrentProcess().Kill();
         }
 
         private void ListBox_DoubleClick_Handler(object sender, EventArgs e)
@@ -696,6 +697,6 @@ namespace ModUpdater.Client.GUI
             {
                 MinecraftModUpdater.Logger.Log(ex);
             }
-        }        
+        }
     }
 }

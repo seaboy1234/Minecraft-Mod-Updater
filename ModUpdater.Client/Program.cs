@@ -72,6 +72,16 @@ namespace ModUpdater.Client
             {
                 //throw new SystemException("Error", new SystemException("Other Error"));
             });
+            string name = Process.GetCurrentProcess().ProcessName;
+            if (Process.GetProcessesByName(name).Length != 1)
+            {
+                foreach (Process pr in Process.GetProcessesByName(name))
+                {
+                    if (pr.MainModule.BaseAddress == Process.GetCurrentProcess().MainModule.BaseAddress)
+                        if (pr.Id != Process.GetCurrentProcess().Id)
+                            pr.Kill();
+                }
+            }
             Application.Run(new MainForm());
         }
         public static void StartMinecraft()
@@ -140,14 +150,14 @@ namespace ModUpdater.Client
             Thread.Sleep(1000);
             TaskManager.AddAsyncTask(delegate
             {
-                SplashScreen.GetScreen().Invoke(new MainForm.Void(delegate
+                SplashScreen.GetScreen().Invoke(new ModUpdaterDelegate(delegate
                 {
                     SplashScreen.GetScreen().Progress.Value = 0;
                     SplashScreen.GetScreen().Progress.MaxValue = 100;
                 }));
                 while (update.Progress != 100)
                 {
-                    SplashScreen.GetScreen().Invoke(new MainForm.Void(delegate
+                    SplashScreen.GetScreen().Invoke(new ModUpdaterDelegate(delegate
                     {
                         SplashScreen.GetScreen().Progress.Value = update.Progress;
                         SplashScreen.UpdateStatusText(update.Status);
@@ -188,6 +198,10 @@ namespace ModUpdater.Client
             if (jOutput.Contains("Java(TM) SE Runtime Environment"))
                 return true;
             return false;
+        }
+        public static void RunOnUIThread(ModUpdaterDelegate method)
+        {
+            MainForm.Instance.Invoke(method);
         }
     }
 }

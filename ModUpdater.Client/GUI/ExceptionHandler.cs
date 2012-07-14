@@ -33,6 +33,7 @@ namespace ModUpdater.Client.GUI
     public partial class ExceptionHandler : Form
     {
         public static bool ProgramCrashed { get; private set; }
+        public static event ModUpdaterDelegate Close = delegate { };
         public Exception Exception;
         private bool Locked = false;
         private string Report;
@@ -72,7 +73,7 @@ namespace ModUpdater.Client.GUI
             ProgramCrashed = true;
             try
             {
-                MainForm.Instance.Invoke(new MainForm.Void(delegate
+                MainForm.Instance.Invoke(new ModUpdaterDelegate(delegate
                 {
                     new ExceptionHandler(e, sender).ShowDialog();
                 }));
@@ -159,7 +160,8 @@ namespace ModUpdater.Client.GUI
                 Application.Restart();
                 return;
             }
-            Application.Exit();
+            Close.Invoke();
+            Process.GetCurrentProcess().Kill();
         }
 
         private void ExceptionHandler_FormClosing(object sender, FormClosingEventArgs e)
