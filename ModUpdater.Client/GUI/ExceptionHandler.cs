@@ -140,29 +140,26 @@ namespace ModUpdater.Client.GUI
 
         private void ExceptionHandler_FormClosed(object sender, FormClosedEventArgs e)
         {
-            if (!Locked)
+            DialogResult r = MessageBox.Show("Would you like to try and recover from this error?  Some progress might be lost.", "Exception Handler", MessageBoxButtons.YesNo);
+            if (r == System.Windows.Forms.DialogResult.Yes)
             {
-                DialogResult r = MessageBox.Show("Would you like to try and recover from this error?  Some progress might be lost.", "Exception Handler", MessageBoxButtons.YesNo);
-                if (r == System.Windows.Forms.DialogResult.Yes)
+                using (StreamWriter sw = new StreamWriter("recoveryinformation.dat"))
                 {
-                    using (StreamWriter sw = new StreamWriter("recoveryinformation.dat"))
+                    sw.WriteLine("status=" + Program.AppStatus);
+                    if (Program.AppStatus == Utility.AppStatus.Updating || Program.AppStatus == Utility.AppStatus.Connecting)
                     {
-                        sw.WriteLine("status=" + Program.AppStatus);
-                        if(Program.AppStatus == Utility.AppStatus.Updating || Program.AppStatus == Utility.AppStatus.Connecting)
-                        {
-                            sw.WriteLine("server.ip=" + MainForm.Instance.Server.Address);
-                            sw.WriteLine("server.port=" + MainForm.Instance.Server.Port);
-                            sw.WriteLine("server.name=" + MainForm.Instance.Server.Name);
-                        }
-                        sw.Flush();
-                        sw.Close();
-                        sw.Dispose();
+                        sw.WriteLine("server.ip=" + MainForm.Instance.Server.Address);
+                        sw.WriteLine("server.port=" + MainForm.Instance.Server.Port);
+                        sw.WriteLine("server.name=" + MainForm.Instance.Server.Name);
                     }
-                    Application.Restart();
-                    return;
+                    sw.Flush();
+                    sw.Close();
+                    sw.Dispose();
                 }
-                Application.Exit();
+                Application.Restart();
+                return;
             }
+            Application.Exit();
         }
 
         private void ExceptionHandler_FormClosing(object sender, FormClosingEventArgs e)
