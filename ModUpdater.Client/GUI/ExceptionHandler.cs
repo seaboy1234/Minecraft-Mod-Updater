@@ -33,7 +33,7 @@ namespace ModUpdater.Client.GUI
     public partial class ExceptionHandler : Form
     {
         public static bool ProgramCrashed { get; private set; }
-        public static event ModUpdaterDelegate Close = delegate { };
+        public static event ModUpdaterDelegate CloseProgram = delegate { };
         public Exception Exception;
         private bool Locked = false;
         private string Report;
@@ -114,6 +114,8 @@ namespace ModUpdater.Client.GUI
                 sw.WriteLine(txtError.Text);
                 sw.Close();
             }
+            Clipboard.SetText(txtError.Text);
+            MessageBox.Show("Error report added to clipboard.");
             Locked = false;
             Close();
         }
@@ -160,13 +162,8 @@ namespace ModUpdater.Client.GUI
                 Application.Restart();
                 return;
             }
-            Close.Invoke();
+            CloseProgram.Invoke();
             Process.GetCurrentProcess().Kill();
-        }
-
-        private void ExceptionHandler_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (Locked) e.Cancel = true;
         }
     }
 }
