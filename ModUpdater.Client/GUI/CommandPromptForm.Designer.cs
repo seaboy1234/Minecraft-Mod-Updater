@@ -44,6 +44,7 @@ namespace ModUpdater.Client.GUI
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CommandPromptForm));
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
@@ -67,8 +68,9 @@ namespace ModUpdater.Client.GUI
             this.BackColor = System.Drawing.Color.Black;
             this.ClientSize = new System.Drawing.Size(399, 262);
             this.Controls.Add(this.textBox1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "CommandPromptForm";
-            this.Text = "CommandPromptForm";
+            this.Text = "Console";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.CommandPromptForm_FormClosing);
             this.Load += new System.EventHandler(this.CommandPromptForm_Load);
             this.Resize += new System.EventHandler(this.CommandPromptForm_Resize);
