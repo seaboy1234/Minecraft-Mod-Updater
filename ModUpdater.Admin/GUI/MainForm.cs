@@ -176,9 +176,13 @@ namespace ModUpdater.Admin.GUI
         private void HandleAllDone(Packet pa)
         {
             AllDonePacket p = pa as AllDonePacket;
-            if (!Directory.Exists(Path.GetDirectoryName(InstancePath + p.File))) 
-                Directory.CreateDirectory(Path.GetDirectoryName(InstancePath + p.File));
-            File.WriteAllBytes(InstancePath + p.File, mods[currentDownload].Contents);
+            Mod m = mods.Find(new Predicate<Mod>(delegate(Mod mod)
+            {
+                return mod.Identifier == p.Identifier;
+            }));
+            if (!Directory.Exists(Path.GetDirectoryName(InstancePath + m.File))) 
+                Directory.CreateDirectory(Path.GetDirectoryName(InstancePath + m.File));
+            File.WriteAllBytes(InstancePath + m.File, mods[currentDownload].Contents);
             updated++;
             if (updated == amountOfUpdates)
             {
@@ -283,7 +287,7 @@ namespace ModUpdater.Admin.GUI
                             downloaded += bytes[i].Count;
                             Thread.Sleep(25);
                         }
-                        Packet.Send(new AllDonePacket { File = m.File }, Connection.PacketHandler.Stream);
+                        Packet.Send(new AllDonePacket { Identifier = m.Identifier }, Connection.PacketHandler.Stream);
                     }
                 }
             });
