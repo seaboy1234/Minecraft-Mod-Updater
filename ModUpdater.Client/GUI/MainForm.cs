@@ -48,6 +48,7 @@ namespace ModUpdater.Client.GUI
         private bool warnDisconnect = true;
         private bool recover;
         int[] progress = new int[5];
+        private int dlThisSecond;
         private double percentage { get { return ((double)progress[4] / progress[3]); } }
         //private int index = 0;
         //private int curPart = 0;
@@ -156,13 +157,23 @@ namespace ModUpdater.Client.GUI
             TaskManager.AddAsyncTask(delegate
             {
                 while (CurrentDownload == null) ;
+                int i = 0;
+                int kbps = 0;
                 while (warnDisconnect == true)
                 {
                     SplashScreen.GetScreen().Invoke(new ModUpdaterDelegate(delegate
                     {
-                        SplashScreen.GetScreen().lblProgress.Text = string.Format("{0:0%}", percentage);
+                        SplashScreen.GetScreen().lblProgress.Text = string.Format(string.Format("{0:0%}", percentage) + " at {0} KB/s", kbps);
                         SplashScreen.GetScreen().Progress.Value = Convert.ToInt32(percentage.ToString("0%").Replace("%", ""));
+                        if (i == 10)
+                        {
+                            kbps = (dlThisSecond) / 1000;
+                            dlThisSecond = 0;
+                            i = 0;
+                        }
                     }));
+                    i++;
+                    
                     Thread.Sleep(100);
                 }
             });
@@ -370,6 +381,7 @@ namespace ModUpdater.Client.GUI
         void ph_FilePart(Packet pa)
         {
             FilePartPacket p = pa as FilePartPacket;
+            dlThisSecond += p.Part.Length;
             progress[1]++;
             progress[4] += p.Part.Length;
             if (ExceptionHandler.ProgramCrashed)

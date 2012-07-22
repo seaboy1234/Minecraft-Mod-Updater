@@ -119,11 +119,11 @@ namespace ModUpdater.Client.GUI
             this.lblProgress.BackColor = System.Drawing.Color.Transparent;
             this.lblProgress.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblProgress.ForeColor = System.Drawing.Color.Green;
-            this.lblProgress.Location = new System.Drawing.Point(568, 337);
+            this.lblProgress.Location = new System.Drawing.Point(470, 309);
             this.lblProgress.Name = "lblProgress";
-            this.lblProgress.Size = new System.Drawing.Size(55, 24);
+            this.lblProgress.Size = new System.Drawing.Size(158, 24);
             this.lblProgress.TabIndex = 8;
-            this.lblProgress.Text = "100%";
+            this.lblProgress.Text = "100% at 1000 kb/s";
             this.lblProgress.Visible = false;
             // 
             // SplashScreenForm
