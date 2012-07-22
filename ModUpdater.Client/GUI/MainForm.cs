@@ -157,7 +157,7 @@ namespace ModUpdater.Client.GUI
             TaskManager.AddAsyncTask(delegate
             {
                 while (CurrentDownload == null) ;
-                int i = 0;
+                int i = 5;
                 int kbps = 0;
                 while (warnDisconnect == true)
                 {
