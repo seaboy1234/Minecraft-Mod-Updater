@@ -67,7 +67,7 @@ namespace ModUpdater.Utility
                     DelayedTasks.Add(t, delayLen);
                     break;
             }
-            if (GetTaskThread(r).Thread == null)
+            if (GetTaskThread(r) == null || GetTaskThread(r).Thread == null)
             {
                 SpawnTaskThread(r);
             }
