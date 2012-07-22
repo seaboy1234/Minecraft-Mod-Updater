@@ -89,7 +89,7 @@ namespace ModUpdater.Client
             SplashScreen.CloseSplashScreen();
             string javaPath, sessionID, username;
             javaPath = Properties.Settings.Default.JavaPath;
-            username = Properties.Settings.Default.Username;
+            username = ProgramOptions.Username;
             sessionID = ProgramOptions.SessionID;
             using (FileStream output = File.Open("MCLaunch.class", FileMode.Create))
             {
