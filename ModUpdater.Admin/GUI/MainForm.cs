@@ -16,18 +16,13 @@
 //    limitations under the License.
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
+using System.IO;
+using System.Threading;
 using System.Windows.Forms;
+using ModUpdater.Admin.Controls;
 using ModUpdater.Admin.Items;
 using ModUpdater.Net;
-using System.IO;
 using ModUpdater.Utility;
-using ModUpdater.Admin.Controls;
-using System.Threading;
 
 namespace ModUpdater.Admin.GUI
 {
@@ -248,6 +243,11 @@ namespace ModUpdater.Admin.GUI
                 foreach (Mod m in changedMods.ToArray())
                 {
                     currentDownload = mods.IndexOf(m); //Again, using this as an upload.
+                    string[] ids = new string[m.RequiredMods.Count];
+                    for(int i = 0; i < m.RequiredMods.Count; i++)
+                    {
+                        ids[i] = m.RequiredMods[i].Identifier;
+                    }
                     Packet.Send(new AdminFileInfoPacket
                     {
                         Author = m.Author,
@@ -259,7 +259,9 @@ namespace ModUpdater.Admin.GUI
                         ModName = m.Name,
                         PostDownload = m.PostDownloadCLI.ToArray(),
                         WhitelistedUsers = m.WhitelistedUsers.ToArray(),
-                        Identifier = m.Identifier
+                        Identifier = m.Identifier,
+                        Optional = m.Optional,
+                        Requires = ids
                     }, Connection.PacketHandler.Stream);
                     if (m.Hash != Extras.GenerateHash(m.Contents))
                     {

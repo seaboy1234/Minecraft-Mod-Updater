@@ -127,10 +127,21 @@ namespace ModUpdater.Admin.GUI
             {
                 Mod.PostDownloadCLI.Add(s);
             }
+            Mod.RequiredMods.Clear();
+            foreach (object o in clsRequired.Items)
+            {
+                Mod m = (Mod)o;
+                Mod.RequiredMods.Add(m);
+            }
             if (Mod.Identifier == null)
             {
                 Mod.Identifier = Extras.GenerateHashFromString(Mod.Name);
             }
+        }
+
+        private void chkOptional_CheckedChanged(object sender, EventArgs e)
+        {
+            clsRequired.Enabled = chkOptional.Checked;
         }
     }
 }

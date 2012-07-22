@@ -62,6 +62,17 @@ namespace ModUpdater.Admin.GUI
             this.label7 = new System.Windows.Forms.Label();
             this.modSelector = new System.Windows.Forms.OpenFileDialog();
             this.modPlacer = new System.Windows.Forms.FolderBrowserDialog();
+            this.chkOptional = new System.Windows.Forms.CheckBox();
+            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.clsRequired = new System.Windows.Forms.CheckedListBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.tabControl1.SuspendLayout();
+            this.tabPage1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
+            this.tabPage3.SuspendLayout();
             this.SuspendLayout();
             // 
             // lblTitle
@@ -95,7 +106,7 @@ namespace ModUpdater.Admin.GUI
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(218, 114);
+            this.button3.Location = new System.Drawing.Point(223, 64);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(75, 23);
             this.button3.TabIndex = 3;
@@ -105,14 +116,14 @@ namespace ModUpdater.Admin.GUI
             // 
             // txtName
             // 
-            this.txtName.Location = new System.Drawing.Point(47, 64);
+            this.txtName.Location = new System.Drawing.Point(52, 14);
             this.txtName.Name = "txtName";
             this.txtName.Size = new System.Drawing.Size(165, 20);
             this.txtName.TabIndex = 4;
             // 
             // txtAuthor
             // 
-            this.txtAuthor.Location = new System.Drawing.Point(47, 90);
+            this.txtAuthor.Location = new System.Drawing.Point(52, 41);
             this.txtAuthor.Name = "txtAuthor";
             this.txtAuthor.Size = new System.Drawing.Size(165, 20);
             this.txtAuthor.TabIndex = 5;
@@ -120,7 +131,7 @@ namespace ModUpdater.Admin.GUI
             // txtFile
             // 
             this.txtFile.BackColor = System.Drawing.SystemColors.Window;
-            this.txtFile.Location = new System.Drawing.Point(47, 114);
+            this.txtFile.Location = new System.Drawing.Point(52, 67);
             this.txtFile.Name = "txtFile";
             this.txtFile.Size = new System.Drawing.Size(165, 20);
             this.txtFile.TabIndex = 6;
@@ -128,32 +139,35 @@ namespace ModUpdater.Admin.GUI
             // 
             // txtWhitelist
             // 
-            this.txtWhitelist.Location = new System.Drawing.Point(111, 188);
+            this.txtWhitelist.Location = new System.Drawing.Point(161, 19);
             this.txtWhitelist.Multiline = true;
             this.txtWhitelist.Name = "txtWhitelist";
-            this.txtWhitelist.Size = new System.Drawing.Size(100, 133);
+            this.txtWhitelist.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtWhitelist.Size = new System.Drawing.Size(139, 245);
             this.txtWhitelist.TabIndex = 7;
             // 
             // txtBlacklist
             // 
-            this.txtBlacklist.Location = new System.Drawing.Point(6, 188);
+            this.txtBlacklist.Location = new System.Drawing.Point(6, 19);
             this.txtBlacklist.Multiline = true;
             this.txtBlacklist.Name = "txtBlacklist";
-            this.txtBlacklist.Size = new System.Drawing.Size(100, 133);
+            this.txtBlacklist.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtBlacklist.Size = new System.Drawing.Size(135, 242);
             this.txtBlacklist.TabIndex = 8;
             // 
             // txtPostDownload
             // 
-            this.txtPostDownload.Location = new System.Drawing.Point(217, 188);
+            this.txtPostDownload.Location = new System.Drawing.Point(161, 21);
             this.txtPostDownload.Multiline = true;
             this.txtPostDownload.Name = "txtPostDownload";
-            this.txtPostDownload.Size = new System.Drawing.Size(110, 133);
+            this.txtPostDownload.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtPostDownload.Size = new System.Drawing.Size(142, 242);
             this.txtPostDownload.TabIndex = 9;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 67);
+            this.label2.Location = new System.Drawing.Point(3, 17);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(35, 13);
             this.label2.TabIndex = 10;
@@ -162,7 +176,7 @@ namespace ModUpdater.Admin.GUI
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(3, 93);
+            this.label3.Location = new System.Drawing.Point(3, 44);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(38, 13);
             this.label3.TabIndex = 11;
@@ -171,7 +185,7 @@ namespace ModUpdater.Admin.GUI
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(3, 117);
+            this.label4.Location = new System.Drawing.Point(6, 69);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(23, 13);
             this.label4.TabIndex = 12;
@@ -180,7 +194,7 @@ namespace ModUpdater.Admin.GUI
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(108, 172);
+            this.label5.Location = new System.Drawing.Point(184, 3);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(89, 13);
             this.label5.TabIndex = 13;
@@ -189,7 +203,7 @@ namespace ModUpdater.Admin.GUI
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(3, 172);
+            this.label6.Location = new System.Drawing.Point(24, 3);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(88, 13);
             this.label6.TabIndex = 14;
@@ -198,7 +212,7 @@ namespace ModUpdater.Admin.GUI
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(214, 172);
+            this.label7.Location = new System.Drawing.Point(193, 5);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(79, 13);
             this.label7.TabIndex = 15;
@@ -208,29 +222,108 @@ namespace ModUpdater.Admin.GUI
             // 
             this.modSelector.Filter = "Zip Files|*.zip|Jar Files|*.jar|Config Files|*.cfg";
             // 
+            // chkOptional
+            // 
+            this.chkOptional.AutoSize = true;
+            this.chkOptional.Location = new System.Drawing.Point(35, 21);
+            this.chkOptional.Name = "chkOptional";
+            this.chkOptional.Size = new System.Drawing.Size(65, 17);
+            this.chkOptional.TabIndex = 16;
+            this.chkOptional.Text = "Optional";
+            this.chkOptional.UseVisualStyleBackColor = true;
+            this.chkOptional.CheckedChanged += new System.EventHandler(this.chkOptional_CheckedChanged);
+            // 
+            // tabControl1
+            // 
+            this.tabControl1.Controls.Add(this.tabPage1);
+            this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Location = new System.Drawing.Point(6, 28);
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.SelectedIndex = 0;
+            this.tabControl1.Size = new System.Drawing.Size(314, 293);
+            this.tabControl1.TabIndex = 17;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.BackColor = System.Drawing.SystemColors.Control;
+            this.tabPage1.Controls.Add(this.txtName);
+            this.tabPage1.Controls.Add(this.txtAuthor);
+            this.tabPage1.Controls.Add(this.label2);
+            this.tabPage1.Controls.Add(this.button3);
+            this.tabPage1.Controls.Add(this.label3);
+            this.tabPage1.Controls.Add(this.label4);
+            this.tabPage1.Controls.Add(this.txtFile);
+            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(306, 267);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "General Options";
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.BackColor = System.Drawing.SystemColors.Control;
+            this.tabPage2.Controls.Add(this.label5);
+            this.tabPage2.Controls.Add(this.txtBlacklist);
+            this.tabPage2.Controls.Add(this.label6);
+            this.tabPage2.Controls.Add(this.txtWhitelist);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(306, 267);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "User Management";
+            // 
+            // tabPage3
+            // 
+            this.tabPage3.BackColor = System.Drawing.SystemColors.Control;
+            this.tabPage3.Controls.Add(this.label1);
+            this.tabPage3.Controls.Add(this.clsRequired);
+            this.tabPage3.Controls.Add(this.txtPostDownload);
+            this.tabPage3.Controls.Add(this.chkOptional);
+            this.tabPage3.Controls.Add(this.label7);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Size = new System.Drawing.Size(306, 267);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "Misc";
+            // 
+            // clsRequired
+            // 
+            this.clsRequired.FormattingEnabled = true;
+            this.clsRequired.Location = new System.Drawing.Point(3, 64);
+            this.clsRequired.Name = "clsRequired";
+            this.clsRequired.Size = new System.Drawing.Size(152, 199);
+            this.clsRequired.TabIndex = 17;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(32, 48);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(72, 13);
+            this.label1.TabIndex = 18;
+            this.label1.Text = "Requirements";
+            // 
             // ControlEditMod
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.label7);
-            this.Controls.Add(this.label6);
-            this.Controls.Add(this.label5);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.txtPostDownload);
-            this.Controls.Add(this.txtBlacklist);
-            this.Controls.Add(this.txtWhitelist);
-            this.Controls.Add(this.txtFile);
-            this.Controls.Add(this.txtAuthor);
-            this.Controls.Add(this.txtName);
-            this.Controls.Add(this.button3);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.lblTitle);
+            this.Controls.Add(this.tabControl1);
             this.Name = "ControlEditMod";
             this.Size = new System.Drawing.Size(330, 350);
             this.Load += new System.EventHandler(this.ControlEditMod_Load);
+            this.tabControl1.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            this.tabPage1.PerformLayout();
+            this.tabPage2.ResumeLayout(false);
+            this.tabPage2.PerformLayout();
+            this.tabPage3.ResumeLayout(false);
+            this.tabPage3.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -256,5 +349,12 @@ namespace ModUpdater.Admin.GUI
         internal System.Windows.Forms.Button button1;
         internal System.Windows.Forms.Button button2;
         private System.Windows.Forms.FolderBrowserDialog modPlacer;
+        private System.Windows.Forms.CheckBox chkOptional;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.CheckedListBox clsRequired;
     }
 }
