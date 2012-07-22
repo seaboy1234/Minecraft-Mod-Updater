@@ -132,7 +132,6 @@ namespace ModUpdater.Utility
             string raw = c.DownloadString("https://raw.github.com/seaboy1234/Minecraft-Mod-Updater/" + MinecraftModUpdater.Branch + "/version.txt");
             c.Dispose();
             Dictionary<string, string> pairs = new Dictionary<string, string>();
-            MinecraftModUpdater.Logger.Log(Logger.Level.Info, raw);
             foreach (string s in raw.Split('\\'))
             {
                 string _key = s.Split('=')[0];
