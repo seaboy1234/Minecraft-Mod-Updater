@@ -28,5 +28,6 @@ namespace ModUpdater.Client
         public static bool CommandLine { get; set; }
         public static bool Debug { get; set; }
         public static bool Administrator { get; set; }
+        public static string Username { get; set; }
     }
 }
