@@ -80,7 +80,7 @@ namespace ModUpdater.Net
                     }
                 }
                 p = (Packet)Packet.GetConstructor(new Type[] { }).Invoke(null);
-                p.Timestamp = DateTime.Now;
+                p.Timestamp = new UnixTime(Stream.ReadLong()).ToDateTime();
                 p.Read(Stream);
                 lastRecived = p;
             }
@@ -102,6 +102,9 @@ namespace ModUpdater.Net
             {
                 PacketId id = GetPacketId(p);
                 Stream.WriteNetworkByte((byte)id);
+                //Write timestamp
+                Stream.WriteLong(new UnixTime().Value);
+                //Write packet.
                 p.Write(Stream);
                 lastSent = p;
                 MinecraftModUpdater.Logger.Log(Logger.Level.Debug, string.Format("Sent packet {0}", id.ToString()));

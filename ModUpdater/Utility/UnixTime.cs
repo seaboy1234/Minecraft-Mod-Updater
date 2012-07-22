@@ -23,6 +23,7 @@ namespace ModUpdater.Utility
 {
     public class UnixTime
     {
+        public long Value { get { return unixTime; } }
         private static readonly DateTime startOfUnixTime = new DateTime(1970, 1, 1, 0, 0, 0);
         private long unixTime;
 
@@ -32,9 +33,24 @@ namespace ModUpdater.Utility
             unixTime = (t - startOfUnixTime).Milliseconds;
         }
 
+        public UnixTime(long t)
+        {
+            unixTime = t;
+        }
+
+        public DateTime ToDateTime()
+        {
+            return startOfUnixTime.AddMilliseconds(unixTime);
+        }
+
         public override string ToString()
         {
             return unixTime.ToString();
+        }
+
+        public static DateTime ToDateTime(UnixTime t)
+        {
+            return t.ToDateTime();
         }
     }
 }
