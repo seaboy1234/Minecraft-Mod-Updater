@@ -38,7 +38,7 @@ namespace ModUpdater
         /// <summary>
         /// The Mod Updater Version.
         /// </summary>
-        public const string Version = "1.3.0_rc";
+        public const string Version = "1.3.0_rc2";
         /// <summary>
         /// The branch of the Git repo.
         /// </summary>
