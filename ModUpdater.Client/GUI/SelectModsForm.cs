@@ -13,13 +13,22 @@ namespace ModUpdater.Client.GUI
     public partial class SelectModsForm : Form
     {
         public Mod[] SelectedMods { get { return selected.ToArray(); } }
+        public Mod[] UnselectedMods { get { return unselected.ToArray(); } }
         private List<Mod> selected, unselected;
 
-        public SelectModsForm(Mod[] optional)
+        public SelectModsForm(Mod[] optional, Mod[] selectedOptional)
         {
             InitializeComponent();
-            selected = new List<Mod>();
-            unselected = new List<Mod>(optional);
+            
+            selected = new List<Mod>(selectedOptional);
+            unselected = new List<Mod>();
+            foreach (Mod m in optional)
+            {
+                if (!selectedOptional.Contains(m))
+                {
+                    unselected.Add(m);
+                }
+            }
         }
 
         private void btnSelect_Click(object sender, EventArgs e)
@@ -105,16 +114,23 @@ namespace ModUpdater.Client.GUI
 
         private void SelectModsForm_Load(object sender, EventArgs e)
         {
+            foreach (Mod m in selected)
+            {
+                lsSelected.Items.Add(m);
+            }
             foreach (Mod m in unselected)
             {
+                if (selected.Contains(m)) continue;
                 lsUnselected.Items.Add(m);
             }
+            DialogResult = System.Windows.Forms.DialogResult.None;
         }
 
         private void btnDone_Click(object sender, EventArgs e)
         {
             DialogResult r = MessageBox.Show(string.Format("Are you sure you want to add {0} more mods to the download list?", selected.Count), "Confirm Action", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
             if (r == System.Windows.Forms.DialogResult.No) return;
+            DialogResult = System.Windows.Forms.DialogResult.Yes;
             Close();
         }
     }

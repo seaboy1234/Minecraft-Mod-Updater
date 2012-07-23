@@ -34,7 +34,7 @@ namespace ModUpdater.Client.Utility
         }
         public static Mod FindFromFile(this List<Mod> mods, string file)
         {
-            foreach (Mod m in mods)
+            foreach (Mod m in mods.ToArray())
             {
                 if (m.File.Replace('/', '\\') == file)
                     return m;
@@ -49,6 +49,18 @@ namespace ModUpdater.Client.Utility
                     return true;
             }
             return false;
+        }
+        public static Mod[] ToArray(this List<Mod> mods, bool optional)
+        {
+            List<Mod> ms = new List<Mod>();
+            foreach (Mod m in mods)
+            {
+                if (m.Optional)
+                {
+                    ms.Add(m);
+                }
+            }
+            return ms.ToArray();
         }
     }
 }

@@ -101,14 +101,10 @@ namespace ModUpdater.Client.GUI
                     Hide();
                     Program.StartMinecraft();
                 }
-                try
+                Program.RunOnUIThread(delegate
                 {
-                    Program.RunOnUIThread(delegate
-                    {
-                        Close();
-                    });
-                }
-                catch { }
+                    Close();
+                });
                 return;
             }
             Program.AppStatus = AppStatus.Updating;
@@ -503,7 +499,7 @@ namespace ModUpdater.Client.GUI
         }
         string GetLastModId()
         {
-            return Mods[Mods.Count - 1].Identifier;
+            return identifiers.LastOrDefault();
         }
         void ph_ModList(Packet pa)
         {
@@ -727,10 +723,42 @@ namespace ModUpdater.Client.GUI
 
         private void btnOptional_Click(object sender, EventArgs e)
         {
-            SelectModsForm smf = new SelectModsForm(OptionalMods.ToArray());
+            SelectModsForm smf = new SelectModsForm(OptionalMods.ToArray(), Mods.ToArray(true));
             smf.ShowDialog();
-            Mods.AddRange(smf.SelectedMods);
-            lsModsToUpdate.Items.AddRange(smf.SelectedMods);
+            if (smf.DialogResult == DialogResult.None) return;
+            foreach (Mod m in smf.SelectedMods)
+            {
+                if (lsModsToDelete.Items.Contains(Path.GetFileName(m.File)))
+                {
+                    lsModsToDelete.Items.Remove(Path.GetFileName(m.File));
+                    lsMods.Items.Add(m);
+                    Mods.Add(m);
+                }
+                else if (!lsModsToUpdate.Items.Contains(m) && !lsMods.Items.Contains(m))
+                {
+                    lsModsToUpdate.Items.Add(m);
+                    Mods.Add(m);
+                }
+            }
+            foreach (Mod m in smf.UnselectedMods)
+            {
+                bool delete = false;
+                if (lsModsToUpdate.Items.Contains(m))
+                {
+                    lsModsToUpdate.Items.Remove(m);
+                    delete = true;
+                }
+                else if (lsMods.Items.Contains(m))
+                {
+                    lsMods.Items.Remove(m);
+                    delete = true;
+                }
+                if (delete)
+                {
+                    lsModsToDelete.Items.Add(Path.GetFileName(m.File));
+                    Mods.Remove(m);
+                }
+            }
         }
     }
 }
