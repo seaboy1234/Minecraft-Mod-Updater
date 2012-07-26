@@ -1,4 +1,4 @@
-﻿//    File:        ConnectionForm.Designer.cs
+﻿//    File:        LoggerForm.Designer.cs
 //    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
 //    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
 //    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
@@ -14,9 +14,9 @@
 //    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
-namespace ModUpdater.Admin
+namespace ModUpdater.Admin.GUI
 {
-    partial class ConnectionForm
+    partial class LoggerForm
     {
         /// <summary>
         /// Required designer variable.
@@ -44,11 +44,37 @@ namespace ModUpdater.Admin
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.SuspendLayout();
+            // 
+            // textBox1
+            // 
+            this.textBox1.BackColor = System.Drawing.SystemColors.Window;
+            this.textBox1.Location = new System.Drawing.Point(0, 0);
+            this.textBox1.Multiline = true;
+            this.textBox1.Name = "textBox1";
+            this.textBox1.ReadOnly = true;
+            this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.textBox1.Size = new System.Drawing.Size(10, 12);
+            this.textBox1.TabIndex = 0;
+            // 
+            // LoggerForm
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Text = "ConnectionForm";
+            this.ClientSize = new System.Drawing.Size(476, 321);
+            this.Controls.Add(this.textBox1);
+            this.Name = "LoggerForm";
+            this.Text = "LoggerForm";
+            this.Load += new System.EventHandler(this.LoggerForm_Load);
+            this.Resize += new System.EventHandler(this.LoggerForm_Resize);
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
         }
 
         #endregion
+
+        private System.Windows.Forms.TextBox textBox1;
     }
 }

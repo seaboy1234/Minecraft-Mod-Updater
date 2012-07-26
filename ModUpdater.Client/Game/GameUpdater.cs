@@ -143,7 +143,7 @@ namespace ModUpdater.Client.Game
             }
             catch (WebException e)
             {
-                ExceptionHandler.HandleException(new Exception("An error occurred when trying to download Minecraft.", e));
+                MCModUpdaterExceptionHandler.HandleException(this, new Exception("An error occurred when trying to download Minecraft.", e));
                                              
                 return;
             }

@@ -46,12 +46,10 @@ namespace ModUpdater.Net
 
         protected override void Dispose(bool disposing)
         {
-            TaskManager.AddAsyncTask(delegate
-            {
-                StreamDisposed.Invoke(null, EventArgs.Empty);
-            });
-            base.Dispose(disposing);
+            if (Disposed) return;
+            StreamDisposed.Invoke(null, EventArgs.Empty);
             Disposed = true;
+            base.Dispose(disposing);
         }
         protected byte[] GenerateKey()
         {
@@ -65,46 +63,84 @@ namespace ModUpdater.Net
             r.NextBytes(ba);
             return ba;
         }
+        public DataType ReadDataType()
+        {
+            byte[] type = new byte[1];
+            Socket.Receive(type);
+            return (DataType)type[0];
+        }
         public int ReadInt()
         {
+            DataType t = ReadDataType();
+            if (t != DataType.Int32) throw new MalformedPacketException("Expected Int32, insted got " + t.ToString() + ".");
             return IPAddress.HostToNetworkOrder((int)Read(4));
         }
-
+        public byte ReadNetworkByte()
+        {
+            DataType t = ReadDataType();
+            if (t != DataType.Byte) throw new MalformedPacketException("Expected Byte, insted got " + t.ToString() + ".");
+            return (byte)base.ReadByte();
+        }
         public short ReadShort()
         {
+            DataType t = ReadDataType();
+            if (t != DataType.Int16) throw new MalformedPacketException("Expected Int16, insted got " + t.ToString() + ".");
             return IPAddress.HostToNetworkOrder((short)Read(2));
         }
 
         public long ReadLong()
         {
+            DataType t = ReadDataType();
+            if (t != DataType.Int64) throw new MalformedPacketException("Expected Int64, insted got " + t.ToString() + ".");
             return IPAddress.HostToNetworkOrder((long)Read(8));
         }
 
         public double ReadDouble()
         {
+            DataType t = ReadDataType();
+            if (t != DataType.Double) throw new MalformedPacketException("Expected Double, insted got " + t.ToString() + ".");
             return new BinaryReader(this).ReadDouble();
         }
 
         public float ReadFloat()
         {
+            DataType t = ReadDataType();
+            if (t != DataType.Float) throw new MalformedPacketException("Expected Float, insted got " + t.ToString() + ".");
             return new BinaryReader(this).ReadSingle();
         }
 
         public Boolean ReadBoolean()
         {
+            DataType t = ReadDataType();
+            if (t != DataType.Boolean) throw new MalformedPacketException("Expected Boolean, insted got " + t.ToString() + ".");
             return new BinaryReader(this).ReadBoolean();
         }
-
-        public byte[] ReadBytes(int count)
+        public string[] ReadStrings()
         {
-            //if (Encrypted)
-            //    return DecryptBytes(new BinaryReader(this).ReadBytes(count));
-            //else
-                return new BinaryReader(this).ReadBytes(count);
+            DataType t = ReadDataType();
+            if (t != DataType.StringArray) throw new MalformedPacketException("Expected StringArray, insted got " + t.ToString() + ".");
+            int l = ReadInt();
+            string[] s = new string[l];
+            for (int i = 0; i < l; i++)
+            {
+                s[i] = ReadString();
+            }
+            return s;
+        }
+        public byte[] ReadBytes()
+        {
+            DataType t = ReadDataType();
+            if (t != DataType.ByteArray) throw new MalformedPacketException("Expected ByteArray, insted got " + t.ToString() + ".");
+            int count = ReadInt();
+            if (Encrypted)
+                return DecryptBytes(new BinaryReader(this).ReadBytes(count));
+            return new BinaryReader(this).ReadBytes(count);
         }
 
         public String ReadString()
         {
+            DataType t = ReadDataType();
+            if (t != DataType.String) throw new MalformedPacketException("Expected String, insted got " + t.ToString() + ".");
             if (!Encrypted)
                 return new BinaryReader(this).ReadString();
             else
@@ -119,6 +155,7 @@ namespace ModUpdater.Net
 
         public void WriteString(String msg)
         {
+            WriteDataType(DataType.String);
             if (!Encrypted)
                 new BinaryWriter(this).Write(msg);
             else
@@ -129,45 +166,77 @@ namespace ModUpdater.Net
         {
             new BinaryWriter(this).Write(AES_encrypt(msg));
         }
+        public void WriteDataType(DataType t)
+        {
+            Socket.Send(new byte[] { (byte)t });
+        }
         public void WriteInt(int i)
         {
+            WriteDataType(DataType.Int32);
             byte[] a = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(i));
             Write(a, 0, a.Length);
         }
 
         public void WriteLong(long i)
         {
+            WriteDataType(DataType.Int64);
             byte[] a = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(i));
             Write(a, 0, a.Length);
         }
 
         public void WriteShort(short i)
         {
+            WriteDataType(DataType.Int16);
             byte[] a = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(i));
             Write(a, 0, a.Length);
         }
 
         public void WriteDouble(double d)
         {
+            WriteDataType(DataType.Double);
             new BinaryWriter(this).Write(d);
         }
 
         public void WriteFloat(float f)
         {
+            WriteDataType(DataType.Float);
             new BinaryWriter(this).Write(f);
         }
 
         public void WriteBoolean(Boolean b)
         {
+            WriteDataType(DataType.Boolean);
             new BinaryWriter(this).Write(b);
         }
-
+        public void WriteStrings(string[] sa)
+        {
+            WriteDataType(DataType.StringArray);
+            WriteInt(sa.Length);
+            foreach (string s in sa)
+            {
+                WriteString(s);
+            }
+        }
+        public void WriteNetworkByte(byte b)
+        {
+            WriteDataType(DataType.Byte);
+            base.WriteByte(b);
+        }
         public void WriteBytes(byte[] b)
         {
-            //if (Encrypted)
-            //    new BinaryWriter(this).Write(EncryptBytes(b));
-            //else
+            WriteDataType(DataType.ByteArray);
+
+            if (Encrypted)
+            {
+                b = EncryptBytes(b);
+                WriteInt(b.Length);
                 new BinaryWriter(this).Write(b);
+            }
+            else
+            {
+                WriteInt(b.Length);
+                new BinaryWriter(this).Write(b);
+            }
         }
         public Object Read(int num)
         {
@@ -217,7 +286,7 @@ namespace ModUpdater.Net
             }
             catch (Exception e) { Console.WriteLine(e); throw e; }
         }
-        public byte[] EncryptBytes(byte[] Input)
+        private byte[] EncryptBytes(byte[] Input)
         {
             try
             {
@@ -269,7 +338,7 @@ namespace ModUpdater.Net
             String Output = Encoding.UTF8.GetString(xBuff);
             return Output;
         }
-        public byte[] DecryptBytes(byte[] Input)
+        private byte[] DecryptBytes(byte[] Input)
         {
             RijndaelManaged aes = new RijndaelManaged();
             aes.KeySize = 256;

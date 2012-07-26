@@ -37,18 +37,28 @@ namespace ModUpdater.Server
         public IPAddress Address { get; private set; }
         public Dictionary<Mod, Image> ModImages { get; private set; }
         public Image BackgroundImage { get; private set; }
+        public List<string> Administrators { get; private set; }
         bool Online { get; set; }
         public Server()
         {
+            MinecraftModUpdater.Logger.LogEvent += new LogEventDelegate(Logger_LogEvent);
+            System.Diagnostics.Process.GetCurrentProcess().Exited += new EventHandler(Server_Exited);
             Config.Load();
             Mods = new List<Mod>();
             Clients = new List<Client>();
             TcpServer = new TcpListener(IPAddress.Any, Config.Port);
             ModImages = new Dictionary<Mod, Image>();
+            Administrators = new List<string>();
+            MCModUpdaterExceptionHandler.RegisterExceptionHandler(new ExceptionHandler());
             SelfUpdate();
+            Administrators.AddRange(File.ReadAllLines("administrators.txt"));
             foreach (string s in Directory.GetFiles(Config.ModsPath + "/xml"))
             {
-                Mods.Add(new Mod(s));
+                try
+                {
+                    Mods.Add(new Mod(s));
+                }
+                catch { } //This error is handled at a lower level.
             }
             foreach (Mod m in Mods)
             {
@@ -56,25 +66,36 @@ namespace ModUpdater.Server
                 {
                     ModImages.Add(m, Image.FromFile(Config.ModsPath + "/ModAssets/" + Path.GetFileName(m.ModFile) + ".png"));
                 }
+                m.LoadRequiredMods(Mods);
             }
             if (File.Exists(Config.ModsPath + "/assets/server_background.png"))
             {
                 BackgroundImage = Image.FromFile(Config.ModsPath + "/assets/server_background.png");
             }
-            Console.WriteLine("Registered {0} mods", Mods.Count);
+            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Registered {0} mods", Mods.Count);
         }
+
+        void Server_Exited(object sender, EventArgs e)
+        {
+            Dispose();
+        }
+        
         private void SelfUpdate()
         {
-            if (Config.ModsPath != ".")
+            //Update
+            switch (Config.Version)
             {
-                try
-                {
-                    if (!Directory.Exists(Config.ModsPath)) Directory.CreateDirectory(Config.ModsPath);
-                    if (Directory.Exists("mods")) Directory.Move("mods", Config.ModsPath + "/mods");
-                    if (Directory.Exists("xml")) Directory.Move("xml", Config.ModsPath + "/xml");
-                    if (Directory.Exists("ModAssets")) Directory.Move("ModAssets", Config.ModsPath + "/ModAssets");
-                }
-                catch { }
+                case "1.2.x":
+                    Upgrade.From12x();
+                    break;
+
+            }
+            //Install
+            if (!File.Exists("administrators.txt"))
+            {
+                Stream f = File.Create("administrators.txt");
+                f.Flush();
+                f.Close();
             }
             if (!Directory.Exists(Config.ModsPath + "/mods")) Directory.CreateDirectory(Config.ModsPath + "/mods");
             if (!Directory.Exists(Config.ModsPath + "/xml")) Directory.CreateDirectory(Config.ModsPath + "/xml");
@@ -101,11 +122,11 @@ namespace ModUpdater.Server
                 Address = IPAddress.Parse(direction);
             }
             catch (Exception e) { MinecraftModUpdater.Logger.Log(e); }
-            Console.WriteLine("Server IP Address is: " + Address.ToString());
+            MinecraftModUpdater.Logger.Log(Logger.Level.Info,"Server IP Address is: " + Address.ToString());
             TcpServer.Start();
             Online = true;
-            TaskManager.AddAsyncTask(delegate { SimpleConsoleImputHandler(); });
-            TaskManager.AddDelayedAsyncTask(delegate
+            TaskManager.AddAsyncTask(delegate { SimpleConsoleInputHandler(); });
+            TaskManager.AddAsyncTask(delegate
             {
                 if (Config.MasterServer != "")
                 {
@@ -118,7 +139,7 @@ namespace ModUpdater.Server
                     Thread.Sleep(1000);
                     Packet.Send(new HandshakePacket { Name = Config.ServerName, Port = Config.Port, Address = Address.ToString(), Type = HandshakePacket.SessionType.Server }, ph.Stream);
                 }
-            }, 1000);
+            }, ThreadRole.Delayed, 1000);
             TaskManager.AddAsyncTask(delegate
             {
                 string ver;
@@ -126,9 +147,9 @@ namespace ModUpdater.Server
                 if (Extras.CheckForUpdate("server", Program.Version, out ver, out api))
                 {
                     if (!api)
-                        Console.WriteLine("Version {0} is now available for Minecraft Mod Updater.", ver);
+                        MinecraftModUpdater.Logger.Log(Logger.Level.Info,"Version {0} is now available for Minecraft Mod Updater.", ver);
                     else
-                        Console.WriteLine("Version {0} is now available for Minecraft Mod Updater API.", ver);
+                        MinecraftModUpdater.Logger.Log(Logger.Level.Info,"Version {0} is now available for Minecraft Mod Updater API.", ver);
                 }
             });
             Receive();
@@ -137,7 +158,12 @@ namespace ModUpdater.Server
         {
             TcpServer.Stop();
             Online = false;
+            foreach (Mod m in Mods)
+            {
+                m.Save();
+            }
             Config.Save();
+            Thread.Sleep(300);
         }
         public void Receive()
         {
@@ -146,6 +172,7 @@ namespace ModUpdater.Server
                 try
                 {
                     Socket s = TcpServer.AcceptSocket();
+                    TaskManager.SpawnTaskThread(ThreadRole.Standard);
                     TaskManager.AddAsyncTask(delegate
                     {
                         AcceptClient(s);
@@ -164,19 +191,24 @@ namespace ModUpdater.Server
                     return;
                 }
                 Client c = new Client(s, this);
-                Clients.Add(c);
-                c.StartListening();
-                Thread.Sleep(1000);
                 c.ClientDisconnected += delegate
                 {
                     Clients.Remove(c);
+                    TaskManager.KillTaskThread(TaskManager.GetTaskThread(Thread.CurrentThread));
                 };
+                Clients.Add(c);
+                c.StartListening();
             }
-            catch (Exception e) { Console.WriteLine(e); }
+            catch (Exception e) { MinecraftModUpdater.Logger.Log(e); }
         }
-        public void SimpleConsoleImputHandler()
+        void Logger_LogEvent(Logger.Level level, string message)
         {
-            Console.WriteLine("Simple Console Input Handler is online and ready.  \r\nEnter \"help\" for a list of commands.");
+            if(level > Logger.Level.Debug)
+                Console.WriteLine("[{0}] {1}", level.ToString().ToUpper(), message);
+        }
+        public void SimpleConsoleInputHandler()
+        {
+            MinecraftModUpdater.Logger.Log(Logger.Level.Info,"Simple Console Input Handler is online and ready.  \r\nEnter \"help\" for a list of commands.");
             while (Online)
             {
                 string input = Console.ReadLine();
@@ -184,13 +216,13 @@ namespace ModUpdater.Server
                 switch (input)
                 {
                     case "connected":
-                        Console.WriteLine("There are {0} connected clients.", Clients.Count);
+                        MinecraftModUpdater.Logger.Log(Logger.Level.Info,"There are {0} connected clients.", Clients.Count);
                         if (Clients.Count > 0)
                         {
-                            Console.WriteLine("Connected Clients:");
+                            MinecraftModUpdater.Logger.Log(Logger.Level.Info,"Connected Clients:");
                             foreach (Client c in Clients)
                             {
-                                Console.WriteLine(c.ToString());
+                                MinecraftModUpdater.Logger.Log(Logger.Level.Info,c.ToString());
                             }
                         }
                         break;
@@ -200,23 +232,28 @@ namespace ModUpdater.Server
                         {
                             Packet.Send(new MetadataPacket { SData = new string[] { "shutdown", "The Server is shutting down." } }, c.PacketHandler.Stream);
                         }
-                        if (Clients.Count > 0) Console.WriteLine("Waiting for {0} clients to exit.", Clients.Count);
-                        while (Clients.Count > 0) ;
+                        if (Clients.Count > 0) MinecraftModUpdater.Logger.Log(Logger.Level.Info,"Waiting for {0} clients to exit.", Clients.Count);
+                        while (Clients.Count > 0) Thread.Sleep(500);
                         Dispose();
                         break;
                     case "populate":
                         foreach(string s in Directory.GetFiles(Config.ModsPath + "/mods"))
                         {
-                            string[] file = new string[] {
-                                "<Mod>",
-                                "    <Name>" + Path.GetFileName(s) + "</Name>",
-                                "    <Author>null</Author>",
-                                "    <File>mods/" + Path.GetFileName(s) + "</File>",
-                                "    <PostDownload>",
-                                "        <Action>echo Example</Action>",
-                                "    </PostDownload>",
-                                "</Mod>" };
-                            File.WriteAllLines(Config.ModsPath + "/xml/" + Path.GetFileName(s) + ".xml", file);
+                            Mod m = new Mod
+                            {
+                                Author = "null",
+                                Description = "",
+                                FileSize = 0,
+                                ModFile = "mods/" + Path.GetFileName(s),
+                                ModName = Path.GetFileName(s),
+                                BlacklistedUsers = new List<string>(),
+                                WhitelistedUsers = new List<string>(),
+                                PostDownloadCLI = new string[0],
+                                Identifier = Extras.GenerateHashFromString(Path.GetFileName(s)),
+                                ConfigFile = Config.ModsPath + "/xml/" + Path.GetFileName(s) + ".xml",
+                                RequiredMods = new List<Mod>()
+                            };
+                            m.Save();
                         }
                         Mods.Clear();
                         ModImages.Clear();
@@ -230,18 +267,23 @@ namespace ModUpdater.Server
                             {
                                 ModImages.Add(m, Image.FromFile(Config.ModsPath + "/ModAssets/" + Path.GetFileName(m.ModFile) + ".png"));
                             }
+                            m.LoadRequiredMods(Mods);
                         }
-                        Console.WriteLine("Registered {0} mods", Mods.Count);
+                        MinecraftModUpdater.Logger.Log(Logger.Level.Info,"Registered {0} mods", Mods.Count);
                         break;
                     case "help":
                     case "?":
                     default:
-                        Console.WriteLine("exit, stop - Safely stops the update server after all clients exit.");
-                        Console.WriteLine("connected - Shows a list of connected clients.");
-                        Console.WriteLine("populate - Automagicly reads all of the files in the mods folder and creates XML files for them.");
+                        MinecraftModUpdater.Logger.Log(Logger.Level.Info,"exit, stop - Safely stops the update server after all clients exit.");
+                        MinecraftModUpdater.Logger.Log(Logger.Level.Info,"connected - Shows a list of connected clients.");
+                        MinecraftModUpdater.Logger.Log(Logger.Level.Info,"populate - Automagicly reads all of the files in the mods folder and creates XML files for them.");
                         break;
                 }
             }
+        }
+        ~Server()
+        {
+            Dispose();
         }
     }
 }

@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 using ModUpdater.Client.GUI;
+using System.Threading;
 
 namespace ModUpdater.Client
 {
@@ -44,17 +45,14 @@ namespace ModUpdater.Client
         /// </summary>
         public static void ShowSplashScreen()
         {
-            if (sf == null)
+            sf = new SplashScreenForm();
+            if (BackgroundImage != null)
             {
-                sf = new SplashScreenForm();
-                if (BackgroundImage != null)
-                {
-                    sf.Image.Image = BackgroundImage;
-                    sf.Image.Height = 400;
-                    sf.Image.Width = 640;
-                }
-                sf.ShowSplashScreen();
+                sf.Image.Image = BackgroundImage;
+                sf.Image.Height = 400;
+                sf.Image.Width = 640;
             }
+            sf.ShowSplashScreen();
         }
 
         /// <summary>
@@ -65,7 +63,7 @@ namespace ModUpdater.Client
             if (sf != null)
             {
                 sf.CloseSplashScreen();
-                sf = null;
+                //sf = null;
             }
         }
 
@@ -75,6 +73,8 @@ namespace ModUpdater.Client
         /// <param name="Text">Message</param>
         public static void UpdateStatusText(string Text)
         {
+            while (sf == null) ; // Wait for this to work...
+            while (sf.Opacity != 1) ; // Wait for it to show.
             if (sf != null)
                 sf.UpdateStatusText(Text);
 
@@ -87,9 +87,21 @@ namespace ModUpdater.Client
         /// <param name="tom">Type of Message</param>
         public static void UpdateStatusTextWithStatus(string Text, TypeOfMessage tom)
         {
-
-            if (sf != null)
+            while (sf == null) Thread.Sleep(20); // Wait for this to work...
+            while (sf.Opacity != 1) Thread.Sleep(20); // Wait for it to show.
+            if (sf != null){
                 sf.UpdateStatusTextWithStatus(Text, tom);
+            if (tom == TypeOfMessage.Error)
+            {
+                sf.Progress.EndColor = Color.FromArgb(211, 0, 0);
+                sf.Progress.StartColor = Color.FromArgb(211, 0, 0);
+            }}
+        }
+
+        public static void AdvanceProgressBar(int by = 10)
+        {
+            if (sf != null && sf.Progress.Value + by <= sf.Progress.MaxValue)
+                sf.Progress.Value += by;
         }
         public static SplashScreenForm GetScreen()
         {

@@ -28,14 +28,14 @@ using System.Threading;
 using ModUpdater.Client.GUI;
 using ModUpdater.Client.Game;
 using Ionic.Zip;
+using ModUpdater.Client.Utility;
 
 namespace ModUpdater.Client
 {
     static class Program
     {
-        public const string Version = "1.2.2_6";
-        [DllImport("kernel32.dll")]
-        private static extern int AllocConsole();
+        public const string Version = "1.3.0";
+        public static AppStatus AppStatus;
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -49,7 +49,7 @@ namespace ModUpdater.Client
                     switch (s)
                     {
                         case "-commandline":
-                            AllocConsole();
+                            CommandPromptForm.Open();
                             ProgramOptions.CommandLine = true;
                             break;
                         case "-debug":
@@ -63,10 +63,25 @@ namespace ModUpdater.Client
                 }
             }
             ExceptionHandler.Init();
+            AppStatus = Utility.AppStatus.Init;
             WindowsPrincipal pricipal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
             ProgramOptions.Administrator = pricipal.IsInRole(WindowsBuiltInRole.Administrator);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            TaskManager.AddAsyncTask(delegate
+            {
+                //throw new SystemException("Error", new SystemException("Other Error"));
+            });
+            string name = Process.GetCurrentProcess().ProcessName;
+            if (Process.GetProcessesByName(name).Length != 1)
+            {
+                foreach (Process pr in Process.GetProcessesByName(name))
+                {
+                    if (pr.MainModule.BaseAddress == Process.GetCurrentProcess().MainModule.BaseAddress)
+                        if (pr.Id != Process.GetCurrentProcess().Id)
+                            pr.Kill();
+                }
+            }
             Application.Run(new MainForm());
         }
         public static void StartMinecraft()
@@ -74,7 +89,7 @@ namespace ModUpdater.Client
             SplashScreen.CloseSplashScreen();
             string javaPath, sessionID, username;
             javaPath = Properties.Settings.Default.JavaPath;
-            username = Properties.Settings.Default.Username;
+            username = ProgramOptions.Username;
             sessionID = ProgramOptions.SessionID;
             using (FileStream output = File.Open("MCLaunch.class", FileMode.Create))
             {
@@ -106,11 +121,11 @@ namespace ModUpdater.Client
             minecraft.Start();
             while (!minecraft.StandardOutput.EndOfStream)
             {
-                Console.WriteLine(minecraft.StandardOutput.ReadLine());
+                MinecraftModUpdater.Logger.Log(Logger.Level.Info, minecraft.StandardOutput.ReadLine().Replace(ProgramOptions.SessionID, "REDACTED"));
             }
             while (!minecraft.StandardError.EndOfStream)
             {
-                Console.WriteLine(minecraft.StandardError.ReadLine());
+                MinecraftModUpdater.Logger.Log(Logger.Level.Info, minecraft.StandardError.ReadLine());
             }
             Thread.Sleep(1000);
             File.Delete("MCLaunch.class");
@@ -122,31 +137,36 @@ namespace ModUpdater.Client
         }
         public static void UpdateMinecraft()
         {
-            if (SplashScreen.GetScreen() == null) TaskManager.AddAsyncTask(delegate { SplashScreen.ShowSplashScreen(); });
+            if (SplashScreen.GetScreen() == null)
+            {
+                TaskManager.AddAsyncTask(delegate
+                {
+                    SplashScreen.ShowSplashScreen();
+                });
+            }
             Thread.Sleep(100);
             GameUpdater update = new GameUpdater(ProgramOptions.LatestVersion, "minecraft.jar", true);
             SplashScreen.UpdateStatusText("Downloading Minecraft...");
             Thread.Sleep(1000);
             TaskManager.AddAsyncTask(delegate
             {
-                SplashScreen.GetScreen().Invoke(new MainForm.Void(delegate
+                SplashScreen.GetScreen().Invoke(new ModUpdaterDelegate(delegate
                 {
-                    SplashScreen.GetScreen().progressBar1.Value = 0;
-                    SplashScreen.GetScreen().progressBar1.Maximum = 100;
-                    SplashScreen.GetScreen().progressBar1.Style = ProgressBarStyle.Blocks;
+                    SplashScreen.GetScreen().Progress.Value = 0;
+                    SplashScreen.GetScreen().Progress.MaxValue = 100;
                 }));
                 while (update.Progress != 100)
                 {
-                    SplashScreen.GetScreen().Invoke(new MainForm.Void(delegate
+                    SplashScreen.GetScreen().Invoke(new ModUpdaterDelegate(delegate
                     {
-                        SplashScreen.GetScreen().progressBar1.Value = update.Progress;
+                        SplashScreen.GetScreen().Progress.Value = update.Progress;
                         SplashScreen.UpdateStatusText(update.Status);
                     }));
                     Thread.Sleep(10);
                 }
             });
             update.UpdateGame();
-            while (update.Progress != 100) Thread.Sleep(50);
+            while (update.Progress != 100) ;
             using (ZipFile zf = ZipFile.Read(Path.Combine(Properties.Settings.Default.MinecraftPath, "bin", "minecraft.jar")))
             {
                 List<ZipEntry> delete = new List<ZipEntry>();
@@ -178,6 +198,10 @@ namespace ModUpdater.Client
             if (jOutput.Contains("Java(TM) SE Runtime Environment"))
                 return true;
             return false;
+        }
+        public static void RunOnUIThread(ModUpdaterDelegate method)
+        {
+            MainForm.Instance.Invoke(method);
         }
     }
 }
