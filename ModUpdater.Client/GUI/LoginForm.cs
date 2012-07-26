@@ -25,6 +25,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
 using System.Net;
+using ModUpdater.Utility;
 
 namespace ModUpdater.Client.GUI
 {
@@ -55,8 +56,6 @@ namespace ModUpdater.Client.GUI
             if (!VerifyAccount(out error))
             {
                 MessageBox.Show("Unable to login to Minecraft.  " + error, "Error");
-                DialogResult = System.Windows.Forms.DialogResult.Abort;
-                Close();
                 return;
             }
             DialogResult = System.Windows.Forms.DialogResult.OK;
@@ -65,28 +64,17 @@ namespace ModUpdater.Client.GUI
 
         private bool VerifyAccount(out string error)
         {
-            string postdata = "user=" + Properties.Settings.Default.Username + "&password=" + Properties.Settings.Default.Password + "&version=" + int.MaxValue.ToString();
-            byte[] post = Encoding.UTF8.GetBytes(postdata);
-            WebRequest r = WebRequest.Create("https://login.minecraft.net");
-            r.Credentials = CredentialCache.DefaultCredentials;
-            ((HttpWebRequest)r).UserAgent = "Minecraft Mod Updater Login Manager";
-            r.Method = "POST";
-            r.ContentType = "application/x-www-form-urlencoded";
-            r.ContentLength = post.Length;
-            Stream s = r.GetRequestStream();
-            s.Write(post, 0, post.Length);
-            WebResponse wr = r.GetResponse();
-            s = wr.GetResponseStream();
-            StreamReader sr = new StreamReader(s);
-            string responce = sr.ReadToEnd();
-            error = responce;
-            s.Close();
-            sr.Close();
-            wr.Close();
-            if (!responce.Contains(":")) return false;
-            string[] returndata = responce.Split(':');
-            ProgramOptions.Username = returndata[2];
-            ProgramOptions.SessionID = returndata[3];
+            LoginManager m = new LoginManager(username.Text);
+            string[] returndata;
+            error = "";
+            bool failed = !m.Login(password.Text, out returndata);
+            if (failed)
+            {
+                error = returndata[0];
+                return false;
+            }
+            ProgramOptions.Username = m.Username;
+            ProgramOptions.SessionID = m.SessionID;
             ProgramOptions.LatestVersion = returndata[0];
             return true;
         }
