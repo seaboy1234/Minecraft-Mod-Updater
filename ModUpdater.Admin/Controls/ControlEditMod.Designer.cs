@@ -67,8 +67,8 @@ namespace ModUpdater.Admin.GUI
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.clsRequired = new System.Windows.Forms.CheckedListBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.lsRequired = new System.Windows.Forms.CheckedListBox();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -279,7 +279,7 @@ namespace ModUpdater.Admin.GUI
             // 
             this.tabPage3.BackColor = System.Drawing.SystemColors.Control;
             this.tabPage3.Controls.Add(this.label1);
-            this.tabPage3.Controls.Add(this.clsRequired);
+            this.tabPage3.Controls.Add(this.lsRequired);
             this.tabPage3.Controls.Add(this.txtPostDownload);
             this.tabPage3.Controls.Add(this.chkOptional);
             this.tabPage3.Controls.Add(this.label7);
@@ -289,14 +289,6 @@ namespace ModUpdater.Admin.GUI
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Misc";
             // 
-            // clsRequired
-            // 
-            this.clsRequired.FormattingEnabled = true;
-            this.clsRequired.Location = new System.Drawing.Point(3, 64);
-            this.clsRequired.Name = "clsRequired";
-            this.clsRequired.Size = new System.Drawing.Size(152, 199);
-            this.clsRequired.TabIndex = 17;
-            // 
             // label1
             // 
             this.label1.AutoSize = true;
@@ -305,6 +297,14 @@ namespace ModUpdater.Admin.GUI
             this.label1.Size = new System.Drawing.Size(72, 13);
             this.label1.TabIndex = 18;
             this.label1.Text = "Requirements";
+            // 
+            // lsRequired
+            // 
+            this.lsRequired.FormattingEnabled = true;
+            this.lsRequired.Location = new System.Drawing.Point(3, 64);
+            this.lsRequired.Name = "lsRequired";
+            this.lsRequired.Size = new System.Drawing.Size(152, 199);
+            this.lsRequired.TabIndex = 17;
             // 
             // ControlEditMod
             // 
@@ -355,6 +355,6 @@ namespace ModUpdater.Admin.GUI
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.TabPage tabPage3;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.CheckedListBox clsRequired;
+        private System.Windows.Forms.CheckedListBox lsRequired;
     }
 }

@@ -68,7 +68,7 @@ namespace ModUpdater.Admin.Items
             }
             catch (SocketException)
             {
-                FailureMessage = "You are not an admin.";
+                FailureMessage = "Connection Failed.";
                 CurrentStep = ProgressStep.LoginFailed;
             }
             PacketHandler = new PacketHandler(Socket);
@@ -118,7 +118,8 @@ namespace ModUpdater.Admin.Items
                 Size = p.FileSize,
                 Hash = p.Hash,
                 Contents = new byte[p.FileSize], //This part will be filled in later.
-                Identifier = p.Identifier
+                Identifier = p.Identifier,
+                RequiredMods = new List<string>(p.Requires)
             });
             if (mods.Count == mods.Capacity)
                 CurrentStep = ProgressStep.Connected;
@@ -142,28 +143,16 @@ namespace ModUpdater.Admin.Items
         }
         private bool Login(ref string reason)
         {
-            string postdata = "user=" + username + "&password=" + password + "&version=" + int.MaxValue.ToString();
-            byte[] post = Encoding.UTF8.GetBytes(postdata);
-            WebRequest r = WebRequest.Create("https://login.minecraft.net");
-            r.Credentials = CredentialCache.DefaultCredentials;
-            ((HttpWebRequest)r).UserAgent = "Minecraft Mod Updater Login Manager";
-            r.Method = "POST";
-            r.ContentType = "application/x-www-form-urlencoded";
-            r.ContentLength = post.Length;
-            Stream s = r.GetRequestStream();
-            CurrentStep = ProgressStep.LoggingIn;
-            s.Write(post, 0, post.Length);
-            WebResponse wr = r.GetResponse();
-            s = wr.GetResponseStream();
-            StreamReader sr = new StreamReader(s);
-            string responce = sr.ReadToEnd();
-            reason = responce;
-            s.Close();
-            sr.Close();
-            wr.Close();
-            if (!responce.Contains(":")) return false;
-            string[] returndata = responce.Split(':');
-            SessionID = returndata[3];
+            LoginManager m = new LoginManager(username, false);
+            string[] returndata;
+            bool failed = !m.Login(password, out returndata);
+            if (failed)
+            {
+                reason = returndata[0];
+                return false;
+            }
+            username = m.Username;
+            SessionID = m.SessionID;
             return true;
         }
         private void OnProgressChange(ProgressStep step)
