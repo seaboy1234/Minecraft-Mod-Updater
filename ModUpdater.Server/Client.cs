@@ -103,7 +103,8 @@ namespace ModUpdater.Server
                             Hash = mod.Hash,
                             PostDownload = mod.PostDownloadCLI, 
                             WhitelistedUsers = mod.WhitelistedUsers.ToArray() ,
-                            Identifier = mod.Identifier
+                            Identifier = mod.Identifier,
+                            Requires = requiredMods
                         }, ph.Stream);
                         return;
                     }
