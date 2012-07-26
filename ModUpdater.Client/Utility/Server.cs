@@ -26,6 +26,8 @@ namespace ModUpdater.Client
         public string Name { get; set; }
         public string Address { get; set; }
         public int Port { get; set; }
+        public bool Shutdown { get; set; }
+        public static float FontSize { get; set; }
         public override string ToString()
         {
             return Name;

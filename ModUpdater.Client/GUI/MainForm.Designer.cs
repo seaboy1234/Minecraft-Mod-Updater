@@ -53,7 +53,7 @@ namespace ModUpdater.Client.GUI
             this.label3 = new System.Windows.Forms.Label();
             this.btnConfirm = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
-            this.label4 = new System.Windows.Forms.Label();
+            this.btnOptional = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // lsMods
@@ -63,6 +63,7 @@ namespace ModUpdater.Client.GUI
             this.lsMods.Name = "lsMods";
             this.lsMods.Size = new System.Drawing.Size(115, 225);
             this.lsMods.TabIndex = 0;
+            this.lsMods.DoubleClick += new System.EventHandler(this.ListBox_DoubleClick_Handler);
             // 
             // label1
             // 
@@ -82,6 +83,7 @@ namespace ModUpdater.Client.GUI
             this.lsModsToUpdate.Name = "lsModsToUpdate";
             this.lsModsToUpdate.Size = new System.Drawing.Size(112, 225);
             this.lsModsToUpdate.TabIndex = 2;
+            this.lsModsToUpdate.DoubleClick += new System.EventHandler(this.ListBox_DoubleClick_Handler);
             // 
             // label2
             // 
@@ -135,17 +137,15 @@ namespace ModUpdater.Client.GUI
             this.btnCancel.UseVisualStyleBackColor = false;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
-            // label4
+            // btnOptional
             // 
-            this.label4.AutoSize = true;
-            this.label4.BackColor = System.Drawing.Color.Transparent;
-            this.label4.ForeColor = System.Drawing.Color.White;
-            this.label4.Location = new System.Drawing.Point(131, 260);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(122, 26);
-            this.label4.TabIndex = 8;
-            this.label4.Text = "There are {0} mods that \r\nwill be changed";
-            this.label4.Visible = false;
+            this.btnOptional.Location = new System.Drawing.Point(145, 260);
+            this.btnOptional.Name = "btnOptional";
+            this.btnOptional.Size = new System.Drawing.Size(95, 23);
+            this.btnOptional.TabIndex = 8;
+            this.btnOptional.Text = "Optional Mods";
+            this.btnOptional.UseVisualStyleBackColor = true;
+            this.btnOptional.Click += new System.EventHandler(this.btnOptional_Click);
             // 
             // MainForm
             // 
@@ -154,7 +154,7 @@ namespace ModUpdater.Client.GUI
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
             this.ClientSize = new System.Drawing.Size(383, 293);
-            this.Controls.Add(this.label4);
+            this.Controls.Add(this.btnOptional);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnConfirm);
             this.Controls.Add(this.label3);
@@ -186,7 +186,7 @@ namespace ModUpdater.Client.GUI
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button btnConfirm;
         private System.Windows.Forms.Button btnCancel;
-        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Button btnOptional;
     }
 }
 

@@ -1,4 +1,4 @@
-﻿//    File:        PacketDelagate.cs
+﻿//    File:        DataType.cs
 //    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
 //    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
 //    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
@@ -14,12 +14,19 @@
 //    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 namespace ModUpdater.Net
 {
-    public delegate void PacketEvent(Packet p);
+    public enum DataType : byte
+    {
+        String,
+        Double,
+        Float,
+        Byte,
+        ByteArray,
+        Int16,
+        Int32,
+        Int64,
+        Boolean,
+        StringArray
+    }
 }

@@ -46,7 +46,13 @@ namespace ModUpdater.Server
         /// The IP Address and port of the master server.
         /// </summary>
         public static string MasterServer { get; set; }
+        /// <summary>
+        /// The current installed version of the server.
+        /// </summary>
+        public static string Version { get; set; }
+
         private static XmlDocument config = new XmlDocument();
+
         public static void Load()
         {
             config = new XmlDocument();
@@ -63,6 +69,12 @@ namespace ModUpdater.Server
                 Port = int.Parse(n["Port"].InnerText);
             }
             catch { Port = 4713; }
+            try
+            {
+                MasterServer = n["Version"].InnerText;
+            }
+            catch
+            { Version = "1.2.x"; }
             try
             {
                 MaxClients = int.Parse(n["MaxClients"].InnerText);
@@ -102,6 +114,7 @@ namespace ModUpdater.Server
                 sw.WriteLine("<Config>");
                 sw.WriteLine("  <ServerName>{0}</ServerName>", ServerName);
                 sw.WriteLine("  <Port>{0}</Port>", Port);
+                sw.WriteLine("  <Version>{0}</Version>", Program.Version);
                 sw.WriteLine("  <MaxClients>{0}</MaxClients>", MaxClients);
                 sw.WriteLine("  <ModsPath>{0}</ModsPath>", ModsPath);
                 sw.WriteLine("  <MasterServer>{0}</MasterServer>", MasterServer);

@@ -25,6 +25,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using ModUpdater.Client.Utility;
 using ModUpdater.Net;
 using ModUpdater.Utility;
 
@@ -33,26 +34,54 @@ namespace ModUpdater.Client.GUI
     public partial class MainForm : Form
     {
         public static MainForm Instance { get; private set; }
-        public ModFile CurrentDownload;
+        public Mod CurrentDownload;
         public IPAddress LocalAddress;
-        public string ServerFolder { get { return serverName.Replace(' ', '_').Replace('.', '-').ToLower(); } }
-        public delegate void Void();
+        public string ServerFolder { get { return Server.Name.Replace(' ', '_').Replace('.', '-').ToLower(); } }
+        public Server Server { get; set; }
 
         private PacketHandler ph;
         private Socket socket;
-        private List<string> ModFiles = new List<string>();
+        private List<string> identifiers = new List<string>();
         private List<Mod> Mods = new List<Mod>();
-        private string[] PostDownload;
-        private bool ServerShutdown = false;
-        private string serverName = "";
-        private float serverFontSize = 36;
+        private List<Mod> OptionalMods = new List<Mod>();
         private ImageList modImages;
         private bool warnDisconnect = true;
-
-        public MainForm()
+        private bool recover;
+        int[] progress = new int[5];
+        private int dlThisSecond;
+        private double percentage { get { return ((double)progress[4] / progress[3]); } }
+        //private int index = 0;
+        //private int curPart = 0;
+        //private int Parts = 0;
+        //private int totalDlSize = 0;
+        //private int totalDlProgress = 0;
+        
+        public MainForm(bool recover = false)
         {
             if (Instance == null) Instance = this;
+            this.recover = recover;
             InitializeComponent();
+        }
+
+        private void Recover()
+        {
+            switch (Program.AppStatus)
+            {
+                case AppStatus.Init:
+                    PrepareConnection();
+                    break;
+                case AppStatus.Connecting:
+                    PrepareConnection();
+                    Connect();
+                    break;
+                case AppStatus.Updating:
+                    PrepareConnection();
+                    Connect();
+                    Properties.Settings.Default.AutoUpdate = true;
+                    btnConfirm_Click(null, null);
+                    Properties.Settings.Default.AutoUpdate = false;
+                    break;
+            }
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
@@ -62,64 +91,88 @@ namespace ModUpdater.Client.GUI
 
         private void btnConfirm_Click(object sender, EventArgs e)
         {
-            if (Properties.Settings.Default.FirstRun || !File.Exists(Properties.Settings.Default.MinecraftPath + "/bin/version"))
-                Program.UpdateMinecraft();
             if (lsModsToUpdate.Items.Count == 0)
             {
                 if (Properties.Settings.Default.LaunchAfterUpdate)
                 {
+                    if (Properties.Settings.Default.FirstRun || !File.Exists(Properties.Settings.Default.MinecraftPath + "/bin/version"))
+                        Program.UpdateMinecraft();
                     SplashScreen.CloseSplashScreen();
                     Hide();
                     Program.StartMinecraft();
                 }
-                try
+                Program.RunOnUIThread(delegate
                 {
-                    Invoke(new Void(delegate
-                    {
-                        Close();
-                    }));
-                }
-                catch { }
+                    Close();
+                });
                 return;
             }
+            Program.AppStatus = AppStatus.Updating;
             if (!Properties.Settings.Default.AutoUpdate)
             {
                 if (MessageBox.Show("Are you sure you want to update " + lsModsToUpdate.Items.Count + " mods and delete " + lsModsToDelete.Items.Count + " more?", "Confirm Update Action", MessageBoxButtons.YesNo) != System.Windows.Forms.DialogResult.Yes)
                 {
                     return;
                 }
+            }
+            foreach (object m in lsModsToUpdate.Items)
+            {
+                progress[3] += (int)((Mod)m).Size;
+            }
+            if (!Properties.Settings.Default.AutoUpdate)
+            {
                 TaskManager.AddAsyncTask(delegate
                 {
-                    SplashScreen.ShowSplashScreen();                    
+                    SplashScreen.ShowSplashScreen();
                 });
             }
-            TaskManager.AddDelayedAsyncTask(delegate
+            while (SplashScreen.GetScreen() == null) ;
+            while (SplashScreen.GetScreen().Opacity != 1) ;
+            if (Properties.Settings.Default.FirstRun || !File.Exists(Properties.Settings.Default.MinecraftPath + "/bin/version"))
+                Program.UpdateMinecraft();
+            SplashScreen.UpdateStatusText("Downloading Updates...");
+            SplashScreen.GetScreen().Invoke(new ModUpdaterDelegate(delegate
             {
-                SplashScreen.UpdateStatusText("Downloading Updates...");
-                SplashScreen.GetScreen().Invoke(new Void(delegate
-                {
-                    SplashScreen.GetScreen().label2.Font.Dispose();
-                    SplashScreen.GetScreen().label2.Font = new Font(FontFamily.GenericSansSerif, serverFontSize);
-                    SplashScreen.GetScreen().label2.Text = serverName;
-                }));
-            }, 300);
-            TaskManager.AddDelayedAsyncTask(delegate
+                SplashScreen.GetScreen().lblTitle.Font.Dispose();
+                SplashScreen.GetScreen().lblTitle.Font = new Font(FontFamily.GenericSansSerif, Server.FontSize);
+                SplashScreen.GetScreen().lblTitle.Text = Server.Name;
+                SplashScreen.GetScreen().lblProgress.Visible = true;
+                SplashScreen.GetScreen().lblProgress.Text = "0%";
+            }));
+            foreach (object o in lsModsToDelete.Items)
             {
-                foreach (object o in lsModsToDelete.Items)
+                string m = (string)o;
+                string path = Properties.Settings.Default.MinecraftPath + "\\" + Path.GetDirectoryName(m) + Path.GetFileName(m).TrimEnd('\\').Replace("clientmods", "mods");
+                File.Delete(Properties.Settings.Default.MinecraftPath + @"\mods\" + Path.GetFileName(m));
+            }
+            Mod mod = (Mod)lsModsToUpdate.Items[progress[0]];
+            if (lsModsToUpdate.Items.Contains(mod))
+            {
+                Packet.Send(new RequestModPacket { Type = RequestModPacket.RequestType.Download, Identifier = mod.Identifier }, ph.Stream);
+            }
+            TaskManager.AddAsyncTask(delegate
+            {
+                while (CurrentDownload == null) ;
+                int i = 5;
+                int kbps = 0;
+                while (warnDisconnect == true)
                 {
-                    string m = (string)o;
-                    string path = Properties.Settings.Default.MinecraftPath + "\\" + Path.GetDirectoryName(m) + Path.GetFileName(m).TrimEnd('\\').Replace("clientmods", "mods");
-                    File.Delete(Properties.Settings.Default.MinecraftPath + @"\mods\" + Path.GetFileName(m));
-                }
-                foreach (Mod m in Mods)
-                {
-                    if (lsModsToUpdate.Items.Contains(m))
+                    SplashScreen.GetScreen().Invoke(new ModUpdaterDelegate(delegate
                     {
-                        Packet.Send(new RequestModPacket { Type = RequestModPacket.RequestType.Download, FileName = m.File }, ph.Stream);
-                        Packet.Send(new RequestModPacket { Type = RequestModPacket.RequestType.Config, FileName = m.File }, ph.Stream);
-                    }
+                        SplashScreen.GetScreen().lblProgress.Text = string.Format(string.Format("{0:0%}", percentage) + " at {0} KB/s", kbps);
+                        SplashScreen.GetScreen().Progress.Value = Convert.ToInt32(percentage.ToString("0%").Replace("%", ""));
+                        if (i == 10)
+                        {
+                            kbps = (dlThisSecond) / 1000;
+                            dlThisSecond = 0;
+                            i = 0;
+                        }
+                    }));
+                    i++;
+                    
+                    Thread.Sleep(100);
                 }
-            }, 1000);
+            });
             Hide();
         }
 
@@ -141,6 +194,7 @@ namespace ModUpdater.Client.GUI
                 direction = direction.Substring(first, last - first);
                 LocalAddress = IPAddress.Parse(direction);
             });
+            ExceptionHandler.CloseProgram += new ModUpdaterDelegate(ExceptionHandler_CloseProgram);
             Debug.Assert("Debug mode is enabled.  In-depth messages will be displayed.");
             if (ProgramOptions.Debug)
             {
@@ -153,8 +207,9 @@ namespace ModUpdater.Client.GUI
             TaskManager.AddAsyncTask(delegate
             {
                 string ver;
-                if (Extras.CheckForUpdate("client", Program.Version, out ver))
-                    UpdateForm.Open(ver);
+                bool api;
+                if (Extras.CheckForUpdate("client", Program.Version, out ver, out api))
+                    UpdateForm.Open(ver, api);
             });
             if (Properties.Settings.Default.FirstRun)
             {
@@ -164,30 +219,54 @@ namespace ModUpdater.Client.GUI
                 });
                 OnFirstRun();
             }
+            if (recover)
+            {
+                Recover();
+                return;
+            }
+            if (!PrepareConnection())
+            {
+                Close();
+            }
+            Connect();
+        }
+
+        void ExceptionHandler_CloseProgram()
+        {
+            MainForm_FormClosing(null, null);
+        }
+        private bool PrepareConnection()
+        {
             ConnectionForm cf = new ConnectionForm();
             if (cf.ShowDialog() != System.Windows.Forms.DialogResult.OK)
             {
-                Dispose();
-                return;
+                return false;
             }
             TaskManager.AddAsyncTask(delegate
             {
                 SplashScreen.ShowSplashScreen();
             });
             Debug.Assert("Launching Program.");
-            Thread.Sleep(500);
             SplashScreen.UpdateStatusTextWithStatus("Preparing to connect to the update server...", TypeOfMessage.Warning);
             Thread.Sleep(3000);
+            SplashScreen.GetScreen().Progress.Step = 20;
+            Program.AppStatus = AppStatus.Connecting;
             SplashScreen.UpdateStatusText("Connecting...");
+            SplashScreen.GetScreen().Progress.PerformStep();
+            return true;
+        }
+        private void Connect()
+        {
             Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             socket = s;
             Debug.Assert("Creating Objects.");
             try
             {
-                string srv = cf.ConnectTo.Address;
-                int port =  cf.ConnectTo.Port;
+                string srv = Server.Address;
+                int port = Server.Port;
                 if (srv == LocalAddress.ToString()) srv = "127.0.0.1";
                 ConnectionHandler.ConnectTo(s, srv, port);
+                SplashScreen.GetScreen().Progress.PerformStep();
             }
             catch (SocketException ex)
             {
@@ -203,31 +282,36 @@ namespace ModUpdater.Client.GUI
                 Close();
                 return;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 ExceptionHandler.HandleException(ex, this);
             }
             modImages = new ImageList();
             modImages.ImageSize = new Size(230, 180);
             modImages.ColorDepth = ColorDepth.Depth32Bit;
+            SplashScreen.GetScreen().Progress.PerformStep();
             TaskManager.AddAsyncTask(delegate
             {
                 while (s.Connected) ;
                 if (!warnDisconnect) return;
-                SplashScreen.UpdateStatusTextWithStatus("Lost connection to server.", TypeOfMessage.Error);
-                if (Visible) MessageBox.Show("Lost connection to server.");
-                else Thread.Sleep(5000);
-                Invoke(new Void(delegate
+                if (SplashScreen.GetScreen() != null)
+                {
+                    SplashScreen.UpdateStatusTextWithStatus("Lost connection to server.", TypeOfMessage.Error);
+                    Thread.Sleep(5000);
+                }
+                else MessageBox.Show("Lost connection to server.");
+                Program.RunOnUIThread(delegate
                 {
                     Close();
-                }));
+                });
             });
             MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Logging started.");
             ph = new PacketHandler(s);
-            TaskManager.AddAsyncTask(delegate
+            ph.Start();
+            for (int i = 0; i < 10; i++)
             {
-                ph.Start();
-            });
+                TaskManager.SpawnTaskThread(ThreadRole.Standard);
+            }
             TaskManager.AddAsyncTask(delegate
             {
                 ph.RegisterPacketHandler(PacketId.Metadata, ph_Metadata);
@@ -238,6 +322,7 @@ namespace ModUpdater.Client.GUI
                 ph.RegisterPacketHandler(PacketId.FilePart, ph_FilePart);
                 ph.RegisterPacketHandler(PacketId.Image, ph_Image);
                 Debug.Assert("Packet Handlers registered.");
+                SplashScreen.GetScreen().Progress.PerformStep();
             });
             if ((new LoginForm()).ShowDialog() != DialogResult.OK)
             {
@@ -251,11 +336,15 @@ namespace ModUpdater.Client.GUI
             }
             Thread.Sleep(1000);
             SplashScreen.UpdateStatusText("Connected to server.  Retreving Mod List.");
-            Packet.Send(new HandshakePacket { Username = Properties.Settings.Default.Username }, ph.Stream);
+            Packet.Send(new HandshakePacket { Username = ProgramOptions.Username }, ph.Stream);
             Debug.Assert("Sent Handshake Packet.");
             Thread.Sleep(100);
+            for (int i = 0; i < 5; i++)
+            {
+                SplashScreen.GetScreen().Progress.Value += 1;
+                Thread.Sleep(20);
+            }
         }
-
         private void OnFirstRun()
         {
             Properties.Settings.Default.MinecraftPath = Environment.CurrentDirectory + "/Minecraft";
@@ -271,7 +360,7 @@ namespace ModUpdater.Client.GUI
         void ph_Image(Packet pa)
         {
             ImagePacket p = pa as ImagePacket;
-            Image i = Extras.ImageFromBytes(ph.Stream.DecryptBytes(p.Image));
+            Image i = Extras.ImageFromBytes(p.Image);
             if (p.Type == ImagePacket.ImageType.Background)
             {
                 SplashScreen.BackgroundImage = i;
@@ -288,7 +377,9 @@ namespace ModUpdater.Client.GUI
         void ph_FilePart(Packet pa)
         {
             FilePartPacket p = pa as FilePartPacket;
-            
+            dlThisSecond += p.Part.Length;
+            progress[1]++;
+            progress[4] += p.Part.Length;
             if (ExceptionHandler.ProgramCrashed)
             {
                 ph.Stop();
@@ -296,44 +387,31 @@ namespace ModUpdater.Client.GUI
             }
             while (SplashScreen.GetScreen().Loading) ;
             int i = p.Index;
-            byte[] d = ph.Stream.DecryptBytes(p.Part);
-            foreach (byte b in d)
+            foreach (byte b in p.Part)
             {
-                CurrentDownload.FileContents[i] = b;
+                CurrentDownload.Contents[i] = b;
                 i++;
             }
-            TaskManager.AddAsyncTask(delegate
-            {
-                
-                    SplashScreen.GetScreen().Invoke(new Void(delegate
-                    {
-                        SplashScreen.AdvanceProgressBar();
-                    }));
-                
-            });
+            
         }
 
         void ph_NextDownload(Packet pa)
         {
             NextDownloadPacket p = pa as NextDownloadPacket;
             Thread.Sleep(100);
-            SplashScreen.GetScreen().Invoke(new Void(delegate
-            {
-                SplashScreen.GetScreen().progressBar1.Value = 0;
-                SplashScreen.GetScreen().progressBar1.Maximum = p.ChunkSize * 10;
-                SplashScreen.GetScreen().progressBar1.Style = ProgressBarStyle.Blocks;
-                SplashScreen.AdvanceProgressBar();
-            }));
-            CurrentDownload = new ModFile(p.ModName, p.FileName, p.Length);
-            if(!ServerShutdown)
-                SplashScreen.UpdateStatusText("Downloading " + p.ModName);
+            progress[1] = 0;
+            progress[2] = p.ChunkSize;
+            CurrentDownload = Mods.Find(p.Identifier);
+            CurrentDownload.Contents = new byte[CurrentDownload.Size];
+            if(!Server.Shutdown)
+                SplashScreen.UpdateStatusText("Downloading " + CurrentDownload.Name);
             else
-                SplashScreen.UpdateStatusTextWithStatus("Downloading " + p.ModName + "(Server Shutdown Mode)", TypeOfMessage.Warning);
-            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Starting download of " + p.ModName);
-            if(modImages.Images.ContainsKey(p.FileName))
-                SplashScreen.GetScreen().setDownloadPicture(modImages.Images[p.FileName]);
-            PostDownload = p.PostDownloadCLI;
-            string path = Properties.Settings.Default.MinecraftPath + "\\" + p.FileName.Replace(p.FileName.Split('\\').Last(), "").TrimEnd('\\').Replace("clientmods", "mods");
+                SplashScreen.UpdateStatusTextWithStatus("Downloading " + CurrentDownload.Name + "(Server Shutdown Mode)", TypeOfMessage.Warning);
+            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Starting download of " + CurrentDownload.Name);
+            if(modImages.Images.ContainsKey(CurrentDownload.File))
+                SplashScreen.GetScreen().setDownloadPicture(modImages.Images[CurrentDownload.File]);
+             CurrentDownload.PostDownload = p.PostDownloadCLI;
+            string path = Properties.Settings.Default.MinecraftPath + "\\" + CurrentDownload.File.Replace(CurrentDownload.File.Split('\\').Last(), "").TrimEnd('\\').Replace("clientmods", "mods");
             bool exists = Directory.Exists(path);
             if (!exists) Directory.CreateDirectory(path);
         }
@@ -341,109 +419,129 @@ namespace ModUpdater.Client.GUI
         void ph_AllDone(Packet pa)
         {
             AllDonePacket p = pa as AllDonePacket;
-            TaskManager.AddAsyncTask(delegate
+            int i = 0;
+            while (progress[1] != progress[2])
             {
-                string path = Properties.Settings.Default.MinecraftPath + "\\" + p.File.Replace(p.File.Split('\\').Last(), "").TrimEnd('\\');
-                File.WriteAllBytes(path + "\\" + Path.GetFileName(p.File), CurrentDownload.FileContents);
-                MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Downloaded " + path + "\\" + Path.GetFileName(p.File));
-            });
-            foreach (string s in PostDownload)
+                if (i > 10)
+                {
+                    SplashScreen.UpdateStatusText("There was an error while downloading.  Retrying...");
+                    Thread.Sleep(5000);
+                    Packet.Send(new RequestModPacket { Type = RequestModPacket.RequestType.Download, Identifier = p.Identifier }, ph.Stream);
+                    return;
+                }
+                i++;
+                Thread.Sleep(1000);
+            }
+            Mod m = Mods.Find(p.Identifier);
+            string path = Path.GetDirectoryName(Properties.Settings.Default.MinecraftPath + "\\" + m.File);
+            File.WriteAllBytes(path + "\\" + Path.GetFileName(m.File), CurrentDownload.Contents);
+            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Downloaded " + path + "\\" + Path.GetFileName(m.File));
+            ProcessStartInfo pr = new ProcessStartInfo("cmd");
+            pr.CreateNoWindow = true;
+            pr.UseShellExecute = false;
+            pr.RedirectStandardOutput = true;
+            pr.RedirectStandardInput = true;
+            Process proc = new Process();
+            proc.StartInfo = pr;
+            proc.Start();
+            foreach (string s in m.PostDownload)
             {
                 try
                 {
-                    ProcessStartInfo pr = new ProcessStartInfo("cmd", "/c " + s);
-                    pr.CreateNoWindow = true;
-                    pr.UseShellExecute = false;
-                    pr.RedirectStandardOutput = true;
-                    Process proc = new Process();
-                    proc.StartInfo = pr;
-                    proc.Start();
-                    MinecraftModUpdater.Logger.Log(Logger.Level.Info, "[Post Download] " + proc.StandardOutput.ReadToEnd());
+                    proc.StandardInput.WriteLine(s);
                 }
                 catch (Exception e) { ExceptionHandler.HandleException(e, this); }
             }
-            if (GetLastModToUpdate().File == p.File)
+            proc.Kill();
+            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "[Post Download] " + proc.StandardOutput.ReadToEnd());
+            if (GetLastModToUpdate().File == m.File)
             {
                 SplashScreen.UpdateStatusText("All files downloaded!");
                 Thread.Sleep(1000);
-                if (Properties.Settings.Default.LaunchAfterUpdate)
-                {
-                    Program.StartMinecraft();
-                }
-                else
-                {
-                    SplashScreen.CloseSplashScreen();
-                }
+                warnDisconnect = false;
                 Packet.Send(new LogPacket { LogMessages = MinecraftModUpdater.Logger.GetMessages() }, ph.Stream);
                 Packet.Send(new DisconnectPacket(), ph.Stream);
-                ph.Stop();
                 ph.RemovePacketHandler(PacketId.Metadata);
                 ph.RemovePacketHandler(PacketId.ModInfo);
                 ph.RemovePacketHandler(PacketId.ModList);
                 ph.RemovePacketHandler(PacketId.NextDownload);
                 ph.RemovePacketHandler(PacketId.FilePart);
                 ph.RemovePacketHandler(PacketId.AllDone);
-                if (socket.Connected) socket.Disconnect(false);
-                Invoke(new Void(delegate
+                TaskManager.AddAsyncTask(delegate
+                {
+                    ph.Stop();
+                }, ThreadRole.Delayed, 5000);
+                if (Properties.Settings.Default.LaunchAfterUpdate)
+                {
+                    Program.RunOnUIThread(delegate
+                    {
+                        Program.StartMinecraft();
+                    });
+                }
+                else
+                {
+                    SplashScreen.CloseSplashScreen();
+                }
+                Program.RunOnUIThread(delegate
                 {
                     Close();
-                }));
+                });
+                return;
             }
+            progress[0]++;
+            m = (Mod)lsModsToUpdate.Items[progress[0]];
+            Packet.Send(new RequestModPacket { Type = RequestModPacket.RequestType.Download, Identifier = m.Identifier }, ph.Stream);
+
         }
         Mod GetLastModToUpdate()
         {
-            Mod m = (Mod)lsModsToUpdate.Items[0];
-            foreach(object o in lsModsToUpdate.Items)
-            {
-                m = (Mod)o;
-            }
-            return m;
+            return (Mod)lsModsToUpdate.Items[lsModsToUpdate.Items.Count - 1];
         }
-        string GetLastModFile()
+        string GetLastModId()
         {
-            string s = "";
-            foreach (string str in ModFiles)
-            {
-                s = str;
-            }
-            return s;
+            return identifiers.LastOrDefault();
         }
         void ph_ModList(Packet pa)
         {
             ModListPacket p = pa as ModListPacket;
-            ModFiles.AddRange(p.Mods);
-            if (p.Mods.Length == 0) { goto open; }
-            foreach (string s in p.Mods)
+            identifiers.AddRange(p.Mods);
+            if (p.Mods.Length == 0)
             {
-                Packet.Send(new RequestModPacket { FileName = s, Type = RequestModPacket.RequestType.Info }, ph.Stream);
-            }
-            bool exists = Directory.Exists(Properties.Settings.Default.MinecraftPath + @"\mods");
-            if (!exists) Directory.CreateDirectory(Properties.Settings.Default.MinecraftPath + @"\mods");
-            foreach (string s in Directory.GetFiles(Properties.Settings.Default.MinecraftPath + @"\mods"))
-            {
-                string str = @"mods\" + Path.GetFileName(s);
-                bool file = ModFiles.Contains(str);
-                if (!file)
-                    Invoke(new Void(delegate
-                    {
-                        lsModsToDelete.Items.Add(Path.GetFileName(s));
-                    }));
-            }
-            open:
-            if (!Properties.Settings.Default.AutoUpdate)
-                Invoke(new Void(delegate
+                Program.RunOnUIThread(delegate
                 {
                     SplashScreen.CloseSplashScreen();
                     Show();
-                }));
+                });
+                return;
+            }
+            Program.RunOnUIThread(delegate
+            {
+                if (Visible) Hide();
+            });
+            foreach (string s in p.Mods)
+            {
+                Packet.Send(new RequestModPacket { Identifier = s, Type = RequestModPacket.RequestType.Info }, ph.Stream);
+            }
+            bool exists = Directory.Exists(Properties.Settings.Default.MinecraftPath + @"\mods");
+            if (!exists) Directory.CreateDirectory(Properties.Settings.Default.MinecraftPath + @"\mods");
+            
+            SplashScreen.AdvanceProgressBar();
+            
         }
 
         void ph_ModInfo(Packet pa)
         {
             ModInfoPacket p = pa as ModInfoPacket;
-            Mod m = new Mod { Author = p.Author, File = p.File, ModName = p.ModName, Hash = p.Hash };
-            Mods.Add(m);
-            string path = Properties.Settings.Default.MinecraftPath + "\\" + p.File.Replace(p.File.Split('\\').Last(), "").TrimEnd('\\').Replace("clientmods", "mods");
+            Mod m = new Mod { Author = p.Author, File = p.File, Name = p.ModName, Hash = p.Hash, Size = p.FileSize, Description = p.Description, Identifier = p.Identifier, Optional = p.Optional, Requires = p.Requires.ToList() };
+            if (m.Optional)
+            {
+                OptionalMods.Add(m);
+            }
+            else
+            {
+                Mods.Add(m);
+            }
+            string path = Path.GetDirectoryName(Properties.Settings.Default.MinecraftPath + "\\" + p.File);
             string s = "";
             bool exists = File.Exists(path + "\\" + Path.GetFileName(m.File));
             if (exists)
@@ -454,34 +552,84 @@ namespace ModUpdater.Client.GUI
                 }
                 catch (Exception e) { MinecraftModUpdater.Logger.Log(e); }
             }
-            if (!exists || s != m.Hash)
+            if ((!exists && !m.Optional) || (s != m.Hash && !m.Optional))
             {
-                if (m.File.Contains("bin") && s == m.Hash)
-                    Invoke(new Void(delegate
-                    {
-                        lsMods.Items.Add(m);
-                    }));
-                else
-                    Invoke(new Void(delegate
-                    {
-                        lsModsToUpdate.Items.Add(m);
-                    }));
+                Program.RunOnUIThread(delegate
+                {
+                    lsModsToUpdate.Items.Add(m);
+                });
             }
-            else
+            else if (!m.Optional)
             {
-                Invoke(new Void(delegate
+                Program.RunOnUIThread(delegate
                 {
                     lsMods.Items.Add(m);
-                }));
+                });
             }
-            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Info: " + m.ModName);
-            string str = GetLastModFile();
-            if (str == m.File && Properties.Settings.Default.AutoUpdate)
+            if (exists && m.Optional && s == m.Hash)
             {
-                Invoke(new Void(delegate
+                Mods.Add(m);
+                Program.RunOnUIThread(delegate
+                {
+                    lsMods.Items.Add(m);
+                });
+            }
+            else if (exists && m.Optional && s != m.Hash)
+            {
+                Mods.Add(m);
+                Program.RunOnUIThread(delegate
+                {
+                    lsModsToUpdate.Items.Add(m);
+                });
+            }
+            MinecraftModUpdater.Logger.Log(Logger.Level.Debug, "Info: " + m.Name);
+            string str = GetLastModId();
+            if (str == m.Identifier)
+            {
+                foreach (string str1 in Directory.GetFiles(Properties.Settings.Default.MinecraftPath + @"\mods"))
+                {
+                    string str2 = @"mods\" + Path.GetFileName(str1);
+                    Mod mod =  Mods.FindFromFile(str2);
+                    bool file = mod != null;
+                    if (!file)
+                        Program.RunOnUIThread(delegate
+                        {
+                            lsModsToDelete.Items.Add(Path.GetFileName(str1));
+                        });
+                }
+            }
+            if (str == m.Identifier && Properties.Settings.Default.AutoUpdate)
+            {
+                Program.RunOnUIThread(delegate
                 {
                     btnConfirm_Click(null, null);
-                }));
+                });
+            }
+            else if (str == m.Identifier)
+            {
+                List<Mod> allMods = new List<Mod>();
+                allMods.AddRange(Mods);
+                allMods.AddRange(OptionalMods);
+                foreach (Mod mod in Mods)
+                {
+                    mod.BuildRequiredByList(allMods.ToArray().ToList()); //Just so that we don't modify the mod list.
+                }
+                foreach (Mod mod in OptionalMods)
+                {
+                    mod.BuildRequiredByList(allMods.ToArray().ToList()); //Just so that we don't modify the mod list.
+                }
+                Program.RunOnUIThread(delegate
+                {
+                    SplashScreen.CloseSplashScreen();
+                    Show();
+                });
+            }
+            else if(str != m.Identifier && !Properties.Settings.Default.AutoUpdate)
+            {
+                Program.RunOnUIThread(delegate
+                {
+                    if (Visible) Hide();
+                });
             }
         }
 
@@ -504,19 +652,23 @@ namespace ModUpdater.Client.GUI
             Debug.Assert(sb.ToString());
             if (p.SData[0] == "shutdown")
             {
-                ServerShutdown = true;
+                Server.Shutdown = true;
                 if (SplashScreen.GetScreen() != null)
+                {
                     SplashScreen.UpdateStatusTextWithStatus(p.SData[1], TypeOfMessage.Error);
+                    SplashScreen.GetScreen().Progress.StartColor = Color.FromArgb(210, 202, 0);
+                    SplashScreen.GetScreen().Progress.EndColor = Color.FromArgb(210, 202, 0);
+                }
                 else
                     MessageBox.Show(p.SData[1], "Server Shutdown");
                 MinecraftModUpdater.Logger.Log(Logger.Level.Error, "Server Shutdown.  Reason: " + p.SData[1]);
             }
             else if (p.SData[0] == "server_name")
             {
-                serverName = p.SData[1];
-                serverFontSize = p.FData[0];
+                Server.Name = p.SData[1];
+                Server.FontSize = p.FData[0];
                 Properties.Settings.Default.MinecraftPath = Environment.CurrentDirectory + "/Minecraft/" + ServerFolder;
-                MinecraftModUpdater.Logger.Log(Logger.Level.Info, Properties.Settings.Default.MinecraftPath);
+                MinecraftModUpdater.Logger.Log(Logger.Level.Info, string.Format("Minecraft path set to: {0}", Properties.Settings.Default.MinecraftPath));
             }
             else if (p.SData[0] == "splash_display")
             {
@@ -529,40 +681,84 @@ namespace ModUpdater.Client.GUI
                 Thread.Sleep(3000);
                 SplashScreen.CloseSplashScreen();
                 Thread.Sleep(1000);
-                Invoke(new Void(delegate
+                Program.RunOnUIThread(delegate
                 {
                     Close();
-                }));
+                });
             }
         }
-        struct Mod
-        {
-            public string ModName;
-            public string Author;
-            public string File;
-            public string Hash;
-            public override string ToString()
-            {
-                return ModName;
-            }
-        }
-
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             warnDisconnect = false;
             MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Stopping logging.");
+            string[] file = MinecraftModUpdater.Logger.GetMessages();
+            File.WriteAllLines("ModUpdater.log", file);
+            foreach (TaskThread t in TaskManager.GetTaskThreads())
+            {
+                TaskManager.KillTaskThread(t);
+            }
             try
             {
                 if (socket.Connected)
                 {
                     Packet.Send(new LogPacket { LogMessages = MinecraftModUpdater.Logger.GetMessages() }, ph.Stream);
-                    ph.Stop();
+                    Packet.Send(new DisconnectPacket(), ph.Stream);
                 }
-                string[] file = MinecraftModUpdater.Logger.GetMessages();
-                File.WriteAllLines("ModUpdater.log", file);
             }
             catch { }
         }
-        
+
+        private void ListBox_DoubleClick_Handler(object sender, EventArgs e)
+        {
+            try
+            {
+                new ModInfoForm((Mod)((ListBox)sender).SelectedItem).ShowDialog();
+            }
+            catch (NullReferenceException) { }
+            catch (Exception ex)
+            {
+                MinecraftModUpdater.Logger.Log(ex);
+            }
+        }
+
+        private void btnOptional_Click(object sender, EventArgs e)
+        {
+            SelectModsForm smf = new SelectModsForm(OptionalMods.ToArray(), Mods.ToArray(true));
+            smf.ShowDialog();
+            if (smf.DialogResult == DialogResult.None) return;
+            foreach (Mod m in smf.SelectedMods)
+            {
+                if (lsModsToDelete.Items.Contains(Path.GetFileName(m.File)))
+                {
+                    lsModsToDelete.Items.Remove(Path.GetFileName(m.File));
+                    lsMods.Items.Add(m);
+                    Mods.Add(m);
+                }
+                else if (!lsModsToUpdate.Items.Contains(m) && !lsMods.Items.Contains(m))
+                {
+                    lsModsToUpdate.Items.Add(m);
+                    Mods.Add(m);
+                }
+            }
+            foreach (Mod m in smf.UnselectedMods)
+            {
+                bool delete = false;
+                if (lsModsToUpdate.Items.Contains(m))
+                {
+                    lsModsToUpdate.Items.Remove(m);
+                    delete = true;
+                }
+                else if (lsMods.Items.Contains(m))
+                {
+                    lsMods.Items.Remove(m);
+                    delete = true;
+                }
+                if (delete)
+                {
+                    lsModsToDelete.Items.Add(Path.GetFileName(m.File));
+                    Mods.Remove(m);
+                }
+            }
+        }
     }
 }

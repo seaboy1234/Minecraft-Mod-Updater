@@ -18,12 +18,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ModUpdater.Utility;
 
 namespace ModUpdater.Server
 {
     class Program
     {
-        public const string Version = "1.2.2_1";
+        public const string Version = "1.3.0";
         public static string ConfigPath = "Config.xml";
         static void Main(string[] args)
         {
@@ -39,12 +40,12 @@ namespace ModUpdater.Server
             try
             {
                 server.Start();
-                Console.WriteLine("Server stopped.");
+                MinecraftModUpdater.Logger.Log(Logger.Level.Info,"Server stopped.");
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
-                Console.WriteLine("Press any key to close.");
+                MinecraftModUpdater.Logger.Log(e);
+                MinecraftModUpdater.Logger.Log(Logger.Level.Info,"Press any key to close.");
                 Console.ReadKey();
             }
         }

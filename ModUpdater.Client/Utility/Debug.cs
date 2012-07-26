@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using ModUpdater.Utility;
 
 namespace ModUpdater.Client
 {
@@ -26,8 +27,8 @@ namespace ModUpdater.Client
     {
         static Debug()
         {
-            DebugMessageHandler.CommandLineMessages += new DebugMessageHandler.DebugMessage(DebugMessageHandler_CommandLineMessages);
-            DebugMessageHandler.DebugMessages +=new DebugMessageHandler.DebugMessage(Assert);
+            DebugMessageHandler.CommandLineMessages += new DebugMessage(DebugMessageHandler_CommandLineMessages);
+            DebugMessageHandler.DebugMessages +=new DebugMessage(Assert);
         }
 
         static void DebugMessageHandler_CommandLineMessages(string message)
@@ -39,6 +40,10 @@ namespace ModUpdater.Client
             if (ProgramOptions.Debug)
             {
                 MessageBox.Show(message, "DEBUG MESSAGE");
+            }
+            if (ProgramOptions.Debug && ProgramOptions.CommandLine)
+            {
+                MinecraftModUpdater.Logger.Log(ModUpdater.Utility.Logger.Level.Debug, message);
             }
         }
         public static void Assert(Exception e)
