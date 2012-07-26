@@ -23,7 +23,7 @@ namespace ModUpdater.Server.Master
 {
     class Program
     {
-        public const string Version = "1.3.0";
+        public const string Version = "1.3.1_dev";
         static void Main(string[] args)
         {
             Server s = new Server();

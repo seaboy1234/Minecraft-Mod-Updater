@@ -38,11 +38,11 @@ namespace ModUpdater
         /// <summary>
         /// The Mod Updater Version.
         /// </summary>
-        public const string Version = "1.3.0";
+        public const string Version = "1.3.1_dev";
         /// <summary>
         /// The branch of the Git repo.
         /// </summary>
-        public const string Branch = "master";
+        public const string Branch = "patch_develop";
         /// <summary>
         /// The Logger.
         /// </summary>
