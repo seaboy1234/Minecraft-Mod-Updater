@@ -104,6 +104,7 @@ namespace ModUpdater.Server
                             PostDownload = mod.PostDownloadCLI, 
                             WhitelistedUsers = mod.WhitelistedUsers.ToArray() ,
                             Identifier = mod.Identifier,
+                            Optional = mod.Optional,
                             Requires = requiredMods
                         }, ph.Stream);
                         return;
@@ -236,6 +237,13 @@ namespace ModUpdater.Server
             m.WhitelistedUsers.AddRange(p.WhitelistedUsers);
             m.ConfigFile = Config.ModsPath + "/xml/" + Path.GetFileName(p.File) + ".xml";
             m.Identifier = p.Identifier;
+            m.Optional = p.Optional;
+            m.RequiredMods = new List<Mod>();
+            foreach (Mod mod in Server.Mods)
+            {
+                if (p.Requires.Contains(mod.Identifier))
+                    m.RequiredMods.Add(mod);
+            }
             m.Save();
             MinecraftModUpdater.Logger.Log(Logger.Level.Warning, "{0}({1}) has been updated by {2}", m.ModName, m.Identifier, ClientID);
         }

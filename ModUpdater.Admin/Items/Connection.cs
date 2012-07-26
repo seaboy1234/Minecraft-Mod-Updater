@@ -119,6 +119,7 @@ namespace ModUpdater.Admin.Items
                 Hash = p.Hash,
                 Contents = new byte[p.FileSize], //This part will be filled in later.
                 Identifier = p.Identifier,
+                Optional = p.Optional,
                 RequiredMods = new List<string>(p.Requires)
             });
             if (mods.Count == mods.Capacity)

@@ -306,7 +306,7 @@ namespace ModUpdater.Admin.GUI
                     ((ControlDownloadProgress)panel1.Controls[0]).progress.Value = Convert.ToInt32(percentage.ToString("0%").Replace("%", ""));
                     ((ControlDownloadProgress)panel1.Controls[0]).message.Text = string.Format("{0}", mods[currentDownload].Name);
                 }));
-                Thread.Sleep(50);
+                Thread.Sleep(25);
             }
             Thread.Sleep(3000);
             Invoke(new VoidInvoke(delegate
@@ -317,6 +317,16 @@ namespace ModUpdater.Admin.GUI
                 button2.Enabled = false;
                 button4.Enabled = false;
             }));
+        }
+
+        private void panel1_ControlAdded(object sender, ControlEventArgs e)
+        {
+            Size = new System.Drawing.Size(597, Size.Height);
+        }
+
+        private void panel1_ControlRemoved(object sender, ControlEventArgs e)
+        {
+            Size = new System.Drawing.Size(250, Size.Height);
         }
     }
 }
