@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SelectModsForm));
             this.lsUnselected = new System.Windows.Forms.ListBox();
             this.lsSelected = new System.Windows.Forms.ListBox();
             this.btnSelect = new System.Windows.Forms.Button();
@@ -98,6 +99,8 @@
             // label1
             // 
             this.label1.AutoSize = true;
+            this.label1.BackColor = System.Drawing.Color.Transparent;
+            this.label1.ForeColor = System.Drawing.Color.White;
             this.label1.Location = new System.Drawing.Point(24, 23);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(90, 13);
@@ -107,6 +110,8 @@
             // label2
             // 
             this.label2.AutoSize = true;
+            this.label2.BackColor = System.Drawing.Color.Transparent;
+            this.label2.ForeColor = System.Drawing.Color.White;
             this.label2.Location = new System.Drawing.Point(272, 23);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(78, 13);
@@ -127,6 +132,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
             this.ClientSize = new System.Drawing.Size(383, 272);
             this.Controls.Add(this.btnDone);
             this.Controls.Add(this.label2);
@@ -137,8 +143,10 @@
             this.Controls.Add(this.btnSelect);
             this.Controls.Add(this.lsSelected);
             this.Controls.Add(this.lsUnselected);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "SelectModsForm";
-            this.Text = "SelectModsForm";
+            this.Text = "Optional Mods";
             this.Load += new System.EventHandler(this.SelectModsForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
