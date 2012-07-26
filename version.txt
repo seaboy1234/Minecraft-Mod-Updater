@@ -1,1 +1,1 @@
-core=1.3.0_rc2\client=1.3.0_rc2\server=1.3.0_rc2\master=1.3.0_rc2\admin=1.3.0_rc2
+core=1.3.0\client=1.3.0\server=1.3.0\master=1.3.0\admin=1.3.0
