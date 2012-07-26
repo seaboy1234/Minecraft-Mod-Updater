@@ -22,6 +22,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using ModUpdater.Utility;
 
 namespace ModUpdater.Client.GUI
 {
@@ -44,19 +45,16 @@ namespace ModUpdater.Client.GUI
         public SplashScreenForm()
         {
             InitializeComponent();
-            this.label3.BackColor = Color.Transparent;
-            label3.Parent = Image;
-            this.label3.ForeColor = Color.Green;
-            label2.Parent = Image;
-            this.label2.BackColor = Color.Transparent;
-            this.label2.Text = MinecraftModUpdater.LongAppName;
+            this.lblMessage.BackColor = Color.Transparent;
+            lblMessage.Parent = Image;
+            this.lblMessage.ForeColor = Color.Green;
+            lblTitle.Parent = Image;
+            this.lblTitle.BackColor = Color.Transparent;
+            this.lblTitle.Text = MinecraftModUpdater.LongAppName;
+            this.lblProgress.Parent = Image;
             this.Opacity = 0;
             DownloadPicture.Parent = Image;
-
-            //this.progressBar1.Parent = this.pictureBox1;
-            //this.progressBar1.BackColor = Color.Transparent;
-
-            progressBar1.Show();
+            Progress.Show();
         }
 
         /// <summary>
@@ -71,6 +69,7 @@ namespace ModUpdater.Client.GUI
                 return;
             }
             this.Show();
+            if (SplashScreen.GetScreen() != this) throw new InvalidOperationException("There can only be one splash screen open at once.");
             Application.Run(this);
         }
 
@@ -98,12 +97,12 @@ namespace ModUpdater.Client.GUI
             if (InvokeRequired)
             {
                 // We're not in the UI thread, so we need to call BeginInvoke
-                BeginInvoke(new StringParameterDelegate(UpdateStatusText), new object[] { Text });
+                Invoke(new StringParameterDelegate(UpdateStatusText), new object[] { Text });
                 return;
             }
             // Must be on the UI thread if we've got this far
-            label3.ForeColor = Color.Green;
-            label3.Text = Text;
+            lblMessage.ForeColor = Color.Green;
+            lblMessage.Text = Text;
         }
 
 
@@ -124,36 +123,36 @@ namespace ModUpdater.Client.GUI
             switch (tom)
             {
                 case TypeOfMessage.Error:
-                    label3.ForeColor = Color.Red;
+                    lblMessage.ForeColor = Color.Red;
                     break;
                 case TypeOfMessage.Warning:
-                    label3.ForeColor = Color.Yellow;
+                    lblMessage.ForeColor = Color.Yellow;
                     break;
                 case TypeOfMessage.Success:
-                    label3.ForeColor = Color.Green;
+                    lblMessage.ForeColor = Color.Green;
                     break;
             }
-            label3.Text = Text;
+            lblMessage.Text = Text;
 
         }
         public void setDownloadPicture(Image i)
         {
             if (InvokeRequired)
             {
-                Invoke(new MainForm.Void(delegate{ setDownloadPicture(i); }));
+                Invoke(new ModUpdaterDelegate(delegate{ setDownloadPicture(i); }));
             }
             DownloadPicture.Image = i;
         }
         private void timer1_Tick(object sender, EventArgs e)
         {
             if (!Visible) return;
-            if (Opacity >= 1.0 && !FadeOut) timer1.Stop();
+            if (Opacity >= 1.0 && !FadeOut) timer.Stop();
             if (FadeOut)
             {
                 this.Opacity -= .05;
                 if(this.Opacity <= .0)
                 {
-                    timer1.Stop();
+                    timer.Stop();
                     Close();
                 }
             }
@@ -163,13 +162,14 @@ namespace ModUpdater.Client.GUI
                 if (this.Opacity >= 1.0)
                 {
                     Loading = false;
+                    Visible = true;
                 }
             }
         }
 
         private void SplashScreenForm_Load(object sender, EventArgs e)
         {
-            timer1.Start();
+            timer.Start();
         }
 
         private void SplashScreenForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -183,7 +183,7 @@ namespace ModUpdater.Client.GUI
                 if (Opacity >= 1)
                 {
                     FadeOut = true;
-                    timer1.Start();
+                    timer.Start();
                     e.Cancel = true;
                     return;
                 }

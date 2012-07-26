@@ -23,19 +23,30 @@ namespace ModUpdater.Utility
 {
     public class Logger
     {
-        List<string> StringLogs = new List<string>();
-        List<Level> LevelLogs = new List<Level>();
+        List<string> StringLogs = new List<string>(20);
+        List<Level> LevelLogs = new List<Level>(20);
+        public event LogEventDelegate LogEvent = delegate { };
         public enum Level
         {
-            Info,
-            Warning,
-            Error
+            Debug = -1,
+            Info = 0,
+            Warning = 1,
+            Error = 2
         }
         public void Log(Level l, string s)
         {
             StringLogs.Add(s);
             LevelLogs.Add(l);
+            LogEvent.Invoke(l, s);
             DebugMessageHandler.AssertCl("["+l.ToString().ToUpper()+"] " + s);
+        }
+        public void Log(Level l, string s, params object[] oa)
+        {
+            for(int i = 0; i < oa.Length; i++)
+            {
+                s = s.Replace("{" + i + "}", oa[i].ToString());
+            }
+            Log(l, s);
         }
         public void Log(Exception e)
         {

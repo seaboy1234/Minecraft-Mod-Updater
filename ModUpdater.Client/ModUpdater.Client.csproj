@@ -50,7 +50,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>
@@ -97,11 +97,23 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Game\GameUpdater.cs" />
+    <Compile Include="GUI\CommandPromptForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\CommandPromptForm.Designer.cs">
+      <DependentUpon>CommandPromptForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\ConnectionForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GUI\ConnectionForm.Designer.cs">
       <DependentUpon>ConnectionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\ModInfoForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\ModInfoForm.Designer.cs">
+      <DependentUpon>ModInfoForm.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\OptionsForm.cs">
       <SubType>Form</SubType>
@@ -109,6 +121,13 @@
     <Compile Include="GUI\OptionsForm.Designer.cs">
       <DependentUpon>OptionsForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\SelectModsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\SelectModsForm.Designer.cs">
+      <DependentUpon>SelectModsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Utility\AppStatus.cs" />
     <Compile Include="Utility\Debug.cs" />
     <Compile Include="GUI\ExceptionHandler.cs">
       <SubType>Form</SubType>
@@ -122,6 +141,9 @@
     <Compile Include="GUI\SelectServerDialog.Designer.cs">
       <DependentUpon>SelectServerDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Utility\ExceptionHandlerLiaison.cs" />
+    <Compile Include="Utility\Extensions.cs" />
+    <Compile Include="Utility\Mod.cs" />
     <Compile Include="Utility\Server.cs" />
     <Compile Include="GUI\UpdateForm.cs">
       <SubType>Form</SubType>
@@ -146,7 +168,6 @@
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Utility\ModFile.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProgramOptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -157,14 +178,23 @@
     <Compile Include="GUI\SplashScreenForm.designer.cs">
       <DependentUpon>SplashScreenForm.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="GUI\CommandPromptForm.resx">
+      <DependentUpon>CommandPromptForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\ConnectionForm.resx">
       <DependentUpon>ConnectionForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\ExceptionHandler.resx">
       <DependentUpon>ExceptionHandler.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\ModInfoForm.resx">
+      <DependentUpon>ModInfoForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\OptionsForm.resx">
       <DependentUpon>OptionsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\SelectModsForm.resx">
+      <DependentUpon>SelectModsForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\SelectServerDialog.resx">
       <DependentUpon>SelectServerDialog.cs</DependentUpon>
@@ -243,6 +273,14 @@
     <Content Include="Launcher\readme.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>SET loc=%25cd%25
+cd ../
+cd ../
+cd Launcher
+"C:\Program Files\Java\jdk1.7.0_01\bin\javac.exe" -target 1.7 -d "%25cd%25" -sourcepath "%25cd%25" MCLaunch.java
+cd %25loc%25</PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -1,4 +1,4 @@
-﻿//    File:        ConnectionForm.cs
+﻿//    File:        LoggerForm.cs
 //    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
 //    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
 //    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
@@ -22,14 +22,45 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using ModUpdater.Utility;
 
-namespace ModUpdater.Admin
+namespace ModUpdater.Admin.GUI
 {
-    public partial class ConnectionForm : Form
+    public partial class LoggerForm : Form
     {
-        public ConnectionForm()
+        public LoggerForm()
         {
             InitializeComponent();
+        }
+
+        private void LoggerForm_Resize(object sender, EventArgs e)
+        {
+            textBox1.Size = this.ClientSize;
+        }
+
+        private void LoggerForm_Load(object sender, EventArgs e)
+        {
+            textBox1.Size = this.ClientSize;
+            MinecraftModUpdater.Logger.LogEvent += new LogEventDelegate(Logger_LogEvent);
+        }
+
+        void Logger_LogEvent(Logger.Level level, string message)
+        {
+            if (IsDisposed) return;
+            if (InvokeRequired)
+            {
+                Invoke(new LogEventDelegate(Logger_LogEvent), level, message);
+                return;
+            }
+            if ((int)level >= 0)
+            {
+                try
+                {
+                    textBox1.AppendText(string.Format("[{0}] {1}{2}", level, message, Environment.NewLine));
+                }
+                catch (InvalidOperationException) { }
+                catch (Exception e) { Program.HandleException(e); }
+            }
         }
     }
 }

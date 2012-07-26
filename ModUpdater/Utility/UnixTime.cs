@@ -1,4 +1,4 @@
-﻿//    File:        MainForm.cs
+﻿//    File:        UnixTime.cs
 //    Copyright:   Copyright (C) 2012 Christian Wilson. All rights reserved.
 //    Website:     https://github.com/seaboy1234/Minecraft-Mod-Updater
 //    Description: This is intended to help Minecraft server owners who use mods make the experience of adding new mods and updating old ones easier for everyone.
@@ -16,20 +16,41 @@
 //    limitations under the License.
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 
-namespace ModUpdater.Admin
+namespace ModUpdater.Utility
 {
-    public partial class MainForm : Form
+    public class UnixTime
     {
-        public MainForm()
+        public long Value { get { return unixTime; } }
+        private static readonly DateTime startOfUnixTime = new DateTime(1970, 1, 1, 0, 0, 0);
+        private long unixTime;
+
+        public UnixTime() : this(DateTime.Now) { }
+        public UnixTime(DateTime t)
         {
-            InitializeComponent();
+            unixTime = (t - startOfUnixTime).Milliseconds;
+        }
+
+        public UnixTime(long t)
+        {
+            unixTime = t;
+        }
+
+        public DateTime ToDateTime()
+        {
+            return startOfUnixTime.AddMilliseconds(unixTime);
+        }
+
+        public override string ToString()
+        {
+            return unixTime.ToString();
+        }
+
+        public static DateTime ToDateTime(UnixTime t)
+        {
+            return t.ToDateTime();
         }
     }
 }

@@ -59,6 +59,7 @@ namespace ModUpdater.Client.GUI
             this.txtError.Multiline = true;
             this.txtError.Name = "txtError";
             this.txtError.ReadOnly = true;
+            this.txtError.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txtError.Size = new System.Drawing.Size(389, 287);
             this.txtError.TabIndex = 0;
             this.txtError.TextChanged += new System.EventHandler(this.txtError_TextChanged);
@@ -113,10 +114,10 @@ namespace ModUpdater.Client.GUI
             this.Controls.Add(this.button2);
             this.Controls.Add(this.btnReport);
             this.Controls.Add(this.txtError);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "ExceptionHandler";
             this.Text = "Exception Handler";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ExceptionHandler_FormClosing);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ExceptionHandler_FormClosed);
             this.Load += new System.EventHandler(this.ExceptionHandler_Load);
             this.ResumeLayout(false);

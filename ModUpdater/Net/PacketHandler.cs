@@ -20,38 +20,62 @@ using System.Linq;
 using System.Text;
 using System.Net.Sockets;
 using System.Threading;
+using ModUpdater.Utility;
 
 namespace ModUpdater.Net
 {
     public class PacketHandler
     {
         public ModUpdaterNetworkStream Stream { get; set; }
+        public bool Online
+        {
+            get
+            {
+                return online;
+            }
+            private set
+            {
+                if(value == false)
+                    Disconnect.Invoke(this, EventArgs.Empty);
+                online = value;
+            }
+        }
+        public event EventHandler Disconnect = delegate { };
+        private bool online;
         protected Socket sck;
-        private bool IgnoreNext = false;
         private Thread NetworkThread;
+        private Thread ConnectedThread;
         private Dictionary<PacketId, PacketEvent> EventHandler;
-
+        private List<Packet> PacketBacklog;
+        private object eventLock = new object();
         public PacketHandler(Socket s)
         {
             sck = s;
-            NetworkThread = new Thread(new ThreadStart(delegate { while (sck.Connected) { Recv(); } }));
+            NetworkThread = new Thread(new ThreadStart(delegate
+            {
+                while (sck.Connected) { Recv(); }
+                Stop();
+            }));
+            ConnectedThread = new Thread(new ThreadStart(delegate
+            {
+                while (sck.Connected && !Stream.Disposed) Thread.Sleep(3000);
+                Stop();
+            }));
             EventHandler = new Dictionary<PacketId, PacketEvent>();
+            PacketBacklog = new List<Packet>();
         }
         /// <summary>
         /// Handles receving of packets.  This method should never be called from outside of this class.
         /// </summary>
         private void Recv()
         {
-            if (IgnoreNext)
-            {
-                return;
-            }
             PacketId id;
             Packet p;
             try
             {
                 p = Packet.ReadPacket(Stream);
                 id = Packet.GetPacketId(p);
+                PacketBacklog.Add(p);
                 if (id == PacketId.EncryptionStatus)
                 {
                     EncryptionStatusPacket pa = p as EncryptionStatusPacket;
@@ -60,17 +84,24 @@ namespace ModUpdater.Net
                     Stream.Encrypted = pa.Encrypt;
                     return;
                 }
-                foreach (var ph in EventHandler)
+                else if (id == PacketId.Disconnect)
                 {
-                    if (ph.Key == id)
+                    Stop();
+                }
+                lock (eventLock)
+                {
+                    foreach (var ph in EventHandler.ToArray())
                     {
-                        ph.Value.Invoke(p);
+                        if (ph.Key == id)
+                        {
+                            ph.Value.Invoke(p);
+                        }
                     }
                 }
             }
-            catch (Exception e)
+            catch (MalformedPacketException e)
             {
-                MinecraftModUpdater.Logger.Log(e);
+                MCModUpdaterExceptionHandler.HandleException(this, e);
             }
         }
         /// <summary>
@@ -78,16 +109,22 @@ namespace ModUpdater.Net
         /// </summary>
         public void Start()
         {
+            online = true;
             Stream = new ModUpdaterNetworkStream(sck);
             NetworkThread.Name = "Network";
             NetworkThread.IsBackground = true;
             NetworkThread.Start();
+            ConnectedThread.IsBackground = true;
+            ConnectedThread.Name = "Connection Thread";
+            ConnectedThread.Start();
         }
         /// <summary>
         /// Stops the networking thread and stops handling packets.
         /// </summary>
         public void Stop()
         {
+            if (!online) return;
+            Online = false;
             Stream.Dispose();
             sck.Disconnect(false);
             NetworkThread.Abort();
@@ -99,11 +136,14 @@ namespace ModUpdater.Net
         /// <param name="handler">The handler for the packet.</param>
         public void RegisterPacketHandler(PacketId id, PacketEvent handler)
         {
-            try
+            lock (eventLock)
             {
-                EventHandler.Add(id, handler);
+                try
+                {
+                    EventHandler.Add(id, handler);
+                }
+                catch (Exception e) { throw e; }
             }
-            catch (Exception e) { throw e; }
         }
         /// <summary>
         /// Un-registers the packet handler for a packet.
@@ -111,11 +151,22 @@ namespace ModUpdater.Net
         /// <param name="id">The packet id to un-register.</param>
         public void RemovePacketHandler(PacketId id)
         {
-            try
+            lock (eventLock)
             {
-                EventHandler.Remove(id);
+                try
+                {
+                    EventHandler.Remove(id);
+                }
+                catch (Exception e) { throw e; }
             }
-            catch (Exception e) { throw e; }
+        }
+        /// <summary>
+        /// Gets a backlog of all recived packets.
+        /// </summary>
+        /// <returns>Array of packets containing every packet recived during this session.</returns>
+        public Packet[] GetBacklog()
+        {
+            return PacketBacklog.ToArray();
         }
     }
 }

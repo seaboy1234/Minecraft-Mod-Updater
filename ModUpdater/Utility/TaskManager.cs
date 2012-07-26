@@ -16,56 +16,61 @@
 //    limitations under the License.
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace ModUpdater.Utility
 {
     public static class TaskManager
     {
-        public delegate void Task();
         private static int CurrentTaskId = 0;
-        public delegate void Error(Exception e);
-        public static event Error ExceptionRaised = delegate { };
-        private static List<Thread> TaskThreads;
+        public static event TaskManagerError ExceptionRaised = delegate { };
+        private static List<TaskThread> TaskThreads;
         private static object taskLock;
         private static Queue<Task> TaskQueue;
+        private static Queue<Task> ImportantTaskQueue;
+        private static Dictionary<Task, int> DelayedTasks;
 
         static TaskManager()
         {
-            TaskThreads = new List<Thread>(15);
+            TaskThreads = new List<TaskThread>(16);
             TaskQueue = new Queue<Task>();
+            ImportantTaskQueue = new Queue<Task>();
+            DelayedTasks = new Dictionary<Task,int>();
             taskLock = new object();
-            Thread.Sleep(100);
-            for (int i = 0; i < 15; i++)
+            for (int i = 0; i < 3; i++)
             {
-                Thread t = new Thread(ManageTaskThread, 10000);
-                t.IsBackground = true;
-                t.Name = "Task Thread " + (TaskThreads.Count + 1);
-                t.Start();
+                SpawnTaskThread(ThreadRole.Standard);
             }
+            Thread.Sleep(1);
+            SpawnTaskThread(ThreadRole.Important);
+            SpawnTaskThread(ThreadRole.Delayed);
+            Application.ApplicationExit += new EventHandler(ApplicationExit);
         }
         /// <summary>
         /// Runs the task on a new thread.
         /// </summary>
         /// <param name="t">The Task to run.</param>
-        public static void AddAsyncTask(Task t)
+        /// <param name="r">The ThreadRole to be used.</param>
+        /// <param name="delayLen">The time to wait, in ms, until the task is run.</param>
+        public static void AddAsyncTask(Task t, ThreadRole r = ThreadRole.Standard, int delayLen = 1000)
         {
-            TaskQueue.Enqueue(t);
-        }
-        /// <summary>
-        /// Runs a task on a new thread after a spefifyed amount of time.
-        /// </summary>
-        /// <param name="t">The Task to run</param>
-        /// <param name="delayInMs">The time to wait before running the task.  In miliseconds</param>
-        public static void AddDelayedAsyncTask(Task t, int delayInMs)
-        {
-            AddAsyncTask(delegate
+            switch (r)
             {
-                Thread.Sleep(delayInMs);
-                PerformTask(t);
-            });
+                case ThreadRole.Standard:
+                    TaskQueue.Enqueue(t);
+                    break;
+                case ThreadRole.Important:
+                    ImportantTaskQueue.Enqueue(t);
+                    break;
+                case ThreadRole.Delayed:
+                    DelayedTasks.Add(t, delayLen);
+                    break;
+            }
+            if (GetTaskThread(r) == null || GetTaskThread(r).Thread == null)
+            {
+                SpawnTaskThread(r);
+            }
         }
         private static void PerformTask(Task t)
         {
@@ -73,44 +78,190 @@ namespace ModUpdater.Utility
             int tid = CurrentTaskId;
             try
             {
-                MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Running Task Id: " + tid.ToString());
+                Thread.BeginCriticalRegion(); // It is important that this task not be stopped here
+                MinecraftModUpdater.Logger.Log(Logger.Level.Debug, "Running Task Id: " + tid.ToString());
                 if (t != null)
                 {
                     t.Invoke();
-                    MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Task " + tid.ToString() + " Done");
+                    MinecraftModUpdater.Logger.Log(Logger.Level.Debug, "Task " + tid.ToString() + " Done");
                 }
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
                 MinecraftModUpdater.Logger.Log(Logger.Level.Error, "Error on task " + tid.ToString());
                 MinecraftModUpdater.Logger.Log(e);
-                ExceptionRaised.Invoke(e);
+                MCModUpdaterExceptionHandler.HandleException(t, e);
+            }
+            finally
+            {
+                Thread.EndCriticalRegion(); // Thread can now be stopped.
             }
         }
+        #region Functions
+        /// <summary>
+        /// Spawns a new task thread and adds it to the list of threads.
+        /// </summary>
+        /// <param name="role">The role of the thread.</param>
+        public static void SpawnTaskThread(ThreadRole role)
+        {
+            TaskThread t;
+            switch (role) //Set properties.
+            {
+                case ThreadRole.Delayed:
+                    t = TaskThread.SpawnTaskThread(role, ManageTaskDelayThread, TaskThreads.Count + 1, true);
+                    break;
+                case ThreadRole.Important:
+                    t = TaskThread.SpawnTaskThread(role, ManageImportantTaskThread, TaskThreads.Count + 1, false);
+                    break;
+                default:
+                case ThreadRole.Standard:
+                    t = TaskThread.SpawnTaskThread(role, ManageTaskThread, TaskThreads.Count + 1, true);
+                    break;
+            }
+            TaskThreads.Add(t);
+            t.Start(); //Start the new thread.
+        }
+        /// <summary>
+        /// Stops a task thread assocated with the givin role.
+        /// </summary>
+        /// <param name="role">The role of the thread to kill.</param>
+        /// <returns>Whether the thread was killed or not.</returns>
+        public static bool KillTaskThread(ThreadRole role)
+        {
+            TaskThread t = GetTaskThread(role);
+            return KillTaskThread(t);
+        }
+        public static bool KillTaskThread(TaskThread t)
+        {
+            if (t == null) return false;
+            t.Stop();
+            TaskThreads.Remove(t);
+            return true;
+        }
+        /// <summary>
+        /// Gets a TaskThread object of the role supplied.
+        /// </summary>
+        /// <param name="role">The role of the TaskThread.</param>
+        /// <returns>The first instance matching the supplied role.</returns>
+        public static TaskThread GetTaskThread(ThreadRole role)
+        {
+            return TaskThreads.Find(new Predicate<TaskThread>(delegate(TaskThread tr)
+            {
+                if (tr.Role == role)
+                    return true;
+                return false;
+            }));
+        }
+        public static TaskThread GetTaskThread(Thread thread)
+        {
+            return TaskThreads.Find(new Predicate<TaskThread>(delegate(TaskThread tr)
+            {
+                if (tr.Thread == thread)
+                    return true;
+                return false;
+            }));
+        }
+        public static TaskThread[] GetTaskThreads()
+        {
+            return TaskThreads.ToArray();
+        }
+        
+        #endregion
+        #region Thread Managers
         /// <summary>
         /// Manage the current thread as a task thread.
         /// </summary>
         private static void ManageTaskThread()
         {
-            TaskThreads.Add(Thread.CurrentThread);
-            int tLoopId = TaskThreads.Count;
+            TaskThread tt = GetTaskThread(Thread.CurrentThread);
             while (true)
             {
                 try
                 {
-                        if (TaskQueue.Peek() != null)
-                        {
-                            Task t;
-                            lock (taskLock)
-                            {
-                                t = TaskQueue.Dequeue();
-                            }
-                            PerformTask(t);
-                        }
+                    while (TaskQueue.Peek() == null) Thread.Sleep(250);
+                    Task t;
+                    tt.Busy = true;
+                    lock (taskLock)
+                    {
+                        t = TaskQueue.Dequeue();
+                    }
+                    PerformTask(t);
+                    tt.Busy = false;
                 }
-                catch { } //Queue is most likly empty, no real need to do anything.
+                catch { tt.Busy = false; } //Task invoked by another thread.  No real need to do anything.
                 Thread.Sleep(250);
             }
         }
+        private static void ManageImportantTaskThread()
+        {
+            TaskThread tt = GetTaskThread(Thread.CurrentThread);
+            while (GetTaskThread(ThreadRole.Standard) == null) ;
+            while (GetTaskThread(ThreadRole.Standard) != null)
+            {
+                try
+                {
+                    while (TaskQueue.Peek() == null) Thread.Sleep(250);
+                    Task t;
+                    tt.Busy = true;
+                    lock (taskLock)
+                    {
+                        t = ImportantTaskQueue.Dequeue();
+                    }
+                    tt.Busy = false;
+                    PerformTask(t);
+                }
+                catch { tt.Busy = false; } //Queue is most likely empty, no real need to do anything.
+                Thread.Sleep(250);
+            }
+        }
+        private static void ManageTaskDelayThread()
+        {
+            TaskThread tt = GetTaskThread(Thread.CurrentThread);
+            while (GetTaskThread(ThreadRole.Standard) == null) ;
+            while (GetTaskThread(ThreadRole.Standard).IsAlive)
+            {
+                try
+                {
+                    tt.Busy = true;
+                    foreach (var v in DelayedTasks)
+                    {
+                        DelayedTasks[v.Key] -= 10;
+                        if (v.Value < 1)
+                        {
+                            TaskQueue.Enqueue(v.Key);
+                            DelayedTasks.Remove(v.Key);
+                        }
+
+                    }
+                    tt.Busy = false;
+                    Thread.Sleep(10);
+                }
+                catch { tt.Busy = false; }
+            }
+        }
+        #endregion
+        //Used to ensure all threads are exited when the app closes.
+        private static void ApplicationExit(object sender, EventArgs e)
+        {
+            KillTaskThread(ThreadRole.Important);
+            KillTaskThread(ThreadRole.Delayed);
+            foreach (TaskThread t in TaskThreads.ToArray())
+            {
+                try
+                {
+                    KillTaskThread(t);
+                }
+                catch (Exception ex)
+                {
+                    MinecraftModUpdater.Logger.Log(ex);
+                }
+            }
+        }
+    }
+    public enum ThreadRole
+    {
+        Standard,
+        Important,
+        Delayed
     }
 }
