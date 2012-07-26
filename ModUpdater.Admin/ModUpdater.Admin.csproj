@@ -90,6 +90,7 @@
     <Compile Include="GUI\ReviewChangesForm.Designer.cs">
       <DependentUpon>ReviewChangesForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Items\Extensions.cs" />
     <Compile Include="LoginFailedException.cs" />
     <Compile Include="Items\Mod.cs" />
     <Compile Include="Program.cs" />
