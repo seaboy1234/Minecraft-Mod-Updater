@@ -189,6 +189,7 @@ namespace ModUpdater.Server
                 PacketHandler.RegisterPacketHandler(PacketId.FilePart, HandleFilePart);
                 PacketHandler.RegisterPacketHandler(PacketId.AllDone, HandleCompleteDownload);
             }
+            Server.Watchtower.ClientStatus(true, this);
         }
 
         internal void HandleLog(Packet pa)

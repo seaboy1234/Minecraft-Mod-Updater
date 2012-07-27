@@ -38,6 +38,7 @@ namespace ModUpdater.Server
         public Dictionary<Mod, Image> ModImages { get; private set; }
         public Image BackgroundImage { get; private set; }
         public List<string> Administrators { get; private set; }
+        public Watchtower Watchtower { get; private set; }
         private StreamWriter logFile;
         bool Online { get; set; }
         public Server()
@@ -52,6 +53,7 @@ namespace ModUpdater.Server
             TcpServer = new TcpListener(IPAddress.Any, Config.Port);
             ModImages = new Dictionary<Mod, Image>();
             Administrators = new List<string>();
+            Watchtower = new Watchtower(this);
             MCModUpdaterExceptionHandler.RegisterExceptionHandler(new ExceptionHandler());
             SelfUpdate();
             Administrators.AddRange(File.ReadAllLines("administrators.txt"));
@@ -203,6 +205,7 @@ namespace ModUpdater.Server
                 c.ClientDisconnected += delegate
                 {
                     Clients.Remove(c);
+                    Watchtower.ClientStatus(false, c);
                     TaskManager.KillTaskThread(TaskManager.GetTaskThread(Thread.CurrentThread));
                 };
                 Clients.Add(c);
@@ -214,8 +217,10 @@ namespace ModUpdater.Server
         {
             if (level > Logger.Level.Debug)
             {
-                Console.WriteLine("{0} [{1}] {2}", DateTime.Now, level.ToString().ToUpper(), message);
-                logFile.WriteLine("{0} [{1}] {2}", DateTime.Now, level.ToString().ToUpper(), message);
+                string msg = string.Format("{0} [{1}] {2}", DateTime.Now, level.ToString().ToUpper(), message);
+                Console.WriteLine(msg);
+                logFile.WriteLine(msg);
+                Watchtower.LogToTowers(msg);
             }
         }
         public void SimpleConsoleInputHandler()
@@ -230,7 +235,7 @@ namespace ModUpdater.Server
         }
         public void HandleCommand(string input)
         {
-            switch (input)
+            switch (input.Split(' ')[0].Trim().ToLower())
             {
                 case "connected":
                     MinecraftModUpdater.Logger.Log(Logger.Level.Info, "There are {0} connected clients.", Clients.Count);
@@ -275,6 +280,25 @@ namespace ModUpdater.Server
                     Mods.Clear();
                     ModImages.Clear();
                     LoadMods();
+                    break;
+                case "broadcast":
+                    Watchtower.BroadcastToTowers(input.Remove(0, input.Split(' ')[0].Trim().Length));
+                    break;
+                case "broadcastto":
+                    Client found = null;
+                    foreach (Client c in Clients)
+                    {
+                        if (c.ClientID.ToLower() == input.Split(' ')[1].Trim().ToLower())
+                        {
+                            found = c;
+                            break;
+                        }
+                    }
+                    if (found == null)
+                    {
+                        MinecraftModUpdater.Logger.Log(Logger.Level.Info, "No user named {0}.  Try again.", input.Split(' ')[1].Trim());
+                    }
+                    Watchtower.BroadcastToTower(found, input.Remove(0, input.Split(' ')[0].Trim().Length + input.Split(' ')[1].Trim().Length));
                     break;
                 case "help":
                 case "?":
