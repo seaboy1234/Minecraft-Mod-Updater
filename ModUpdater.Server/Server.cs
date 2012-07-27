@@ -306,6 +306,8 @@ namespace ModUpdater.Server
                     MinecraftModUpdater.Logger.Log(Logger.Level.Info, "exit, stop - Safely stops the update server after all clients exit.");
                     MinecraftModUpdater.Logger.Log(Logger.Level.Info, "connected - Shows a list of connected clients.");
                     MinecraftModUpdater.Logger.Log(Logger.Level.Info, "populate - Automagicly reads all of the files in the mods folder and creates XML files for them.");
+                    MinecraftModUpdater.Logger.Log(Logger.Level.Info, "broadcast - Broadcasts a message to all Watchtower users.");
+                    MinecraftModUpdater.Logger.Log(Logger.Level.Info, "broadcastto <client> - Broadcasts a message to a single Watchtower client.");
                     break;
             }
         }
