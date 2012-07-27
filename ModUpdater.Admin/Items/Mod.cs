@@ -37,7 +37,7 @@ namespace ModUpdater.Admin.Items
         public List<string> PostDownloadCLI { get; set; }
         public List<string> WhitelistedUsers { get; set; }
         public List<string> BlacklistedUsers { get; set; }
-        public List<Mod> RequiredMods { get; set; }
+        public List<string> RequiredMods { get; set; }
         public bool NeedsUpdate { get; set; }
         public byte[] Contents { get; set; }
         public bool Optional { get; set; }
@@ -50,6 +50,7 @@ namespace ModUpdater.Admin.Items
             PostDownloadCLI = new List<string>();
             WhitelistedUsers = new List<string>();
             BlacklistedUsers = new List<string>();
+            RequiredMods = new List<string>();
         }
         public override string ToString()
         {

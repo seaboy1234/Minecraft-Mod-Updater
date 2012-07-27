@@ -30,6 +30,7 @@ namespace ModUpdater.Admin.GUI
     {
         public static MainForm Instance { get; private set; }
         internal Connection Connection { get; private set; }
+        public Mod[] Mods { get { return mods.ToArray(); } }
         public string InstancePath { get; private set; }
         private List<Mod> mods, changedMods;
         private int currentDownload, amountOfUpdates, updated, editing;
@@ -158,7 +159,7 @@ namespace ModUpdater.Admin.GUI
                 {
                     if (m.NeedsUpdate)
                     {
-                        Packet.Send(new RequestModPacket { Identifier = m.File, Type = RequestModPacket.RequestType.Download }, Connection.PacketHandler.Stream);
+                        Packet.Send(new RequestModPacket { Identifier = m.Identifier, Type = RequestModPacket.RequestType.Download }, Connection.PacketHandler.Stream);
                     }
                     else
                     {
@@ -243,11 +244,6 @@ namespace ModUpdater.Admin.GUI
                 foreach (Mod m in changedMods.ToArray())
                 {
                     currentDownload = mods.IndexOf(m); //Again, using this as an upload.
-                    string[] ids = new string[m.RequiredMods.Count];
-                    for(int i = 0; i < m.RequiredMods.Count; i++)
-                    {
-                        ids[i] = m.RequiredMods[i].Identifier;
-                    }
                     Packet.Send(new AdminFileInfoPacket
                     {
                         Author = m.Author,
@@ -261,7 +257,7 @@ namespace ModUpdater.Admin.GUI
                         WhitelistedUsers = m.WhitelistedUsers.ToArray(),
                         Identifier = m.Identifier,
                         Optional = m.Optional,
-                        Requires = ids
+                        Requires = m.RequiredMods.ToArray()
                     }, Connection.PacketHandler.Stream);
                     if (m.Hash != Extras.GenerateHash(m.Contents))
                     {
@@ -310,7 +306,7 @@ namespace ModUpdater.Admin.GUI
                     ((ControlDownloadProgress)panel1.Controls[0]).progress.Value = Convert.ToInt32(percentage.ToString("0%").Replace("%", ""));
                     ((ControlDownloadProgress)panel1.Controls[0]).message.Text = string.Format("{0}", mods[currentDownload].Name);
                 }));
-                Thread.Sleep(50);
+                Thread.Sleep(25);
             }
             Thread.Sleep(3000);
             Invoke(new VoidInvoke(delegate
@@ -321,6 +317,16 @@ namespace ModUpdater.Admin.GUI
                 button2.Enabled = false;
                 button4.Enabled = false;
             }));
+        }
+
+        private void panel1_ControlAdded(object sender, ControlEventArgs e)
+        {
+            Size = new System.Drawing.Size(597, Size.Height);
+        }
+
+        private void panel1_ControlRemoved(object sender, ControlEventArgs e)
+        {
+            Size = new System.Drawing.Size(250, Size.Height);
         }
     }
 }

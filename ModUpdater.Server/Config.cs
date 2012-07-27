@@ -39,6 +39,10 @@ namespace ModUpdater.Server
         /// </summary>
         public static string ModsPath { get; set; }
         /// <summary>
+        /// The path to the log file.
+        /// </summary>
+        public static string LogFile { get; set; }
+        /// <summary>
         /// The name of this update server.
         /// </summary>
         public static string ServerName { get; set; }
@@ -88,6 +92,12 @@ namespace ModUpdater.Server
             { ModsPath = "."; }
             try
             {
+                LogFile = n["LogFile"].InnerText;
+            }
+            catch
+            { LogFile = "ModUpdater.log"; }
+            try
+            {
                 ServerName = n["ServerName"].InnerText;
             }
             catch
@@ -116,6 +126,7 @@ namespace ModUpdater.Server
                 sw.WriteLine("  <Port>{0}</Port>", Port);
                 sw.WriteLine("  <Version>{0}</Version>", Program.Version);
                 sw.WriteLine("  <MaxClients>{0}</MaxClients>", MaxClients);
+                sw.WriteLine("  <LogFile>{0}</LogFile>", LogFile);
                 sw.WriteLine("  <ModsPath>{0}</ModsPath>", ModsPath);
                 sw.WriteLine("  <MasterServer>{0}</MasterServer>", MasterServer);
                 sw.WriteLine("</Config>");
