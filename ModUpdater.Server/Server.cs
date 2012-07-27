@@ -38,12 +38,15 @@ namespace ModUpdater.Server
         public Dictionary<Mod, Image> ModImages { get; private set; }
         public Image BackgroundImage { get; private set; }
         public List<string> Administrators { get; private set; }
+        private StreamWriter logFile;
         bool Online { get; set; }
         public Server()
         {
             MinecraftModUpdater.Logger.LogEvent += new LogEventDelegate(Logger_LogEvent);
             System.Diagnostics.Process.GetCurrentProcess().Exited += new EventHandler(Server_Exited);
             Config.Load();
+            logFile = File.AppendText(Config.LogFile);
+            logFile.AutoFlush = true;
             Mods = new List<Mod>();
             Clients = new List<Client>();
             TcpServer = new TcpListener(IPAddress.Any, Config.Port);
@@ -52,27 +55,11 @@ namespace ModUpdater.Server
             MCModUpdaterExceptionHandler.RegisterExceptionHandler(new ExceptionHandler());
             SelfUpdate();
             Administrators.AddRange(File.ReadAllLines("administrators.txt"));
-            foreach (string s in Directory.GetFiles(Config.ModsPath + "/xml"))
-            {
-                try
-                {
-                    Mods.Add(new Mod(s));
-                }
-                catch { } //This error is handled at a lower level.
-            }
-            foreach (Mod m in Mods)
-            {
-                if (File.Exists(Config.ModsPath + "/ModAssets/" + Path.GetFileName(m.ModFile) + ".png"))
-                {
-                    ModImages.Add(m, Image.FromFile(Config.ModsPath + "/ModAssets/" + Path.GetFileName(m.ModFile) + ".png"));
-                }
-                m.LoadRequiredMods(Mods);
-            }
+            LoadMods();
             if (File.Exists(Config.ModsPath + "/assets/server_background.png"))
             {
                 BackgroundImage = Image.FromFile(Config.ModsPath + "/assets/server_background.png");
             }
-            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Registered {0} mods", Mods.Count);
         }
 
         void Server_Exited(object sender, EventArgs e)
@@ -100,7 +87,27 @@ namespace ModUpdater.Server
             if (!Directory.Exists(Config.ModsPath + "/mods")) Directory.CreateDirectory(Config.ModsPath + "/mods");
             if (!Directory.Exists(Config.ModsPath + "/xml")) Directory.CreateDirectory(Config.ModsPath + "/xml");
             if (!Directory.Exists(Config.ModsPath + "/assets")) Directory.CreateDirectory(Config.ModsPath + "/assets");
-            if (!Directory.Exists(Config.ModsPath + "/ModAssets")) Directory.CreateDirectory(Config.ModsPath + "/ModAssets");
+            if (!Directory.Exists(Config.ModsPath + "/assets/mod")) Directory.CreateDirectory(Config.ModsPath + "/assets/mod");
+        }
+        private void LoadMods()
+        {
+            foreach (string s in Directory.GetFiles(Config.ModsPath + "/xml"))
+            {
+                try
+                {
+                    Mods.Add(new Mod(s));
+                }
+                catch { } //This error is handled at a lower level.
+            }
+            foreach (Mod m in Mods)
+            {
+                if (File.Exists(Config.ModsPath + "/ModAssets/" + Path.GetFileName(m.ModFile) + ".png"))
+                {
+                    ModImages.Add(m, Image.FromFile(Config.ModsPath + "/ModAssets/" + Path.GetFileName(m.ModFile) + ".png"));
+                }
+                m.LoadRequiredMods(Mods);
+            }
+            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Registered {0} mods", Mods.Count);
         }
         public void Start()
         {
@@ -163,6 +170,8 @@ namespace ModUpdater.Server
                 m.Save();
             }
             Config.Save();
+            logFile.Flush();
+            logFile.Close();
             Thread.Sleep(300);
         }
         public void Receive()
@@ -203,8 +212,11 @@ namespace ModUpdater.Server
         }
         void Logger_LogEvent(Logger.Level level, string message)
         {
-            if(level > Logger.Level.Debug)
-                Console.WriteLine("[{0}] {1}", level.ToString().ToUpper(), message);
+            if (level > Logger.Level.Debug)
+            {
+                Console.WriteLine("{0} [{1}] {2}", DateTime.Now, level.ToString().ToUpper(), message);
+                logFile.WriteLine("{0} [{1}] {2}", DateTime.Now, level.ToString().ToUpper(), message);
+            }
         }
         public void SimpleConsoleInputHandler()
         {
@@ -257,19 +269,7 @@ namespace ModUpdater.Server
                         }
                         Mods.Clear();
                         ModImages.Clear();
-                        foreach (string s in Directory.GetFiles(Config.ModsPath + "/xml"))
-                        {
-                            Mods.Add(new Mod(s));
-                        }
-                        foreach (Mod m in Mods)
-                        {
-                            if (File.Exists(Config.ModsPath + "/ModAssets/" + Path.GetFileName(m.ModFile) + ".png"))
-                            {
-                                ModImages.Add(m, Image.FromFile(Config.ModsPath + "/ModAssets/" + Path.GetFileName(m.ModFile) + ".png"));
-                            }
-                            m.LoadRequiredMods(Mods);
-                        }
-                        MinecraftModUpdater.Logger.Log(Logger.Level.Info,"Registered {0} mods", Mods.Count);
+                        LoadMods();
                         break;
                     case "help":
                     case "?":

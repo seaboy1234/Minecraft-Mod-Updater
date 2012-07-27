@@ -57,6 +57,16 @@ namespace ModUpdater.Admin.GUI
             {
                 txtBlacklist.AppendText(s + "\r\n");
             }
+            foreach (Mod m in MainForm.Instance.Mods)
+            {
+                lsRequired.Items.Add(m);
+                if (Mod.RequiredMods.Contains(m.Identifier))
+                {
+                    lsRequired.SetSelected(lsRequired.Items.IndexOf(m), true);
+                }
+            }
+            chkOptional.Checked = Mod.Optional;
+            lsRequired.Enabled = Mod.Optional;
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -128,10 +138,10 @@ namespace ModUpdater.Admin.GUI
                 Mod.PostDownloadCLI.Add(s);
             }
             Mod.RequiredMods.Clear();
-            foreach (object o in clsRequired.Items)
+            foreach (object o in lsRequired.SelectedItems)
             {
                 Mod m = (Mod)o;
-                Mod.RequiredMods.Add(m);
+                Mod.RequiredMods.Add(m.Identifier);
             }
             if (Mod.Identifier == null)
             {
@@ -141,7 +151,7 @@ namespace ModUpdater.Admin.GUI
 
         private void chkOptional_CheckedChanged(object sender, EventArgs e)
         {
-            clsRequired.Enabled = chkOptional.Checked;
+            lsRequired.Enabled = chkOptional.Checked;
         }
     }
 }

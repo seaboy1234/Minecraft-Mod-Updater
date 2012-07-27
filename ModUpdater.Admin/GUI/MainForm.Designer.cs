@@ -68,6 +68,8 @@ namespace ModUpdater.Admin.GUI
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(330, 350);
             this.panel1.TabIndex = 1;
+            this.panel1.ControlAdded += new System.Windows.Forms.ControlEventHandler(this.panel1_ControlAdded);
+            this.panel1.ControlRemoved += new System.Windows.Forms.ControlEventHandler(this.panel1_ControlRemoved);
             // 
             // button1
             // 
@@ -132,12 +134,12 @@ namespace ModUpdater.Admin.GUI
 
         #endregion
 
-        private System.Windows.Forms.ListBox listBox1;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button3;
         public System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Button button4;
+        internal System.Windows.Forms.ListBox listBox1;
     }
 }
 
