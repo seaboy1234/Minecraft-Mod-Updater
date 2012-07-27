@@ -85,6 +85,7 @@
     <Compile Include="Server.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Upgrade.cs" />
+    <Compile Include="Watchtower.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ModUpdater\ModUpdater.csproj">
