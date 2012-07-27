@@ -34,7 +34,7 @@ namespace ModUpdater.Client
 {
     static class Program
     {
-        public const string Version = "1.3.0_1";
+        public const string Version = "1.3.1_dev";
         public static AppStatus AppStatus;
         /// <summary>
         /// The main entry point for the application.
