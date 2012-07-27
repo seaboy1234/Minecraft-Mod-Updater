@@ -277,7 +277,7 @@ namespace ModUpdater.Server
         }
         public void Save()
         {
-            using (StreamWriter sw = new StreamWriter(ConfigFile))
+            using (StreamWriter sw = new StreamWriter(File.Create(ConfigFile)))
             {
                 sw.WriteLine("<Mod>");
                 sw.WriteLine(" <Name>{0}</Name>", ModName);
