@@ -225,60 +225,64 @@ namespace ModUpdater.Server
             {
                 string input = Console.ReadLine();
                 if (!Online) break;
-                switch (input)
-                {
-                    case "connected":
-                        MinecraftModUpdater.Logger.Log(Logger.Level.Info,"There are {0} connected clients.", Clients.Count);
-                        if (Clients.Count > 0)
-                        {
-                            MinecraftModUpdater.Logger.Log(Logger.Level.Info,"Connected Clients:");
-                            foreach (Client c in Clients)
-                            {
-                                MinecraftModUpdater.Logger.Log(Logger.Level.Info,c.ToString());
-                            }
-                        }
-                        break;
-                    case "exit":
-                    case "stop":
+                
+            }
+        }
+        public void HandleCommand(string input)
+        {
+            switch (input)
+            {
+                case "connected":
+                    MinecraftModUpdater.Logger.Log(Logger.Level.Info, "There are {0} connected clients.", Clients.Count);
+                    if (Clients.Count > 0)
+                    {
+                        MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Connected Clients:");
                         foreach (Client c in Clients)
                         {
-                            Packet.Send(new MetadataPacket { SData = new string[] { "shutdown", "The Server is shutting down." } }, c.PacketHandler.Stream);
+                            MinecraftModUpdater.Logger.Log(Logger.Level.Info, c.ToString());
                         }
-                        if (Clients.Count > 0) MinecraftModUpdater.Logger.Log(Logger.Level.Info,"Waiting for {0} clients to exit.", Clients.Count);
-                        while (Clients.Count > 0) Thread.Sleep(500);
-                        Dispose();
-                        break;
-                    case "populate":
-                        foreach(string s in Directory.GetFiles(Config.ModsPath + "/mods"))
+                    }
+                    break;
+                case "exit":
+                case "stop":
+                    foreach (Client c in Clients)
+                    {
+                        Packet.Send(new MetadataPacket { SData = new string[] { "shutdown", "The Server is shutting down." } }, c.PacketHandler.Stream);
+                    }
+                    if (Clients.Count > 0) MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Waiting for {0} clients to exit.", Clients.Count);
+                    while (Clients.Count > 0) Thread.Sleep(500);
+                    Dispose();
+                    break;
+                case "populate":
+                    foreach (string s in Directory.GetFiles(Config.ModsPath + "/mods"))
+                    {
+                        Mod m = new Mod
                         {
-                            Mod m = new Mod
-                            {
-                                Author = "null",
-                                Description = "",
-                                FileSize = 0,
-                                ModFile = "mods/" + Path.GetFileName(s),
-                                ModName = Path.GetFileName(s),
-                                BlacklistedUsers = new List<string>(),
-                                WhitelistedUsers = new List<string>(),
-                                PostDownloadCLI = new string[0],
-                                Identifier = Extras.GenerateHashFromString(Path.GetFileName(s)),
-                                ConfigFile = Config.ModsPath + "/xml/" + Path.GetFileName(s) + ".xml",
-                                RequiredMods = new List<Mod>()
-                            };
-                            m.Save();
-                        }
-                        Mods.Clear();
-                        ModImages.Clear();
-                        LoadMods();
-                        break;
-                    case "help":
-                    case "?":
-                    default:
-                        MinecraftModUpdater.Logger.Log(Logger.Level.Info,"exit, stop - Safely stops the update server after all clients exit.");
-                        MinecraftModUpdater.Logger.Log(Logger.Level.Info,"connected - Shows a list of connected clients.");
-                        MinecraftModUpdater.Logger.Log(Logger.Level.Info,"populate - Automagicly reads all of the files in the mods folder and creates XML files for them.");
-                        break;
-                }
+                            Author = "null",
+                            Description = "",
+                            FileSize = 0,
+                            ModFile = "mods/" + Path.GetFileName(s),
+                            ModName = Path.GetFileName(s),
+                            BlacklistedUsers = new List<string>(),
+                            WhitelistedUsers = new List<string>(),
+                            PostDownloadCLI = new string[0],
+                            Identifier = Extras.GenerateHashFromString(Path.GetFileName(s)),
+                            ConfigFile = Config.ModsPath + "/xml/" + Path.GetFileName(s) + ".xml",
+                            RequiredMods = new List<Mod>()
+                        };
+                        m.Save();
+                    }
+                    Mods.Clear();
+                    ModImages.Clear();
+                    LoadMods();
+                    break;
+                case "help":
+                case "?":
+                default:
+                    MinecraftModUpdater.Logger.Log(Logger.Level.Info, "exit, stop - Safely stops the update server after all clients exit.");
+                    MinecraftModUpdater.Logger.Log(Logger.Level.Info, "connected - Shows a list of connected clients.");
+                    MinecraftModUpdater.Logger.Log(Logger.Level.Info, "populate - Automagicly reads all of the files in the mods folder and creates XML files for them.");
+                    break;
             }
         }
         ~Server()
