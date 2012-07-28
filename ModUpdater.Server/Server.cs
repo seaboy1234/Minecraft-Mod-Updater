@@ -230,7 +230,7 @@ namespace ModUpdater.Server
             {
                 string input = Console.ReadLine();
                 if (!Online) break;
-                
+                HandleCommand(input);
             }
         }
         public void HandleCommand(string input)
