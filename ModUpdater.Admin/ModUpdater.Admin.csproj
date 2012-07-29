@@ -33,6 +33,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>computer.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -52,11 +55,23 @@
     <Compile Include="Controls\ControlDownloadProgress.Designer.cs">
       <DependentUpon>ControlDownloadProgress.cs</DependentUpon>
     </Compile>
+    <Compile Include="Dialog\InputBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialog\InputBox.Designer.cs">
+      <DependentUpon>InputBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\LoggerForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GUI\LoggerForm.Designer.cs">
       <DependentUpon>LoggerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Watchtower.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Watchtower.Designer.cs">
+      <DependentUpon>Watchtower.cs</DependentUpon>
     </Compile>
     <Compile Include="Items\Changelog.cs" />
     <Compile Include="Items\Connection.cs" />
@@ -99,6 +114,9 @@
     <EmbeddedResource Include="Controls\ControlDownloadProgress.resx">
       <DependentUpon>ControlDownloadProgress.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Dialog\InputBox.resx">
+      <DependentUpon>InputBox.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\ConnectionForm.resx">
       <DependentUpon>ConnectionForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -113,6 +131,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\ReviewChangesForm.resx">
       <DependentUpon>ReviewChangesForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Watchtower.resx">
+      <DependentUpon>Watchtower.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -140,7 +161,9 @@
       <Name>ModUpdater</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="computer.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

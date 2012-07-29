@@ -54,6 +54,7 @@ namespace ModUpdater.Server
         public void ClientStatus(bool joined, Client c)
         {
             string msg = joined ? "join" : "leave";
+            if (c.ClientID == null) return;
             foreach (Client cl in clients)
             {
                 Packet.Send(new MetadataPacket { SData = new string[] { "watchtower", "client_status", c.ClientID, msg } }, cl.PacketHandler.Stream);
@@ -61,8 +62,12 @@ namespace ModUpdater.Server
         }
         public void RegisterWatchtowerUser(Client c)
         {
-            LogToTowers(c.ClientID + " has entered Watchtower.");
+            foreach (Client cl in server.Clients)
+            {
+                ClientStatus(true, cl);
+            }
             clients.Add(c);
+            LogToTowers(c.ClientID + " has entered Watchtower.");
         }
         public void RemoveWatchtowerUser(Client c)
         {

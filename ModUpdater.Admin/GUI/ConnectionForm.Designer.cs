@@ -44,6 +44,7 @@ namespace ModUpdater.Admin.GUI
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ConnectionForm));
             this.lsSrvs = new System.Windows.Forms.ListBox();
             this.btnCancel = new System.Windows.Forms.Button();
             this.txtSvr = new System.Windows.Forms.TextBox();
@@ -63,7 +64,7 @@ namespace ModUpdater.Admin.GUI
             // lsSrvs
             // 
             this.lsSrvs.FormattingEnabled = true;
-            this.lsSrvs.Location = new System.Drawing.Point(0, 27);
+            this.lsSrvs.Location = new System.Drawing.Point(6, 27);
             this.lsSrvs.Name = "lsSrvs";
             this.lsSrvs.Size = new System.Drawing.Size(120, 108);
             this.lsSrvs.TabIndex = 6;
@@ -203,6 +204,7 @@ namespace ModUpdater.Admin.GUI
             this.Controls.Add(this.txtSvr);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.lsSrvs);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "ConnectionForm";
             this.Text = "Connect To Server";
             this.Load += new System.EventHandler(this.ConnectionForm_Load);

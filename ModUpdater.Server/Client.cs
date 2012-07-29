@@ -188,10 +188,18 @@ namespace ModUpdater.Server
                 PacketHandler.RegisterPacketHandler(PacketId.UploadFile, HandleFileUpload);
                 PacketHandler.RegisterPacketHandler(PacketId.FilePart, HandleFilePart);
                 PacketHandler.RegisterPacketHandler(PacketId.AllDone, HandleCompleteDownload);
+                PacketHandler.RegisterPacketHandler(PacketId.Metadata, HandleMetadata);
             }
             Server.Watchtower.ClientStatus(true, this);
         }
-
+        internal void HandleMetadata(Packet pa)
+        {
+            MetadataPacket p = pa as MetadataPacket;
+            if (p.SData[0] == "watchtower" && Admin)
+            {
+                Server.Watchtower.HandleWatchtowerMessage(this, p);
+            }
+        }
         internal void HandleLog(Packet pa)
         {
             LogPacket p = pa as LogPacket;

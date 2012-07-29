@@ -123,7 +123,10 @@ namespace ModUpdater.Admin.Items
                 RequiredMods = new List<string>(p.Requires)
             });
             if (mods.Count == mods.Capacity)
+            {
+                PacketHandler.RemovePacketHandler(PacketId.Metadata);
                 CurrentStep = ProgressStep.Connected;
+            }
         }
         private void MetadataPacketHandler(Packet pa)
         {

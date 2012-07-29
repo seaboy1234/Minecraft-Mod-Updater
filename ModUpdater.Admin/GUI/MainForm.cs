@@ -35,6 +35,7 @@ namespace ModUpdater.Admin.GUI
         private List<Mod> mods, changedMods;
         private int currentDownload, amountOfUpdates, updated, editing;
         private long downloadSize,downloaded;
+        private Watchtower Watchtower;
         private double percentage { get { return ((double)downloaded / downloadSize); } }
         public MainForm()
         {
@@ -155,6 +156,7 @@ namespace ModUpdater.Admin.GUI
                 Connection.PacketHandler.RegisterPacketHandler(PacketId.NextDownload, HandleDownloadInfo);
                 Connection.PacketHandler.RegisterPacketHandler(PacketId.FilePart, HandleFilePart);
                 Connection.PacketHandler.RegisterPacketHandler(PacketId.AllDone, HandleAllDone);
+                
                 foreach (Mod m in mods)
                 {
                     if (m.NeedsUpdate)
@@ -215,7 +217,14 @@ namespace ModUpdater.Admin.GUI
                 button2_Click(null, null);
             }
         }
-
+        private void HandleMetadata(Packet pa)
+        {
+            MetadataPacket p = pa as MetadataPacket;
+            if (p.SData[0] == "watchtower" && Watchtower != null)
+            {
+                Watchtower.HandleWatchtower(p);
+            }
+        }
         private void button3_Click(object sender, EventArgs e)
         {
             Mod m = mods[listBox1.SelectedIndex];
@@ -327,6 +336,28 @@ namespace ModUpdater.Admin.GUI
         private void panel1_ControlRemoved(object sender, ControlEventArgs e)
         {
             Size = new System.Drawing.Size(250, Size.Height);
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            if (Watchtower != null)
+            {
+                Watchtower.BringToFront();
+                return;
+            }
+            Watchtower w = new Watchtower();
+            Connection.PacketHandler.RemovePacketHandler(PacketId.Metadata);
+            Connection.PacketHandler.RegisterPacketHandler(PacketId.Metadata, HandleMetadata);
+            w.Show();
+            Watchtower = w;
+            w.FormClosed += new FormClosedEventHandler(Watchtower_FormClosed);
+            Packet.Send(new MetadataPacket { SData = new string[] { "watchtower", "status", "enable" } }, Connection.PacketHandler.Stream);
+        }
+
+        void Watchtower_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Packet.Send(new MetadataPacket { SData = new string[] { "watchtower", "status", "disable" } }, Connection.PacketHandler.Stream);
+            Watchtower = null;
         }
     }
 }
