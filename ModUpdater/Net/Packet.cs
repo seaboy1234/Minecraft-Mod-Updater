@@ -27,7 +27,7 @@ namespace ModUpdater.Net
 {
     public abstract class Packet
     {
-        public const int PROTOCOL_VERSION = 5;
+        public const int PROTOCOL_VERSION = 6;
 
         public DateTime Timestamp { get; private set; }
         /// <summary>
@@ -255,7 +255,7 @@ namespace ModUpdater.Net
     {
         public string Author { get; set; }
         public string ModName { get; set; }
-        public string File { get; set; }
+        public string[] Files { get; set; }
         public string Hash { get; set; }
         public long FileSize { get; set; }
         public string Description { get; set; }
@@ -267,7 +267,7 @@ namespace ModUpdater.Net
         {
             Author = s.ReadString();
             ModName = s.ReadString();
-            File = s.ReadString();
+            Files = s.ReadStrings();
             Hash = s.ReadString();
             FileSize = s.ReadLong();
             Description = s.ReadString();
@@ -280,7 +280,7 @@ namespace ModUpdater.Net
         {
             s.WriteString(Author);
             s.WriteString(ModName);
-            s.WriteString(File);
+            s.WriteStrings(Files);
             s.WriteString(Hash);
             s.WriteLong(FileSize);
             s.WriteString(Description);
