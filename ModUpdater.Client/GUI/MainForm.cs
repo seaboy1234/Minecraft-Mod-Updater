@@ -28,6 +28,7 @@ using System.Windows.Forms;
 using ModUpdater.Client.Utility;
 using ModUpdater.Net;
 using ModUpdater.Utility;
+using Ionic.Zip;
 
 namespace ModUpdater.Client.GUI
 {
@@ -385,7 +386,6 @@ namespace ModUpdater.Client.GUI
                 ph.Stop();
                 return;
             }
-            while (SplashScreen.GetScreen().Loading) ;
             int i = p.Index;
             foreach (byte b in p.Part)
             {
@@ -433,9 +433,21 @@ namespace ModUpdater.Client.GUI
                 Thread.Sleep(1000);
             }
             Mod m = Mods.Find(p.Identifier);
-            string path = Path.GetDirectoryName(Properties.Settings.Default.MinecraftPath + "\\" + m.File);
-            File.WriteAllBytes(path + "\\" + Path.GetFileName(m.File), CurrentDownload.Contents);
-            MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Downloaded " + path + "\\" + Path.GetFileName(m.File));
+            //Old Code
+            //string path = Path.GetDirectoryName(Properties.Settings.Default.MinecraftPath + "\\" + m.File);
+            //File.WriteAllBytes(path + "\\" + Path.GetFileName(m.File), CurrentDownload.Contents);
+            //MinecraftModUpdater.Logger.Log(Logger.Level.Info, "Downloaded " + path + "\\" + Path.GetFileName(m.File));
+            using (MemoryStream ms = new MemoryStream())
+            {
+                ms.Write(m.Contents, 0, m.Contents.Length); //Write file contents to stream.
+                using (ZipFile zip1 = ZipFile.Read(ms)) //Only to read it in the next line.
+                {
+                    foreach (ZipEntry e in zip1)
+                    {
+                        e.Extract(Properties.Settings.Default.MinecraftPath, ExtractExistingFileAction.OverwriteSilently);
+                    }
+                }
+            }
             ProcessStartInfo pr = new ProcessStartInfo("cmd");
             pr.CreateNoWindow = true;
             pr.UseShellExecute = false;
@@ -541,46 +553,50 @@ namespace ModUpdater.Client.GUI
             {
                 Mods.Add(m);
             }
-            string path = Path.GetDirectoryName(Properties.Settings.Default.MinecraftPath + "\\" + p.File);
-            string s = "";
-            bool exists = File.Exists(path + "\\" + Path.GetFileName(m.File));
-            if (exists)
+            foreach (string file in p.Files)
             {
-                try
+                string path = Path.GetDirectoryName(Properties.Settings.Default.MinecraftPath + "\\" + file);
+                string s = "";
+                bool exists = File.Exists(path + "\\" + Path.GetFileName(m.File));
+                if (exists)
                 {
-                    s = Extras.GenerateHash(path + "\\" + Path.GetFileName(m.File));
+                    try
+                    {
+                        s = Extras.GenerateHash(path + "\\" + Path.GetFileName(m.File));
+                    }
+                    catch (Exception e) { MinecraftModUpdater.Logger.Log(e); }
                 }
-                catch (Exception e) { MinecraftModUpdater.Logger.Log(e); }
-            }
-            if ((!exists && !m.Optional) || (s != m.Hash && !m.Optional))
-            {
-                Program.RunOnUIThread(delegate
+                if ((!exists && !m.Optional) || (s != m.Hash && !m.Optional))
                 {
-                    lsModsToUpdate.Items.Add(m);
-                });
-            }
-            else if (!m.Optional)
-            {
-                Program.RunOnUIThread(delegate
+                    Program.RunOnUIThread(delegate
+                    {
+                        lsModsToUpdate.Items.Add(m);
+                    });
+                    continue;
+                }
+                else if (!m.Optional)
                 {
-                    lsMods.Items.Add(m);
-                });
-            }
-            if (exists && m.Optional && s == m.Hash)
-            {
-                Mods.Add(m);
-                Program.RunOnUIThread(delegate
+                    Program.RunOnUIThread(delegate
+                    {
+                        lsMods.Items.Add(m);
+                    });
+                }
+                if (exists && m.Optional && s == m.Hash)
                 {
-                    lsMods.Items.Add(m);
-                });
-            }
-            else if (exists && m.Optional && s != m.Hash)
-            {
-                Mods.Add(m);
-                Program.RunOnUIThread(delegate
+                    Mods.Add(m);
+                    Program.RunOnUIThread(delegate
+                    {
+                        lsMods.Items.Add(m);
+                    });
+                }
+                else if (exists && m.Optional && s != m.Hash)
                 {
-                    lsModsToUpdate.Items.Add(m);
-                });
+                    Mods.Add(m);
+                    Program.RunOnUIThread(delegate
+                    {
+                        lsModsToUpdate.Items.Add(m);
+                    });
+                }
             }
             MinecraftModUpdater.Logger.Log(Logger.Level.Debug, "Info: " + m.Name);
             string str = GetLastModId();
