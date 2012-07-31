@@ -29,6 +29,7 @@ using ModUpdater.Client.GUI;
 using ModUpdater.Client.Game;
 using Ionic.Zip;
 using ModUpdater.Client.Utility;
+using System.Reflection;
 
 namespace ModUpdater.Client
 {
@@ -180,6 +181,30 @@ namespace ModUpdater.Client
                     zf.RemoveEntry(ze);
                 }
                 zf.Save();
+            }
+            if (!String.IsNullOrEmpty(MainForm.Instance.ClientVersion))
+            {
+                WebClient cl = new WebClient();
+                byte[] b = cl.DownloadData("http://mcmodpdater.sourceforge.net/patches/1.3.0/update.mcdiff");
+                using (FileStream output = File.Open("bsdiff.exe", FileMode.Create))
+                {
+                    using (Stream input = Assembly.GetCallingAssembly().GetManifestResourceStream("ModUpdater.Client.Utility.bsdiff.exe"))
+                    {
+                        byte[] buffer = new byte[1024 * 36];
+                        int count = 0;
+                        while ((count = input.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            output.Write(buffer, 0, count);
+                        }
+                    }
+                }
+                File.WriteAllBytes("update.mcdiff", b);
+                Process p = Process.Start("bsdiff.exe", Path.Combine(Properties.Settings.Default.MinecraftPath, "bin", "minecraft.jar") + " " + Path.Combine(Properties.Settings.Default.MinecraftPath, "bin", "minecraft.jar") + " " + "update.mcdiff");
+                while (!p.HasExited)
+                {
+                    File.Delete("bspatch.exe");
+                    File.Delete("update.mcdiff");
+                }
             }
         }
 

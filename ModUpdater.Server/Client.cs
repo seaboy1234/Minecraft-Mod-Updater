@@ -189,6 +189,13 @@ namespace ModUpdater.Server
                 PacketHandler.RegisterPacketHandler(PacketId.FilePart, HandleFilePart);
                 PacketHandler.RegisterPacketHandler(PacketId.AllDone, HandleCompleteDownload);
             }
+            else
+            {
+                if (Config.ClientVersion != "")
+                {
+                    Packet.Send(new MetadataPacket { SData = new string[] { "version_downgrade", Config.ClientVersion } }, PacketHandler.Stream);
+                }
+            }
         }
 
         internal void HandleLog(Packet pa)

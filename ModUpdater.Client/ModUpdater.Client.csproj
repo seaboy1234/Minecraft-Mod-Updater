@@ -271,6 +271,7 @@
   <ItemGroup>
     <Content Include="icon.ico" />
     <Content Include="Launcher\readme.txt" />
+    <EmbeddedResource Include="Utility\bspatch.exe" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

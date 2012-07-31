@@ -38,6 +38,7 @@ namespace ModUpdater.Client.GUI
         public IPAddress LocalAddress;
         public string ServerFolder { get { return Server.Name.Replace(' ', '_').Replace('.', '-').ToLower(); } }
         public Server Server { get; set; }
+        public string ClientVersion;
 
         private PacketHandler ph;
         private Socket socket;
@@ -685,6 +686,10 @@ namespace ModUpdater.Client.GUI
                 {
                     Close();
                 });
+            }
+            else if (p.SData[0] == "version_downgrade")
+            {
+                ClientVersion = p.SData[1];
             }
         }
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
