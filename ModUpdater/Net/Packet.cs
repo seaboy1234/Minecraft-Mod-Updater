@@ -243,12 +243,14 @@ namespace ModUpdater.Net
         {
             Index = s.ReadInt();
             Part = s.ReadBytes();
+            s.WriteByte(0); // Just to make this send at the user's upload speed and not give a false number.
         }
 
         public override void Write(ModUpdaterNetworkStream s)
         {
             s.WriteInt(Index);
             s.WriteBytes(Part);
+            s.ReadByte(); // We don't care about this number.
         }
     }
     public class ModInfoPacket : Packet
