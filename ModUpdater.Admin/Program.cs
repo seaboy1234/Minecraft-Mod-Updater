@@ -26,7 +26,7 @@ namespace ModUpdater.Admin
 {
     static class Program
     {
-        public const string Version = "1.3.1_dev";
+        public const string Version = "1.3.1";
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
