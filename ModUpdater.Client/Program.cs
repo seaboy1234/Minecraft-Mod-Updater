@@ -168,6 +168,33 @@ namespace ModUpdater.Client
             });
             update.UpdateGame();
             while (update.Progress != 100) ;
+            if (!String.IsNullOrEmpty(MainForm.Instance.ClientVersion))
+            {
+                WebClient cl = new WebClient();
+                string client = MainForm.Instance.ClientVersion + ".mcdiff";
+                SplashScreen.UpdateStatusText("Downloading Patches...");
+                byte[] b = cl.DownloadData("http://mcmodpdater.sourceforge.net/patches/1.3.0/" + client);
+                using (FileStream output = File.Open("bspatch.exe", FileMode.Create))
+                {
+                    using (Stream input = Assembly.GetCallingAssembly().GetManifestResourceStream("ModUpdater.Client.Utility.bspatch.exe"))
+                    {
+                        byte[] buffer = new byte[1024 * 36];
+                        int count = 0;
+                        while ((count = input.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            output.Write(buffer, 0, count);
+                        }
+                    }
+                }
+                File.Move(Path.Combine(Properties.Settings.Default.MinecraftPath, "bin", "minecraft.jar"), "minecraft.jar");
+                File.WriteAllBytes(client, b);
+                SplashScreen.UpdateStatusText("If prompted, please press \"Yes\"");
+                Process p = Process.Start("bspatch.exe", "minecraft.jar minecraft.jar " + client);
+                while (!p.HasExited) { }
+                File.Move("minecraft.jar", Path.Combine(Properties.Settings.Default.MinecraftPath, "bin", "minecraft.jar"));
+                File.Delete("bspatch.exe");
+                File.Delete(client);
+            }
             using (ZipFile zf = ZipFile.Read(Path.Combine(Properties.Settings.Default.MinecraftPath, "bin", "minecraft.jar")))
             {
                 List<ZipEntry> delete = new List<ZipEntry>();
@@ -181,30 +208,6 @@ namespace ModUpdater.Client
                     zf.RemoveEntry(ze);
                 }
                 zf.Save();
-            }
-            if (!String.IsNullOrEmpty(MainForm.Instance.ClientVersion))
-            {
-                WebClient cl = new WebClient();
-                byte[] b = cl.DownloadData("http://mcmodpdater.sourceforge.net/patches/1.3.0/update.mcdiff");
-                using (FileStream output = File.Open("bsdiff.exe", FileMode.Create))
-                {
-                    using (Stream input = Assembly.GetCallingAssembly().GetManifestResourceStream("ModUpdater.Client.Utility.bsdiff.exe"))
-                    {
-                        byte[] buffer = new byte[1024 * 36];
-                        int count = 0;
-                        while ((count = input.Read(buffer, 0, buffer.Length)) > 0)
-                        {
-                            output.Write(buffer, 0, count);
-                        }
-                    }
-                }
-                File.WriteAllBytes("update.mcdiff", b);
-                Process p = Process.Start("bsdiff.exe", Path.Combine(Properties.Settings.Default.MinecraftPath, "bin", "minecraft.jar") + " " + Path.Combine(Properties.Settings.Default.MinecraftPath, "bin", "minecraft.jar") + " " + "update.mcdiff");
-                while (!p.HasExited)
-                {
-                    File.Delete("bspatch.exe");
-                    File.Delete("update.mcdiff");
-                }
             }
         }
 
