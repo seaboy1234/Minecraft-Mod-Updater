@@ -47,6 +47,10 @@ namespace ModUpdater.Server
         /// </summary>
         public static string ServerName { get; set; }
         /// <summary>
+        /// The version of the client to downgrade to.
+        /// </summary>
+        public static string ClientVersion { get; set; }
+        /// <summary>
         /// The IP Address and port of the master server.
         /// </summary>
         public static string MasterServer { get; set; }
@@ -110,6 +114,12 @@ namespace ModUpdater.Server
             { MasterServer = ""; }
             try
             {
+                ClientVersion = n["ClientVersion"].InnerText;
+            }
+            catch
+            { ClientVersion = ""; }
+            try
+            {
                 config.Save(Program.ConfigPath);
             }
             catch { } //XML file is not valid.
@@ -124,6 +134,7 @@ namespace ModUpdater.Server
                 sw.WriteLine("<Config>");
                 sw.WriteLine("  <ServerName>{0}</ServerName>", ServerName);
                 sw.WriteLine("  <Port>{0}</Port>", Port);
+                sw.WriteLine("  <ClientVersion>{0}</ClientVersion>", ClientVersion);
                 sw.WriteLine("  <Version>{0}</Version>", Program.Version);
                 sw.WriteLine("  <MaxClients>{0}</MaxClients>", MaxClients);
                 sw.WriteLine("  <LogFile>{0}</LogFile>", LogFile);
